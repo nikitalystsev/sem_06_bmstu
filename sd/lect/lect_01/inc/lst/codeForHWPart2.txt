@@ -1,0 +1,10 @@
+            for (size_t i = 0; i <= word.length() - ngram; ++i) // 11
+                ngrams.push_back(word.substr(i, ngram));        // 12
+
+            for (const auto &ngram : ngrams) // 13
+                ngramCounts[ngram]++;        // 14
+
+            startPos = endPos + 1; // 15
+        }
+    }
+}
