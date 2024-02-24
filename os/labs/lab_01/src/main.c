@@ -8,7 +8,7 @@ typedef int Myfunc(const char *, int, int);
 
 static Myfunc myfunc;
 static int myftw(char *, Myfunc *);
-static int dopath(const char *, Myfunc *, int);
+static int dopath(Myfunc *, int);
 
 int main(int argc, char *argv[])
 {
@@ -41,16 +41,17 @@ myftw(char *pathname, Myfunc *func)
 {
     size_t len;
 
-    // fullpath = path_alloc(&len); /* выделить память для PATH_MAX+1 байт */
+    fullpath = path_alloc(&len); /* выделить память для PATH_MAX+1 байт */
     /* (листинг 2.3) */
 
-    // strncpy(fullpath, pathname, len);
-    // fullpath[len - 1] = 0;
+    strncpy(fullpath, pathname, len);
+    fullpath[len - 1] = 0;
 
     int level = 0;
 
-    return (dopath(pathname, func, level));
+    return (dopath(func, level));
 }
+
 /*
  * Выполняет обход дерева каталогов, начиная с "pathname".
  * Если "pathname" не является каталогом, для него вызывается lstat(),
@@ -58,68 +59,53 @@ myftw(char *pathname, Myfunc *func)
  * Для каталогов производится рекурсивный вызов функции.
  */
 static int /* возвращает то, что вернула функция func() */
-dopath(const char *pathname, Myfunc *func, int level)
+dopath(Myfunc *func, int level)
 {
     struct stat statbuf;
     struct dirent *dirp;
     DIR *dp;
     int ret;
-    char *fullpath;
-
-    size_t len;
-
-    if ((fullpath = path_alloc(&len)) == NULL)
-        return (func(pathname, level, FTW_NS)); // Ошибка выделения памяти
+    char *ptr;
 
     /*
         получаем информацию о файле, указанном в pathname
     */
-    if (lstat(pathname, &statbuf) < 0) /* ошибка вызова функции stat */
-    {
-        free(fullpath);
-        return (func(pathname, level, FTW_NS));
-    }
+    if (lstat(fullpath, &statbuf) < 0) /* ошибка вызова функции stat */
+        return (func(fullpath, level, FTW_NS));
 
     if (S_ISDIR(statbuf.st_mode) == 0) /* не каталог */
-    {
-        free(fullpath);
-        return (func(pathname, level, FTW_F));
-    }
+        return (func(fullpath, level, FTW_F));
 
     /*
      * Это каталог. Сначала вызвать функцию func(),
      * а затем обработать все файлы в этом каталоге.
      */
-    if ((ret = func(pathname, level++, FTW_D)) != 0)
-    {
-        free(fullpath);
+    if ((ret = func(fullpath, level++, FTW_D)) != 0)
         return (ret);
-    }
 
-    if ((dp = opendir(pathname)) == NULL) /* каталог недоступен */
-    {
-        free(fullpath);
-        return (func(pathname, level, FTW_DNR));
-    }
+    ptr = fullpath + strlen(fullpath);
+
+    *ptr++ = '/';
+    *ptr = 0;
+
+    if ((dp = opendir(fullpath)) == NULL) /* каталог недоступен */
+        return (func(fullpath, level, FTW_DNR));
 
     while ((dirp = readdir(dp)) != NULL)
     {
         if (strcmp(dirp->d_name, ".") == 0 || strcmp(dirp->d_name, "..") == 0)
             continue; /* пропустить каталоги "." и ".." */
 
-        snprintf(fullpath, len, "%s/%s", pathname, dirp->d_name);
+        strcpy(ptr, dirp->d_name);
 
-        if ((ret = dopath(fullpath, func, level)) != 0) /* рекурсия */
-            break;                                      /* выход по ошибке */
+        if ((ret = dopath(func, level)) != 0) /* рекурсия */
+            break;                            /* выход по ошибке */
     }
+
+    ptr[-1] = 0; /* стереть часть строки от слэша и до конца */
 
     if (closedir(dp) < 0)
-    {
-        free(fullpath);
-        return (func(pathname, level, FTW_NS));
-    }
-
-    free(fullpath);
+        err_ret("невозможно закрыть каталог %s", fullpath);
 
     return (ret);
 }
