@@ -15,20 +15,14 @@ PREF_INC := ./inc/
 PREF_OUT := ./out/
 PREF_LIB := ./examples/lib/
 
-.PHONY: ver1 ver2 clean 
+.PHONY: clean 
 
-all: ver1 ver2
+all: app.exe
 
-ver1: $(PREF_OUT)ver1.o $(PREF_OUT)error.o $(PREF_OUT)pathalloc.o
-	$(CC) $^ $(LINKFLAGS) -o ver1.exe
+app.exe: $(PREF_OUT)main.o $(PREF_OUT)error.o $(PREF_OUT)pathalloc.o
+	$(CC) $^ $(LINKFLAGS) -o app.exe
 
-$(PREF_OUT)ver1.o: $(PREF_SRC)ver1.c
-	$(CC) $(CFLAGS) -c -MD $< -o $@
-
-ver2: $(PREF_OUT)ver2.o $(PREF_OUT)error.o $(PREF_OUT)pathalloc.o
-	$(CC) $^ $(LINKFLAGS) -o ver2.exe
-
-$(PREF_OUT)ver2.o: $(PREF_SRC)ver2.c
+$(PREF_OUT)main.o: $(PREF_SRC)main.c
 	$(CC) $(CFLAGS) -c -MD $< -o $@
 
 $(PREF_OUT)error.o: $(PREF_LIB)error.c
