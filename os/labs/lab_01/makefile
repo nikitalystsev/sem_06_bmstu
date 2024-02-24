@@ -1,9 +1,12 @@
 $(shell mkdir -p out)
 
+# $@ Имя цели обрабатываемого правила
+# $< Имя первой зависимости обрабатываемого правила
+# $^ Список всех зависимостей обрабатываемого правила
+
 CC := gcc
 
 CFLAGS := -Iexamples/include/
-
 
 LINKFLAGS := -lpthread -lc
 
@@ -12,14 +15,20 @@ PREF_INC := ./inc/
 PREF_OUT := ./out/
 PREF_LIB := ./examples/lib/
 
-.PHONY: d2 clean 
+.PHONY: ver1 ver2 clean 
 
-all: d2 
+all: ver1 ver2
 
-d2: $(PREF_OUT)main.o $(PREF_OUT)error.o $(PREF_OUT)pathalloc.o
-	$(CC) $(PREF_OUT)main.o $(PREF_OUT)error.o $(PREF_OUT)pathalloc.o $(LINKFLAGS) -o main.exe
+ver1: $(PREF_OUT)ver1.o $(PREF_OUT)error.o $(PREF_OUT)pathalloc.o
+	$(CC) $^ $(LINKFLAGS) -o ver1.exe
 
-$(PREF_OUT)main.o: $(PREF_SRC)main.c
+$(PREF_OUT)ver1.o: $(PREF_SRC)ver1.c
+	$(CC) $(CFLAGS) -c -MD $< -o $@
+
+ver2: $(PREF_OUT)ver2.o $(PREF_OUT)error.o $(PREF_OUT)pathalloc.o
+	$(CC) $^ $(LINKFLAGS) -o ver2.exe
+
+$(PREF_OUT)ver2.o: $(PREF_SRC)ver2.c
 	$(CC) $(CFLAGS) -c -MD $< -o $@
 
 $(PREF_OUT)error.o: $(PREF_LIB)error.c
