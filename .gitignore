@@ -12,6 +12,7 @@
 
 /os/lects/lect_01/*.m4a
 /os/labs/audio_labs/*.m4a
+/os/.vscode/
 
 /model/lects/lect_01/*.m4a
 /model/lects/lect_02/*.m4a
