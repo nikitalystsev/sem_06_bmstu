@@ -52,6 +52,7 @@ static char *fullpath; /* полный путь к каждому из файл�
 static int /* возвращает то, что вернула функция func() */
 myftw(char *pathname, Myfunc *func)
 {
+    int ret;
     size_t len;
 
     fullpath = path_alloc(&len); /* выделить память для PATH_MAX+1 байт */
@@ -62,12 +63,17 @@ myftw(char *pathname, Myfunc *func)
 
     int level = 0;
 
-    return (dopath(func, level));
+    ret = dopath(func, level);
+
+    free(fullpath);
+
+    return (ret);
 }
 
 static int /* возвращает то, что вернула функция func() */
 myftw_with_chdir(char *pathname, Myfunc *func)
 {
+    int ret;
     size_t len;
 
     fullpath = path_alloc(&len); /* выделить память для PATH_MAX+1 байт */
@@ -78,7 +84,11 @@ myftw_with_chdir(char *pathname, Myfunc *func)
 
     int level = 0;
 
-    return (dopath_with_chdir(func, level, fullpath));
+    ret = dopath_with_chdir(func, level, fullpath);
+
+    free(fullpath);
+
+    return (ret);
 }
 
 /*
@@ -262,21 +272,25 @@ void cmp_time(char *pathname)
     long long beg, end;
     double cpu_time_used;
 
-    int reps = 10;
+    int nreps = 1;
 
     beg = getThreadCpuTimeNs();
-    for (int i = 0; i < reps; ++i)
+    for (int i = 0; i < nreps; ++i)
+        myftw(pathname, myfunc);
+    end = getThreadCpuTimeNs();
+
+    printf("end - beg = %lld\n", end - beg);
+
+    cpu_time_used = ((double)(end - beg)) / nreps;
+    printf("\nВремя обхода дерева каталогов без chdir: %f\n", cpu_time_used);
+
+    beg = getThreadCpuTimeNs();
+    for (int i = 0; i < nreps; ++i)
         myftw_with_chdir(pathname, myfunc);
     end = getThreadCpuTimeNs();
 
-    cpu_time_used = ((double)(end - beg)) / reps;
+    printf("end - beg = %lld\n", end - beg);
+
+    cpu_time_used = ((double)(end - beg)) / nreps;
     printf("Время обхода дерева каталогов с chdir: %f\n", cpu_time_used);
-
-    // beg = getThreadCpuTimeNs();
-    // for (int i = 0; i < reps; ++i)
-    //     myftw(pathname, myfunc);
-    // end = getThreadCpuTimeNs();
-
-    // cpu_time_used = ((double)(end - beg)) / reps;
-    // printf("\nВремя обхода дерева каталогов без chdir: %f\n", cpu_time_used);
 }
