@@ -11,11 +11,15 @@ static Myfunc myfunc;
 
 static int myftw(char *, Myfunc *);
 static int myftw_with_chdir(char *, Myfunc *);
+
 static int dopath(Myfunc *, int);
 static int dopath_with_chdir(Myfunc *, int, char *);
+
 void cmp_time(char *);
 
 static long long getThreadCpuTimeNs();
+
+int is_print_tree = 1;
 
 int main(int argc, char *argv[])
 {
@@ -24,8 +28,9 @@ int main(int argc, char *argv[])
     if (argc != 2)
         err_quit("Использование: ftw <начальный_каталог>");
 
+    ret = myftw(argv[1], myfunc); /* выполняет всю работу */
+
     cmp_time(argv[1]);
-    // ret = myftw(argv[1], myfunc); /* выполняет всю работу */
 
     // подсчитывать количества файлов по типам не нужно
 
@@ -199,37 +204,40 @@ dopath_with_chdir(Myfunc *func, int level, char *partname)
 
 static int myfunc(const char *pathname, int level, int type)
 {
-    // if (type == FTW_F || type == FTW_D)
-    // {
-    //     const char *filename;
-    //     int i = 0;
+    if (!is_print_tree)
+        return 0;
 
-    //     for (int i = 0; i < level; ++i)
-    //     {
-    //         if (i != level - 1)
-    //             printf("│   ");
-    //         else
-    //             printf("└───");
-    //     }
+    if (type == FTW_F || type == FTW_D)
+    {
+        const char *filename;
+        int i = 0;
 
-    //     if (level > 0)
-    //     {
-    //         filename = strrchr(pathname, '/');
+        for (int i = 0; i < level; ++i)
+        {
+            if (i != level - 1)
+                printf("│   ");
+            else
+                printf("└───");
+        }
 
-    //         if (filename != NULL)
-    //             printf("%s\n", filename + 1);
-    //         else
-    //             printf("%s\n", pathname);
-    //     }
-    //     else
-    //         printf("%s\n", pathname);
-    // }
-    // else if (type == FTW_DNR)
-    //     err_ret("закрыт доступ к каталогу %s", pathname);
-    // else if (type == FTW_NS)
-    //     err_ret("ошибка вызова функции stat для %s", pathname);
-    // else
-    //     err_dump("неизвестный тип %d для файла %s", type, pathname);
+        if (level > 0)
+        {
+            filename = strrchr(pathname, '/');
+
+            if (filename != NULL)
+                printf("%s\n", filename + 1);
+            else
+                printf("%s\n", pathname);
+        }
+        else
+            printf("%s\n", pathname);
+    }
+    else if (type == FTW_DNR)
+        err_ret("закрыт доступ к каталогу %s", pathname);
+    else if (type == FTW_NS)
+        err_ret("ошибка вызова функции stat для %s", pathname);
+    else
+        err_dump("неизвестный тип %d для файла %s", type, pathname);
 
     return (0);
 }
@@ -249,24 +257,26 @@ static long long getThreadCpuTimeNs()
 
 void cmp_time(char *pathname)
 {
+    is_print_tree = 0;
+
     long long beg, end;
     double cpu_time_used;
 
-    int reps = 10000;
+    int reps = 10;
 
     beg = getThreadCpuTimeNs();
     for (int i = 0; i < reps; ++i)
-        myftw(pathname, myfunc);
-    end = getThreadCpuTimeNs();
-
-    cpu_time_used = ((double)(end - beg)) / reps;
-    printf("\nВремя обхода дерева каталогов без chdir: %f\n", cpu_time_used);
-
-    beg = getThreadCpuTimeNs();
-    for (int i = 0; i < reps; ++i)
-        myftw(pathname, myfunc);
+        myftw_with_chdir(pathname, myfunc);
     end = getThreadCpuTimeNs();
 
     cpu_time_used = ((double)(end - beg)) / reps;
     printf("Время обхода дерева каталогов с chdir: %f\n", cpu_time_used);
+
+    // beg = getThreadCpuTimeNs();
+    // for (int i = 0; i < reps; ++i)
+    //     myftw(pathname, myfunc);
+    // end = getThreadCpuTimeNs();
+
+    // cpu_time_used = ((double)(end - beg)) / reps;
+    // printf("\nВремя обхода дерева каталогов без chdir: %f\n", cpu_time_used);
 }
