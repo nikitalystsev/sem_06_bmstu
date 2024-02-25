@@ -17,7 +17,7 @@ static int dopath_with_chdir(Myfunc *, int, char *);
 
 void cmp_time(char *);
 
-static long long getThreadCpuTimeNs();
+static long long getCpuTimeNs();
 
 int is_print_tree = 1;
 
@@ -252,7 +252,7 @@ static int myfunc(const char *pathname, int level, int type)
     return (0);
 }
 
-static long long getThreadCpuTimeNs()
+static long long getCpuTimeNs()
 {
     struct timespec t;
 
@@ -274,22 +274,18 @@ void cmp_time(char *pathname)
 
     int nreps = 1;
 
-    beg = getThreadCpuTimeNs();
+    beg = getCpuTimeNs();
     for (int i = 0; i < nreps; ++i)
         myftw(pathname, myfunc);
-    end = getThreadCpuTimeNs();
-
-    printf("end - beg = %lld\n", end - beg);
+    end = getCpuTimeNs();
 
     cpu_time_used = ((double)(end - beg)) / nreps;
     printf("\nВремя обхода дерева каталогов без chdir: %f\n", cpu_time_used);
 
-    beg = getThreadCpuTimeNs();
+    beg = getCpuTimeNs();
     for (int i = 0; i < nreps; ++i)
         myftw_with_chdir(pathname, myfunc);
-    end = getThreadCpuTimeNs();
-
-    printf("end - beg = %lld\n", end - beg);
+    end = getCpuTimeNs();
 
     cpu_time_used = ((double)(end - beg)) / nreps;
     printf("Время обхода дерева каталогов с chdir: %f\n", cpu_time_used);
