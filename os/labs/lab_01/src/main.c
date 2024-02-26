@@ -64,7 +64,7 @@ myftw(char *pathname, Myfunc *func)
     end = getCpuTimeNs();
 
     cpu_time_used = (double)(end - beg);
-    printf("\nВремя работы функции path_alloc (без chdir): %f\n", cpu_time_used);
+    printf("\nВремя работы функции path_alloc (без chdir): %3.f нс\n", cpu_time_used);
 
     strncpy(fullpath, pathname, len);
     fullpath[len - 1] = 0;
@@ -93,7 +93,7 @@ myftw_with_chdir(char *pathname, Myfunc *func)
     end = getCpuTimeNs();
 
     cpu_time_used = (double)(end - beg);
-    printf("\nВремя работы функции path_alloc (chdir): %f\n", cpu_time_used);
+    printf("\nВремя работы функции path_alloc (chdir): %3.f нс\n", cpu_time_used);
 
     fullpath = path_alloc(&len); /* выделить память для PATH_MAX+1 байт */
     /* (листинг 2.3) */
@@ -299,7 +299,7 @@ void cmp_time(char *pathname)
     end = getCpuTimeNs();
 
     cpu_time_used = ((double)(end - beg)) / nreps;
-    printf("\nВремя обхода дерева каталогов без chdir: %f\n", cpu_time_used);
+    printf("\nВремя обхода дерева каталогов без chdir: %3.f нс\n", cpu_time_used);
 
     beg = getCpuTimeNs();
     for (int i = 0; i < nreps; ++i)
@@ -307,5 +307,5 @@ void cmp_time(char *pathname)
     end = getCpuTimeNs();
 
     cpu_time_used = ((double)(end - beg)) / nreps;
-    printf("Время обхода дерева каталогов с chdir: %f\n", cpu_time_used);
+    printf("Время обхода дерева каталогов с chdir: %3.f нс\n", cpu_time_used);
 }
