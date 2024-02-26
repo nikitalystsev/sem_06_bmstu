@@ -55,8 +55,16 @@ myftw(char *pathname, Myfunc *func)
     int ret;
     size_t len;
 
+    long long beg, end;
+    double cpu_time_used;
+
+    beg = getCpuTimeNs();
     fullpath = path_alloc(&len); /* выделить память для PATH_MAX+1 байт */
     /* (листинг 2.3) */
+    end = getCpuTimeNs();
+
+    cpu_time_used = (double)(end - beg);
+    printf("\nВремя работы функции path_alloc (без chdir): %f\n", cpu_time_used);
 
     strncpy(fullpath, pathname, len);
     fullpath[len - 1] = 0;
@@ -75,6 +83,17 @@ myftw_with_chdir(char *pathname, Myfunc *func)
 {
     int ret;
     size_t len;
+
+    long long beg, end;
+    double cpu_time_used;
+
+    beg = getCpuTimeNs();
+    fullpath = path_alloc(&len); /* выделить память для PATH_MAX+1 байт */
+    /* (листинг 2.3) */
+    end = getCpuTimeNs();
+
+    cpu_time_used = (double)(end - beg);
+    printf("\nВремя работы функции path_alloc (chdir): %f\n", cpu_time_used);
 
     fullpath = path_alloc(&len); /* выделить память для PATH_MAX+1 байт */
     /* (листинг 2.3) */
