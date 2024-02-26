@@ -59,6 +59,12 @@
 
 ; седьмое задание (на листочке)
 
+; (defun pred2(x)
+;     (and (plusp x) (numberp x))
+; )
+
+; восьмое задание
+
 ; только if
 
 ; (defun first_is_between2(x y z)
