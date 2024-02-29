@@ -5,31 +5,28 @@
 #include <stdio.h>
 #include <errno.h>
 
-#define BUF_SIZE 1024
-
 int main(int argc, char **argv)
 {
 
     int sockets[2];
-    char buf[BUF_SIZE];
+    char buf[1024];
     pid_t pid;
 
     if (socketpair(AF_UNIX, SOCK_STREAM, 0, sockets) < 0)
     {
-        perror("socketpair() failed");
+        perror("Ошибка socketpair");
         return EXIT_FAILURE;
     }
 
-    pid = fork();
-
-    if (pid == -1)
+    if ((pid = fork()) == -1)
     {
-        perror("fork error");
+        perror("Ошибка fork");
         exit(EXIT_FAILURE);
     }
     else if (pid == 0)
     {
-        char msg[] = "I am child";
+        // код процесса потомка
+        char msg[] = "aaaaaaaaa";
         close(sockets[1]);
 
         printf("Child send: %s\n", msg);
@@ -41,7 +38,8 @@ int main(int argc, char **argv)
     }
     else
     {
-        char msg[] = "I am parent";
+        // код процесса предка
+        char msg[] = "bbbbbbb";
         close(sockets[0]);
 
         read(sockets[1], buf, sizeof(buf));
