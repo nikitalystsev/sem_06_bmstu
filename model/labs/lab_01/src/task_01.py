@@ -1,3 +1,6 @@
+import numpy as np
+
+
 # u'' + 0.1 * (u')^2 + (1 + 0.1 * x) * u = 0
 # u(0) = 1, u'(0) = 2
 
@@ -58,15 +61,15 @@ def get_u_x_by_row(x_0: float):
     str_u_x = f"Разложением в ряд: u(x) = {get_first()} + {get_second() / 1: .3f} * x + " \
               f"{get_third(x_0) / 2: .3f} * x^2 +" \
               f" {get_fourth(x_0) / 6: .3f} * x^3 + " \
-              f"{get_fourth(x_0) / 24: .3f} * x^4"
+              f"{get_fifth(x_0) / 24: .3f} * x^4"
 
     print(str_u_x)
 
-    def f(x: int | float) -> int | float:
-        return get_first() + get_second() / 1 * x + \
-            get_third(x_0) / 2 * x ** 2 + \
-            get_fourth(x_0) / 6 * x ** 3 + \
-            get_fourth(x_0) / 24 * x ** 4
+    def f(x: int | float | np.ndarray) -> int | float | np.ndarray:
+        return get_first() + (get_second() / 1) * x + \
+            (get_third(x_0) / 2) * x ** 2 + \
+            (get_fourth(x_0) / 6) * x ** 3 + \
+            (get_fifth(x_0) / 24) * x ** 4
 
     return f
 
@@ -80,22 +83,33 @@ def get_u_x_by_euler():
 
     print(str_u_x_by_euler)
 
-    def f(x: int | float) -> int | float:
+    def f(x: int | float | np.ndarray) -> int | float | np.ndarray:
         return get_first() + get_second() / 1 * x
 
     return f
 
 
-def get_u_x_by_picard():
+def get_u_x_by_picard1():
     """
     Функция выводит на экран функцию u методом Пикара (1-е приближение)
     """
 
-    str_u_x_by_picard = f"Методом Пикара: u(x) = 2 - 1.40 * x - 0.05 * x^2 + C = 1"
+    str_u_x_by_picard1 = f"Методом Пикара: u(x) = 2 - 1.40 * x - 0.05 * x^2 + 1"
 
-    print(str_u_x_by_picard)
+    print(str_u_x_by_picard1)
 
-    def f(x: int | float) -> int | float:
+    def f(x: int | float | np.ndarray) -> int | float | np.ndarray:
         return - (x ** 3) / 60 - (7 * (x ** 2)) / 10 + 2 * x + 1
+
+    return f
+
+
+def get_u_x_by_picard2():
+    """
+    Функция выводит на экран функцию u методом Пикара (2-е приближение)
+    """
+
+    def f(x: int | float | np.ndarray) -> int | float | np.ndarray:
+        return - (x ** 3) / 60 - (x ** 2) / 2 + (158 * x) / 87 - (40 - 29 * x) ** 4 / 40368000 + 1 + 40 ** 4 / 40368000
 
     return f
