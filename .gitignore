@@ -18,5 +18,6 @@
 /model/lects/lect_01/*.m4a
 /model/lects/lect_02/*.m4a
 /model/labs/.idea
+/model/labs/lab_01/src/__pycache__
 
 /bir/lects/lect_01/*.m4a
