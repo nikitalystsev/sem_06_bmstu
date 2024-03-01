@@ -50,7 +50,7 @@ def get_fifth(x_0: float) -> float:
     return -_sum
 
 
-def get_u_x(x_0: float) -> None:
+def get_u_x_by_row(x_0: float):
     """
     Функция выводит на экран функцию u
     """
@@ -62,8 +62,16 @@ def get_u_x(x_0: float) -> None:
 
     print(str_u_x)
 
+    def f(x: int | float) -> int | float:
+        return get_first() + get_second() / 1 * x + \
+            get_third(x_0) / 2 * x ** 2 + \
+            get_fourth(x_0) / 6 * x ** 3 + \
+            get_fourth(x_0) / 24 * x ** 4
 
-def get_u_x_by_euler() -> None:
+    return f
+
+
+def get_u_x_by_euler():
     """
     Функция выводит на экран функцию u методом Эйлера
     """
@@ -71,3 +79,23 @@ def get_u_x_by_euler() -> None:
     str_u_x_by_euler = f"Методом Эйлера: u(x) = {get_first()} + {get_second() / 1} * x"
 
     print(str_u_x_by_euler)
+
+    def f(x: int | float) -> int | float:
+        return get_first() + get_second() / 1 * x
+
+    return f
+
+
+def get_u_x_by_picard():
+    """
+    Функция выводит на экран функцию u методом Пикара
+    """
+
+    str_u_x_by_picard = f"Методом Пикара: u(x) = 2 - 1.40 * x - 0.05 * x^2 + C = 1"
+
+    print(str_u_x_by_picard)
+
+    def f(x: int | float) -> int | float:
+        return - (x ** 3) / 60 - (7 * (x ** 2)) / 10 + 2 * x + 1
+
+    return f
