@@ -1,55 +1,156 @@
-import numpy as np
 import matplotlib.pyplot as plt
+from typing import Callable
+
+MAX_X = 2.003
+STEP = 1e-4
 
 
-def picard_method(x, n):
-    u = np.zeros_like(x)
-    u[0] = 0
-    for i in range(1, n + 1):
-        u = u + (x ** 2 + u ** 2) * (x[1] - x[0])
-    return u
+# u'(x) = x^2 + u^2
+# u(0) = 0
+
+def f(x: int | float, u: int | float) -> int | float:
+
+    return x ** 2 + u ** 2
 
 
-def euler_method(x, h):
-    u = np.zeros_like(x)
-    u[0] = 0
-    for i in range(1, len(x)):
-        u[i] = u[i - 1] + h * (x[i - 1] ** 2 + u[i - 1] ** 2)
-    return u
+def get_u_x_by_picard1(x: int | float) -> int | float:
+    """
+    Функция решения методом Пикара (1-е приближение)
+    """
+
+    return x ** 3 / 3
 
 
-# Определение интервала и шага
-xmax = 3  # Примерное значение
-step = 0.1
+def get_u_x_by_picard2(x: int | float) -> int | float:
+    """
+    Функция решения методом Пикара (2-е приближение)
+    """
 
-# Создание массива аргументов
-x = np.arange(0, xmax + step, step)
+    return get_u_x_by_picard1(x) + x ** 7 / 63
 
-# Решение методом Пикара
-u_picard_1 = picard_method(x, 1)
-u_picard_2 = picard_method(x, 2)
-u_picard_3 = picard_method(x, 3)
-u_picard_4 = picard_method(x, 4)
 
-# Решение методом Эйлера
-h = 0.01  # Начальный шаг
-u_euler = euler_method(x, h)
+def get_u_x_by_picard3(x: int | float) -> int | float:
+    """
+    Функция решения методом Пикара (3-е приближение)
+    """
 
-# Вывод результатов
-print("x\t\tPicard 1\tPicard 2\tPicard 3\tPicard 4\tEuler")
-for i in range(len(x)):
-    print(
-        f"{x[i]:.2f}\t\t{u_picard_1[i]:.6f}\t{u_picard_2[i]:.6f}\t{u_picard_3[i]:.6f}\t{u_picard_4[i]:.6f}\t{u_euler[i]:.6f}")
+    return get_u_x_by_picard2(x) + x ** 15 / 59535 + (2 * x ** 11) / 2079
 
-# Визуализация
-plt.plot(x, u_picard_1, label="Picard 1")
-plt.plot(x, u_picard_2, label="Picard 2")
-plt.plot(x, u_picard_3, label="Picard 3")
-plt.plot(x, u_picard_4, label="Picard 4")
-plt.plot(x, u_euler, label="Euler")
-plt.xlabel("x")
-plt.ylabel("u(x)")
-plt.title("Solutions using Picard and Euler methods")
-plt.legend()
-plt.grid(True)
-plt.show()
+
+def get_u_x_by_picard4(x: int | float) -> int | float:
+    """
+    Функция решения методом Пикара (4-е приближение)
+    """
+
+    return get_u_x_by_picard2(x) + \
+        (2 * x ** 11) / 2079 + \
+        (13 * x ** 15) / 218295 + \
+        (82 * x ** 19) / 37328445 + \
+        (662 * x ** 23) / 10438212015 + \
+        (4 * x ** 27) / 3341878155 + \
+        (x ** 31) / 109876903975
+
+
+def get_picard_approx(x_max, h, u_x_by_picard_func: Callable[[int | float], int | float]) -> list[int | float]:
+    """
+    Функция для получения массива значений функции методом Пикара переданного приближения
+    """
+    u_values = []
+    x, u = 0, 0
+
+    while abs(x) < abs(x_max):
+        u_values.append(u)
+        x += h
+        u = u_x_by_picard_func(x)
+
+    return u_values
+
+
+def get_euler_approx(x_max, h) -> list[int | float]:
+    """
+    Функция для получения массива значений функции методом Эйлера
+    """
+    u_values = []
+    x, u = 0, 0
+
+    while abs(x) < abs(x_max):
+        u_values.append(u)
+        u = u + h * f(x, u)
+        x += h
+
+    return u_values
+
+
+def get_generate_x(x_max, step) -> list[int | float]:
+    """
+    Функция для генерации диапазона значений аргумента с заданным шагом
+    """
+    x_values = []
+
+    x = 0
+
+    while abs(x) < abs(x_max):
+        x_values.append(round(x, 3))
+        x += step
+
+    return x_values
+
+
+def print_res_table(x_values, u_values_by_picar1, u_values_by_picar2,
+                    u_values_by_picar3, u_values_by_picar4, u_values_by_euler):
+    """
+    Функция для вывода таблицы согласно заданию
+    """
+
+    print(f'\n| {"x": ^7} | {"picard1": ^22} | {"picard2": ^22} | {"picard3": ^22} |'
+          f' {"picard4": ^22} | {"euler": ^22} |')
+    print("-" * 136)
+
+    for i in range(len(x_values)):
+        if i % 500 == 0:
+            print(f"| {x_values[i]: ^7.3f} | {u_values_by_picar1[i]: ^22.3f} | {u_values_by_picar2[i]: ^22.3f} |"
+                  f" {u_values_by_picar3[i]: ^22.3f} | {u_values_by_picar4[i]: ^22.3f} |"
+                  f" {u_values_by_euler[i]: ^22.3f} |")
+
+    print("-" * 136)
+    print()
+
+
+def build_graph(x_values, u_values_by_picar1, u_values_by_picar2,
+                u_values_by_picar3, u_values_by_picar4, u_values_by_euler):
+    """
+    Функция для вывода графика (для себя)
+    """
+    fig1 = plt.figure(figsize=(10, 7))
+    plot = fig1.add_subplot()
+    plot.plot(x_values, u_values_by_picar1, label="picard1")
+    plot.plot(x_values, u_values_by_picar2, label="picard2")
+    plot.plot(x_values, u_values_by_picar3, label="picard3")
+    plot.plot(x_values, u_values_by_picar4, label="picard4")
+    plot.plot(x_values, u_values_by_euler, label="Euler")
+
+    plt.legend()
+    plt.grid()
+    plt.title("Сравнение методов")
+
+    plt.show()
+
+
+def get_solution() -> None:
+    """
+    Функция выводит все решения задачи
+    """
+    x_values: list[int | float] = get_generate_x(MAX_X, STEP)
+
+    u_values_by_picar1: list[int | float] = get_picard_approx(MAX_X, STEP, get_u_x_by_picard1)
+    u_values_by_picar2: list[int | float] = get_picard_approx(MAX_X, STEP, get_u_x_by_picard2)
+    u_values_by_picar3: list[int | float] = get_picard_approx(MAX_X, STEP, get_u_x_by_picard3)
+    u_values_by_picar4: list[int | float] = get_picard_approx(MAX_X, STEP, get_u_x_by_picard4)
+
+    u_values_by_euler: list[int | float] = get_euler_approx(MAX_X, STEP)
+
+    print_res_table(x_values, u_values_by_picar1, u_values_by_picar2,
+                    u_values_by_picar3, u_values_by_picar4, u_values_by_euler)
+
+    build_graph(x_values, u_values_by_picar1, u_values_by_picar2,
+                u_values_by_picar3, u_values_by_picar4, u_values_by_euler)

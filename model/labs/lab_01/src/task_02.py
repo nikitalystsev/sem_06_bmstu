@@ -50,3 +50,18 @@ def get_x_u_by_picard5(u: int | float) -> int | float:
     """
 
     return 0.5 + (u ** 22) / 1080 + (u ** 10) / 24 + (u ** 8) / 6 + (u ** 6) / 2 + 3 * (u ** 4) / 4 + (u ** 2) / 2
+
+
+def get_solution() -> None:
+    """
+    Функция выводит все решения задачи
+    """
+
+    arg = float(input("Введите значение аргумента: "))
+
+    print(f"Аналитическое решение:                    x({arg}) = ", get_x_u_by_analyt(arg))
+    print(f"Решение методом Пикара (1-е приближение): x({arg}) = ", get_x_u_by_picard1(arg))
+    print(f"Решение методом Пикара (2-е приближение): x({arg}) = ", get_x_u_by_picard2(arg))
+    print(f"Решение методом Пикара (3-е приближение): x({arg}) = ", get_x_u_by_picard3(arg))
+    print(f"Решение методом Пикара (4-е приближение): x({arg}) = ", get_x_u_by_picard4(arg))
+    # print(f"Решение методом Пикара (5-е приближение): x({arg}) = ", get_x_u_by_picard5(arg))

@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 # u'' + 0.1 * (u')^2 + (1 + 0.1 * x) * u = 0
@@ -113,3 +114,70 @@ def get_u_x_by_picard2():
         return - (x ** 3) / 60 - (x ** 2) / 2 + (158 * x) / 87 - (40 - 29 * x) ** 4 / 40368000 + 1 + 40 ** 4 / 40368000
 
     return f
+
+
+def get_solution() -> None:
+    """
+    Функция выводит все решения задачи
+    """
+    f_row = get_u_x_by_row(0)
+    f_euler = get_u_x_by_euler()
+    f_picard1 = get_u_x_by_picard1()
+    f_picard2 = get_u_x_by_picard2()
+
+    x_values: np.ndarray | tuple[np.ndarray, float | None] = np.linspace(-2, 6, 100)
+    y_values_picard2: np.ndarray | tuple[np.ndarray, float | None] = f_picard2(x_values)
+    y_values_row: np.ndarray | tuple[np.ndarray, float | None] = f_row(x_values)
+    y_values_euler: np.ndarray | tuple[np.ndarray, float | None] = f_euler(x_values)
+
+    fig1 = plt.figure(figsize=(10, 7))
+    plot = fig1.add_subplot()
+
+    plot.plot(x_values, y_values_picard2, label="Метод Пикара (2-е приближение)")
+    plot.plot(x_values, y_values_row, label="Разложение в ряд Тейлора (первые 5 членов)")
+    plot.plot(x_values, y_values_euler, label="Метод Эйлера")
+
+    plt.legend()
+    plt.grid()
+    plt.title("Сравнение методов")
+
+    plt.show()
+
+    # x_min = min(x_values)
+    # x_max = max(x_values)
+    # y_min = min(min(y_values_picard2), min(y_values_row))
+    # y_max = max(max(y_values_picard2), max(y_values_row))
+    #
+    # fig, axs = plt.subplots(nrows=1, ncols=3, figsize=(10, 5))
+    #
+    # # Постройте первый график
+    # axs[0].plot(x_values, y_values_picard2, color='blue')
+    # axs[0].set_title('Метод Пикара (2-е приближение)')
+    # axs[0].set_xlim(x_min, x_max)
+    # axs[0].set_ylim(y_min, y_max)
+    # axs[0].grid(True)
+    #
+    # # Постройте второй график
+    # axs[1].plot(x_values, y_values_row, color='red')
+    # axs[1].set_title('Разложение в ряд Тейлора (первые 5 членов)')
+    # axs[1].set_xlim(x_min, x_max)
+    # axs[1].set_ylim(y_min, y_max)
+    # axs[1].grid(True)
+    #
+    # # Постройте второй график
+    # axs[2].plot(x_values, y_values_euler, color='red')
+    # axs[2].set_title('Метод Эйлера')
+    # axs[2].set_xlim(x_min, x_max)
+    # axs[2].set_ylim(y_min, y_max)
+    # axs[2].grid(True)
+
+    # # Отобразите все графики
+    # plt.tight_layout()  # Распределить графики равномерно по окну
+    # plt.show()
+
+    arg = float(input("Введите значение аргумента: "))
+
+    print(f"Решение разложением в ряд Тейлора (первые 5 членов):  u({arg}) = ", f_row(arg))
+    print(f"Решение методом Эйлера:                               u({arg}) = ", f_euler(arg))
+    print(f"Решение методом Пикара (1-е приближение):             u({arg}) = ", f_picard1(arg))
+    print(f"Решение методом Пикара (2-е приближение):             u({arg}) = ", f_picard2(arg))
