@@ -9,7 +9,6 @@ STEP = 1e-4
 # u(0) = 0
 
 def f(x: int | float, u: int | float) -> int | float:
-
     return x ** 2 + u ** 2
 
 
@@ -121,17 +120,26 @@ def build_graph(x_values, u_values_by_picar1, u_values_by_picar2,
     """
     Функция для вывода графика (для себя)
     """
-    fig1 = plt.figure(figsize=(10, 7))
-    plot = fig1.add_subplot()
-    plot.plot(x_values, u_values_by_picar1, label="picard1")
-    plot.plot(x_values, u_values_by_picar2, label="picard2")
-    plot.plot(x_values, u_values_by_picar3, label="picard3")
-    plot.plot(x_values, u_values_by_picar4, label="picard4")
-    plot.plot(x_values, u_values_by_euler, label="Euler")
+    fig, axs = plt.subplots(nrows=1, ncols=2, figsize=(10, 7))
 
-    plt.legend()
-    plt.grid()
-    plt.title("Сравнение методов")
+    axs[0].plot(x_values, u_values_by_picar1, label="picard1")
+    axs[0].plot(x_values, u_values_by_picar2, label="picard2")
+    axs[0].plot(x_values, u_values_by_picar3, label="picard3")
+    axs[0].plot(x_values, u_values_by_picar4, label="picard4")
+    axs[0].set_xlabel("x")
+    axs[0].set_ylabel("u(x)")
+    axs[0].legend()
+    axs[0].grid(True)
+
+    axs[1].plot(x_values, u_values_by_picar1, label="picard1")
+    axs[1].plot(x_values, u_values_by_picar2, label="picard2")
+    axs[1].plot(x_values, u_values_by_picar3, label="picard3")
+    axs[1].plot(x_values, u_values_by_picar4, label="picard4")
+    axs[1].plot(x_values, u_values_by_euler, label="euler")
+    axs[1].set_xlabel("x")
+    axs[1].set_ylabel("u(x)")
+    axs[1].legend()
+    axs[1].grid(True)
 
     plt.show()
 

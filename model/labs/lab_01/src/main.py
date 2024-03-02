@@ -28,7 +28,11 @@ def main() -> None:
     while True:
         print_menu()
 
-        menu_item = int(input("Выберите пункт меню: "))
+        try:
+            menu_item = int(input("Выберите пункт меню: "))
+        except ValueError:
+            print("Неверный пункт меню! Попробуйте еще раз")
+            continue
 
         match menu_item:
             case 1:

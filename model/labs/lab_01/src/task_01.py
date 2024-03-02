@@ -175,7 +175,11 @@ def get_solution() -> None:
     # plt.tight_layout()  # Распределить графики равномерно по окну
     # plt.show()
 
-    arg = float(input("Введите значение аргумента: "))
+    try:
+        arg = float(input("Введите значение аргумента: "))
+    except ValueError:
+        print("Неверный ввод!")
+        return
 
     print(f"Решение разложением в ряд Тейлора (первые 5 членов):  u({arg}) = ", f_row(arg))
     print(f"Решение методом Эйлера:                               u({arg}) = ", f_euler(arg))

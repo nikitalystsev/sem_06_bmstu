@@ -57,7 +57,11 @@ def get_solution() -> None:
     Функция выводит все решения задачи
     """
 
-    arg = float(input("Введите значение аргумента: "))
+    try:
+        arg = float(input("Введите значение аргумента: "))
+    except ValueError:
+        print("Неверный ввод!")
+        return
 
     print(f"Аналитическое решение:                    x({arg}) = ", get_x_u_by_analyt(arg))
     print(f"Решение методом Пикара (1-е приближение): x({arg}) = ", get_x_u_by_picard1(arg))
