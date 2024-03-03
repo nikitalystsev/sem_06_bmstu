@@ -49,7 +49,7 @@ def get_fifth(x_0: float) -> float:
     """
 
     _sum = 0.2 * (get_third(x_0) ** 2 + get_second() * get_fourth(x_0)) + get_third(x_0) + 0.1 * get_second() + \
-        0.1 * (get_second() + x_0 * get_third(x_0))
+           0.1 * (get_second() + x_0 * get_third(x_0))
 
     return -_sum
 
@@ -60,9 +60,9 @@ def get_u_x_by_row(x_0: float):
     """
 
     str_u_x = f"Разложением в ряд: u(x) = {get_first()} + {get_second() / 1: .3f} * x + " \
-        f"{get_third(x_0) / 2: .3f} * x^2 +" \
-        f" {get_fourth(x_0) / 6: .3f} * x^3 + " \
-        f"{get_fifth(x_0) / 24: .3f} * x^4"
+              f"{get_third(x_0) / 2: .3f} * x^2 +" \
+              f" {get_fourth(x_0) / 6: .3f} * x^3 + " \
+              f"{get_fifth(x_0) / 24: .3f} * x^4"
 
     print(str_u_x)
 
@@ -84,8 +84,22 @@ def get_u_x_by_euler():
 
     print(str_u_x_by_euler)
 
-    def f(x: int | float | np.ndarray) -> int | float | np.ndarray:
-        return get_first() + get_second() / 1 * x
+    def f(x_values: np.ndarray, h: int | float) -> dict:
+        u = 1
+        u_1 = 2
+
+        u_values = dict()
+
+        for x in x_values:
+            u_values[x] = u
+
+            delta_u = h * u_1
+            delta_u_1 = h * (-0.1 * u_1 * u_1 - (1 + 0.1 * x) * u)
+
+            u += delta_u
+            u_1 += delta_u_1
+
+        return u_values
 
     return f
 
@@ -125,17 +139,17 @@ def get_solution() -> None:
     f_picard1 = get_u_x_by_picard1()
     f_picard2 = get_u_x_by_picard2()
 
-    x_values: np.ndarray | tuple[np.ndarray, float | None] = np.linspace(-2, 6, 100)
+    x_values: np.ndarray | tuple[np.ndarray, float | None] = np.arange(0, 5, 0.001)
     y_values_picard2: np.ndarray | tuple[np.ndarray, float | None] = f_picard2(x_values)
     y_values_row: np.ndarray | tuple[np.ndarray, float | None] = f_row(x_values)
-    y_values_euler: np.ndarray | tuple[np.ndarray, float | None] = f_euler(x_values)
+    y_values_euler: dict = f_euler(x_values, 0.001)
 
     fig1 = plt.figure(figsize=(10, 7))
     plot = fig1.add_subplot()
 
     plot.plot(x_values, y_values_picard2, label="Метод Пикара (2-е приближение)")
     plot.plot(x_values, y_values_row, label="Разложение в ряд Тейлора (первые 5 членов)")
-    plot.plot(x_values, y_values_euler, label="Метод Эйлера")
+    plot.plot(x_values, y_values_euler.values(), label="Метод Эйлера")
 
     plt.legend()
     plt.grid()
@@ -182,6 +196,7 @@ def get_solution() -> None:
         return
 
     print(f"Решение разложением в ряд Тейлора (первые 5 членов):  u({arg}) = ", f_row(arg))
-    print(f"Решение методом Эйлера:                               u({arg}) = ", f_euler(arg))
+    print(f"Решение методом Эйлера:                               u({arg}) = ",
+          f_euler(np.arange(0, arg + 0.001, 0.001), 0.001)[arg])
     print(f"Решение методом Пикара (1-е приближение):             u({arg}) = ", f_picard1(arg))
     print(f"Решение методом Пикара (2-е приближение):             u({arg}) = ", f_picard2(arg))
