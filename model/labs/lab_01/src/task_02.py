@@ -1,4 +1,3 @@
-import math as m
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -27,7 +26,7 @@ def get_x_u_by_picard2(u: int | float | np.ndarray) -> int | float | np.ndarray:
     Функция решения методом Пикара (2-е приближение)
     """
 
-    return 0.5 + (u ** 16) / 12 + (u ** 4) / 2 + (u ** 2) / 2
+    return 0.5 + (u ** 6) / 12 + (u ** 4) / 2 + (u ** 2) / 2
 
 
 def get_x_u_by_picard3(u: int | float | np.ndarray) -> int | float | np.ndarray:
@@ -35,7 +34,7 @@ def get_x_u_by_picard3(u: int | float | np.ndarray) -> int | float | np.ndarray:
     Функция решения методом Пикара (3-е приближение)
     """
 
-    return 0.5 + (u ** 18) / 108 + (u ** 6) / 6 + (u ** 4) / 2 + (u ** 2) / 2
+    return 0.5 + (u ** 8) / 48 + (u ** 6) / 6 + (u ** 4) / 2 + (u ** 2) / 2
 
 
 def get_x_u_by_picard4(u: int | float | np.ndarray) -> int | float | np.ndarray:
@@ -43,7 +42,7 @@ def get_x_u_by_picard4(u: int | float | np.ndarray) -> int | float | np.ndarray:
     Функция решения методом Пикара (4-е приближение)
     """
 
-    return 0.5 + (u ** 20) / 1080 + (u ** 8) / 24 + (u ** 6) / 6 + (u ** 4) / 2 + (u ** 2) / 2
+    return 0.5 + (u ** 10) / 240 + (u ** 8) / 24 + (u ** 6) / 6 + (u ** 4) / 2 + (u ** 2) / 2
 
 
 def get_x_u_by_picard5(u: int | float | np.ndarray) -> int | float | np.ndarray:
@@ -51,7 +50,7 @@ def get_x_u_by_picard5(u: int | float | np.ndarray) -> int | float | np.ndarray:
     Функция решения методом Пикара (4-е приближение)
     """
 
-    return 0.5 + (u ** 22) / 1080 + (u ** 10) / 24 + (u ** 8) / 6 + (u ** 6) / 2 + 3 * (u ** 4) / 4 + (u ** 2) / 2
+    return 0.5 + (u ** 12) / 1440 + (u ** 10) / 120 + (u ** 8) / 24 + (u ** 6) / 6 + (u ** 4) / 2 + (u ** 2) / 2
 
 
 def get_solution() -> None:
@@ -75,13 +74,14 @@ def get_solution() -> None:
     fig1 = plt.figure(figsize=(10, 7))
     plot = fig1.add_subplot()
 
-    u_values: np.ndarray | tuple[np.ndarray, float | None] = np.arange(0, 6, 0.001)
+    u_values: np.ndarray | tuple[np.ndarray, float | None] = np.arange(0, 2, 0.001)
 
     plot.plot(get_x_u_by_analyt(u_values), u_values, label="Аналитическое решение")
     plot.plot(get_x_u_by_picard1(u_values), u_values, label="Метод Пикара (1-е приближение)")
     plot.plot(get_x_u_by_picard2(u_values), u_values, label="Метод Пикара (2-е приближение)")
     plot.plot(get_x_u_by_picard3(u_values), u_values, label="Метод Пикара (3-е приближение)")
     plot.plot(get_x_u_by_picard4(u_values), u_values, label="Метод Пикара (4-е приближение)")
+    plot.plot(get_x_u_by_picard5(u_values), u_values, label="Метод Пикара (5-е приближение)")
 
     plt.legend()
     plt.grid()
