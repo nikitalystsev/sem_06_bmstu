@@ -1,10 +1,6 @@
 import matplotlib.pyplot as plt
 from typing import Callable
 import numpy as np
-import time
-
-MAX_X = 2.003
-STEP = 0.01
 
 EPS = 1e-4
 
@@ -124,8 +120,6 @@ def find_xmax() -> int | float:
                 return xmax, step
 
         step /= 2
-
-
 
 
 def print_res_table(x_values, u_values_by_picar1, u_values_by_picar2,
