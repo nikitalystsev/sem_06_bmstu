@@ -80,10 +80,6 @@ def get_u_x_by_euler():
     Функция выводит на экран функцию u методом Эйлера
     """
 
-    str_u_x_by_euler = f"Методом Эйлера: u(x) = {get_first()} + {get_second() / 1} * x"
-
-    print(str_u_x_by_euler)
-
     def f(x_values: np.ndarray, h: int | float) -> dict:
         u = 1
         u_1 = 2
@@ -94,7 +90,7 @@ def get_u_x_by_euler():
             u_values[x] = u
 
             delta_u = h * u_1
-            delta_u_1 = h * (-0.1 * u_1 * u_1 - (1 + 0.1 * x) * u)
+            delta_u_1 = h * (-0.1 * u_1 ** 2 - (1 + 0.1 * x) * u)
 
             u += delta_u
             u_1 += delta_u_1
@@ -109,10 +105,6 @@ def get_u_x_by_picard1():
     Функция выводит на экран функцию u методом Пикара (1-е приближение)
     """
 
-    str_u_x_by_picard1 = f"Методом Пикара: u(x) = 2 - 1.40 * x - 0.05 * x^2 + 1"
-
-    print(str_u_x_by_picard1)
-
     def f(x: int | float | np.ndarray) -> int | float | np.ndarray:
         return - (x ** 3) / 60 - (7 * (x ** 2)) / 10 + 2 * x + 1
 
@@ -125,7 +117,22 @@ def get_u_x_by_picard2():
     """
 
     def f(x: int | float | np.ndarray) -> int | float | np.ndarray:
-        return - (x ** 3) / 60 - (x ** 2) / 2 + (158 * x) / 87 - (40 - 29 * x) ** 4 / 40368000 + 1 + 40 ** 4 / 40368000
+        return (-x ** 6 / 120000) - (7 * x ** 5) / 10000 - (11 * x ** 4) / 750 + (23 * x ** 3) / 300 - (
+                7 * x ** 2) / 10 + 2 * x + 1
+
+    return f
+
+
+def get_u_x_by_picard3():
+    """
+    Функция выводит на экран функцию u методом Пикара (3-е приближение)
+    """
+
+    def f(x: int | float | np.ndarray) -> int | float | np.ndarray:
+        return (-x ** 12 / 528000000000) - (7 * x ** 11) / 22000000000 - (1087 * x ** 10) / 54000000000 - (
+                1163 * x ** 9) / 2160000000 - (8873 * x ** 8) / 2520000000 + (163 * x ** 7) / 3937500 - (
+                1219 * x ** 6) / 1800000 + (659 * x ** 5) / 150000 - (3 * x ** 4) / 125 + (23 * x ** 3) / 300 - (
+                    7 * x ** 2) / 10 + 2 * x + 1
 
     return f
 
@@ -138,16 +145,22 @@ def get_solution() -> None:
     f_euler = get_u_x_by_euler()
     f_picard1 = get_u_x_by_picard1()
     f_picard2 = get_u_x_by_picard2()
+    f_picard3 = get_u_x_by_picard3()
 
     x_values: np.ndarray | tuple[np.ndarray, float | None] = np.arange(0, 5, 0.001)
+
+    y_values_picard1: np.ndarray | tuple[np.ndarray, float | None] = f_picard1(x_values)
     y_values_picard2: np.ndarray | tuple[np.ndarray, float | None] = f_picard2(x_values)
+    y_values_picard3: np.ndarray | tuple[np.ndarray, float | None] = f_picard3(x_values)
     y_values_row: np.ndarray | tuple[np.ndarray, float | None] = f_row(x_values)
     y_values_euler: dict = f_euler(x_values, 0.001)
 
     fig1 = plt.figure(figsize=(10, 7))
     plot = fig1.add_subplot()
 
+    plot.plot(x_values, y_values_picard1, label="Метод Пикара (1-е приближение)")
     plot.plot(x_values, y_values_picard2, label="Метод Пикара (2-е приближение)")
+    plot.plot(x_values, y_values_picard3, label="Метод Пикара (3-е приближение)")
     plot.plot(x_values, y_values_row, label="Разложение в ряд Тейлора (первые 5 членов)")
     plot.plot(x_values, y_values_euler.values(), label="Метод Эйлера")
 

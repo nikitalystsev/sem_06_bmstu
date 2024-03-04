@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 from typing import Callable
 import numpy as np
+import time
 
 MAX_X = 2.003
 STEP = 0.01
@@ -96,37 +97,35 @@ def calc_error(u1_h: int | float, u1_h_half_2: int | float):
     return np.abs(u1_h - u1_h_half_2) / (np.abs(u1_h_half_2) + 1e-10)
 
 
-# def find_xmax() -> int | float:
-#     """
-#     Функция поиска xmax
-#     """
-#     xmax = 2  # начальное значение
-#     # step = 0.0005  # начальное значение шага
-#     # error = 1 # начальное относительной точности вычислений
-#
-#     steps: np.ndarray = np.arange(0.001, 0.1, 0.001)
-#
-#     while True:
-#
-#         for step in steps:
-#             x_values1: np.ndarray = np.arange(0, xmax + step, step)
-#             x_values2: np.ndarray = np.arange(0, xmax + step, step / 2)
-#
-#             u_values_by_euler1: dict = get_euler_approx(x_values1, step)
-#             u_values_by_euler2: dict = get_euler_approx(x_values2, step / 2)
-#
-#             for x in x_values1[1:]:
-#                 error = calc_error(u_values_by_euler1[x], u_values_by_euler2[x])
-#                 # print(f"error = {error}")
-#
-#                 if error < EPS:
-#                     return xmax
-#
-#         # print(f"xmax = {xmax}")
-#
-#         # time.sleep(3)
-#
-#         xmax += 0.0001
+def find_xmax() -> int | float:
+    """
+    Функция поиска xmax
+    """
+    xmax = 2  # начальное значение
+    step = 0.1  # начальное значение шага
+    # error = 1 # начальное относительной точности вычислений
+
+    steps: np.ndarray = np.arange(0.001, 0.1, 0.001)
+
+    while True:
+
+        x_values1: np.ndarray = np.arange(0, xmax + step, step)
+        x_values2: np.ndarray = np.arange(0, xmax + step, step / 2)
+
+        u_values_by_euler1: dict = get_euler_approx(x_values1, step)
+        u_values_by_euler2: dict = get_euler_approx(x_values2, step / 2)
+
+        for x in x_values1[1:]:
+            error = calc_error(u_values_by_euler1[x], u_values_by_euler2[x])
+            print(f"error = {error}")
+            # # time.sleep(0.5)
+
+            if error < EPS:
+                return xmax, step
+
+        step /= 2
+
+
 
 
 def print_res_table(x_values, u_values_by_picar1, u_values_by_picar2,
@@ -140,9 +139,9 @@ def print_res_table(x_values, u_values_by_picar1, u_values_by_picar2,
     print("-" * 136)
 
     for x in x_values:
-        print(f"| {x: ^7.3f} | {u_values_by_picar1[x]: ^22.3f} | {u_values_by_picar2[x]: ^22.3f} |"
-              f" {u_values_by_picar3[x]: ^22.3f} | {u_values_by_picar4[x]: ^22.3f} |"
-              f" {u_values_by_euler[x]: ^22.3f} |")
+        print(f"| {x: ^7.5f} | {u_values_by_picar1[x]: ^22.5f} | {u_values_by_picar2[x]: ^22.5f} |"
+              f" {u_values_by_picar3[x]: ^22.5f} | {u_values_by_picar4[x]: ^22.5f} |"
+              f" {u_values_by_euler[x]: ^22.5f} |")
 
     print("-" * 136)
     print()
@@ -181,16 +180,20 @@ def get_solution() -> None:
     """
     Функция выводит все решения задачи
     """
-    # xmax: int | float = find_xmax()
-    # print(f"xmax = {xmax}")
-    x_values: np.ndarray = np.arange(0, MAX_X, STEP)
+    xmax, step = find_xmax()
+    print(f"xmax = {xmax}, step = {step}")
+
+    xmax = 2.003
+    step = 0.01
+
+    x_values: np.ndarray = np.arange(0, xmax, step)
 
     u_values_by_picar1: dict = get_picard_approx(x_values, get_u_x_by_picard1)
     u_values_by_picar2: dict = get_picard_approx(x_values, get_u_x_by_picard2)
     u_values_by_picar3: dict = get_picard_approx(x_values, get_u_x_by_picard3)
     u_values_by_picar4: dict = get_picard_approx(x_values, get_u_x_by_picard4)
 
-    u_values_by_euler: dict = get_euler_approx(x_values, STEP)
+    u_values_by_euler: dict = get_euler_approx(x_values, step)
 
     print_res_table(x_values, u_values_by_picar1, u_values_by_picar2,
                     u_values_by_picar3, u_values_by_picar4, u_values_by_euler)
