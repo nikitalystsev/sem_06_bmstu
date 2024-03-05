@@ -74,7 +74,8 @@ def get_euler_approx(x_values: np.ndarray, h: int | float) -> dict:
     u = 0
 
     for x in x_values:
-        u_values[x] = u
+        _x = round(x, 1)
+        u_values[_x] = u
         u = u + h * f(x, u)
 
     return u_values
@@ -95,14 +96,15 @@ def find_xmax() -> (int | float, int | float):
     Функция поиска xmax
     """
     xmax = 2.5  # начальное значение
-    step = 0.1  # начальное значение шага
+    step = 0.1
 
     while xmax >= 2:
         step = 0.1  # начальное значение шага
-        while step >= 1e-6:
 
-            x_values1: np.ndarray = np.arange(0, xmax + step, step)
-            x_values2: np.ndarray = np.arange(0, xmax + step, step / 2)
+        while step >= 1e-12:
+
+            x_values1: np.ndarray = np.arange(2, xmax + step, step)
+            x_values2: np.ndarray = np.arange(2, xmax + step, step / 2)
 
             u_values_by_euler1: dict = get_euler_approx(x_values1, step)
             u_values_by_euler2: dict = get_euler_approx(x_values2, step / 2)
@@ -110,21 +112,17 @@ def find_xmax() -> (int | float, int | float):
             count = 0
 
             for x in x_values1[1:]:
-                error = calc_error(u_values_by_euler1[x], u_values_by_euler2[x])
-                # print(f"error = {error}")
+                _x = round(x, 1)
+                error = calc_error(u_values_by_euler1[_x], u_values_by_euler2[_x])
 
                 if error < EPS:
                     count += 1
-
-            # print(f"count = {count}")
-            # print(f"len(x_values1) - 1 = {len(x_values1) - 1}")
 
             if count == len(x_values1) - 1:
                 break
 
             step /= 2
-        print(f"xmax = {xmax}")
-        xmax -= 0.01
+        xmax -= 0.001
 
     return xmax, step
 
@@ -181,13 +179,12 @@ def get_solution() -> None:
     """
     Функция выводит все решения задачи
     """
-    # xmax, step = find_xmax()
-    # print(f"xmax = {xmax}, step = {step}")
+    xmax, step = find_xmax()
 
-    xmax = 2.14
-    step = 0.01
+    # xmax = 2.003
+    # step = 1e-6 / 2
 
-    x_values: np.ndarray = np.arange(0, xmax, step)
+    x_values: np.ndarray = np.arange(2, xmax, step)
 
     u_values_by_picar1: dict = get_picard_approx(x_values, get_u_x_by_picard1)
     u_values_by_picar2: dict = get_picard_approx(x_values, get_u_x_by_picard2)
@@ -199,5 +196,8 @@ def get_solution() -> None:
     print_res_table(x_values, u_values_by_picar1, u_values_by_picar2,
                     u_values_by_picar3, u_values_by_picar4, u_values_by_euler)
 
-    build_graph(x_values, u_values_by_picar1, u_values_by_picar2,
-                u_values_by_picar3, u_values_by_picar4, u_values_by_euler)
+    # build_graph(x_values, u_values_by_picar1, u_values_by_picar2,
+    #             u_values_by_picar3, u_values_by_picar4, u_values_by_euler)
+
+    # print(f"u(2)")
+    print(f"xmax = {xmax}, step = {step}")
