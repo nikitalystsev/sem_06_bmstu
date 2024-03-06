@@ -1,0 +1,5 @@
+(defun swap-first-last(x)
+    (let ((_first (car  x))
+         (_last (car (last x))))
+        (setf (car x) _last)
+        (setf (car (last x)) _first)))

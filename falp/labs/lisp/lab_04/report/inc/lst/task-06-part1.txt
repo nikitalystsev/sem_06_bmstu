@@ -1,0 +1,26 @@
+(setf *random-state* (make-random-state T))
+
+(defun get_dice() ; функция для генерации значений игральной кости
+    (list (+ (random 6) 1) (+ (random 6) 1))
+)
+
+(defun is_repeat(dice)
+    (let ((_first (car dice))
+          (_second (car (cdr dice))))
+         (cond ((or (= _first _second 1) (= _first _second 6)) t)
+               (t nil)
+         )
+    )
+)
+
+(defun player_actions(who)
+    (let* ((_dice (get_dice))
+           (_sum_dice (+ (car _dice) (car (cdr _dice)))))
+          (print who)
+          (print _dice)
+          (cond ((or (= _sum_dice 7) (= _sum_dice 11)) `win)
+                ((is_repeat _dice) (player_actions))
+                (t _sum_dice)
+          )
+    )
+)
