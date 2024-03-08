@@ -17,22 +17,13 @@
 int main(void)
 {
     int sock;
-    struct sockaddr cln_addr, srv_addr;
-    char buf[1024], bufAns[1024];
+    struct sockaddr srv_addr;
+    char buf[1024];
     int bytes_read;
 
     if ((sock = socket(AF_UNIX, SOCK_DGRAM, 0)) == -1)
     {
         perror("Ошибка socket");
-        exit(EXIT_FAILURE);
-    }
-
-    cln_addr.sa_family = AF_UNIX;
-    sprintf(cln_addr.sa_data, "./%d.cln", getpid());
-
-    if (bind(sock, &cln_addr, sizeof(cln_addr)))
-    {
-        perror("Ошибка bind");
         exit(EXIT_FAILURE);
     }
 
