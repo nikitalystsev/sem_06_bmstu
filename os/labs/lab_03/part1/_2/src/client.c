@@ -20,6 +20,7 @@ int main(void)
     struct sockaddr cln_addr, srv_addr;
     char buf[1024], bufAns[1024];
     int bytes_read;
+    int addr_size;
 
     if ((sock = socket(AF_UNIX, SOCK_DGRAM, 0)) == -1)
     {
@@ -47,7 +48,7 @@ int main(void)
         exit(EXIT_FAILURE);
     }
 
-    if ((bytes_read = recvfrom(sock, bufAns, 1024, 0, NULL, NULL)) == -1)
+    if ((bytes_read = recvfrom(sock, bufAns, 1024, 0, &srv_addr, &addr_size)) == -1)
     {
         perror("Ошибка recvfrom");
         exit(EXIT_FAILURE);
@@ -57,6 +58,7 @@ int main(void)
 
     printf("Cliend (pid %d) receive from Server: %s\n", getpid(), bufAns);
 
+    unlink(cln_addr.sa_data);
     close(sock);
 
     return EXIT_SUCCESS;

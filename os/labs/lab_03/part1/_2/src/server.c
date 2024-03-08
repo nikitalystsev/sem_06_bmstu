@@ -17,12 +17,11 @@
 
 int sock;
 
-void sigint_handler()
+void signal_handler()
 {
     close(sock);
     unlink("./sock.srv");
-    printf("Server shutdown...\n");
-    exit(0);
+    exit(EXIT_SUCCESS);
 }
 
 int main(void)
@@ -30,7 +29,7 @@ int main(void)
     struct sockaddr srv_addr, cln_addr;
     char buf[1024], bufAns[1024];
     int bytes_read;
-    int buf_size;
+    int addr_size;
 
     if ((sock = socket(AF_UNIX, SOCK_DGRAM, 0)) == -1)
     {
@@ -47,7 +46,7 @@ int main(void)
         exit(EXIT_FAILURE);
     }
 
-    if (signal(SIGINT, sigint_handler) == (void *)-1)
+    if (signal(SIGINT, signal_handler) == (void *)-1)
     {
         perror("Ошибка signal");
         exit(EXIT_FAILURE);
@@ -55,7 +54,7 @@ int main(void)
 
     while (1)
     {
-        if ((bytes_read = recvfrom(sock, buf, 1024, 0, &cln_addr, &buf_size)) == -1)
+        if ((bytes_read = recvfrom(sock, buf, 1024, 0, &cln_addr, &addr_size)) == -1)
         {
             perror("Ошибка recvfrom");
             exit(EXIT_FAILURE);
