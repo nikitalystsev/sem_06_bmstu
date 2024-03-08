@@ -46,8 +46,6 @@ int main(void)
             exit(1);
         }
 
-        printf("client file: %s", cln_addr.sa_data);
-
         buf[bytes_read] = '\0';
         printf("Server get message: %s\n", buf);
 
