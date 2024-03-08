@@ -29,7 +29,7 @@ int main(void)
     }
 
     srv_addr.sa_family = AF_UNIX;
-    strcpy(srv_addr.sa_data, "./test_sock");
+    strcpy(srv_addr.sa_data, "./sock.srv");
 
     if (bind(sock, &srv_addr, sizeof(srv_addr)))
     {
@@ -39,16 +39,19 @@ int main(void)
 
     while (1)
     {
+
         if ((bytes_read = recvfrom(sock, buf, 1024, 0, &cln_addr, &buf_size)) == -1)
         {
             perror("Ошибка recvfrom");
             exit(1);
         }
 
+        printf("client file: %s", cln_addr.sa_data);
+
         buf[bytes_read] = '\0';
         printf("Server get message: %s\n", buf);
 
-        snprintf(bufAns, 1024, "Server (pid %d) process request", getpid());
+        snprintf(bufAns, 1024, "server pid %d", getpid());
 
         if (sendto(sock, bufAns, strlen(bufAns) + 1, 0, &cln_addr, sizeof(cln_addr)) == -1)
         {

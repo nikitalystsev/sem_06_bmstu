@@ -31,4 +31,4 @@ $(PREF_OUT)client.o: $(PREF_SRC)client.c
 include $(wildcard $(PREF_OUT)*.d)
 
 clean : 
-	rm -Rf $(PREF_OUT) ./*.exe 
+	rm -Rf $(PREF_OUT) ./*.exe ./*.cln ./*.srv

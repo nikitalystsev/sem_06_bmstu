@@ -17,7 +17,7 @@
 int main(void)
 {
     int sock;
-    struct sockaddr cln_addr;
+    struct sockaddr cln_addr, srv_addr;
     char buf[1024], bufAns[1024];
     int bytes_read;
 
@@ -28,11 +28,20 @@ int main(void)
     }
 
     cln_addr.sa_family = AF_UNIX;
-    strcpy(cln_addr.sa_data, "./test_sock");
+    sprintf(cln_addr.sa_data, "./%d.cln", getpid());
 
-    snprintf(buf, 1024, "Client (pid %d) send message", getpid());
+    if (bind(sock, &cln_addr, sizeof(cln_addr)))
+    {
+        perror("Ошибка bind");
+        exit(1);
+    }
 
-    if (sendto(sock, buf, strlen(buf) + 1, 0, &addr, sizeof(addr)) == -1)
+    srv_addr.sa_family = AF_UNIX;
+    sprintf(srv_addr.sa_data, "./sock.srv");
+
+    snprintf(buf, 1024, "client pid = %d", getpid());
+
+    if (sendto(sock, buf, strlen(buf) + 1, 0, &srv_addr, sizeof(srv_addr)) == -1)
     {
         perror("Ошибка sendto");
         exit(1);
