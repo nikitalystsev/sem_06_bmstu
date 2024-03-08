@@ -17,7 +17,9 @@
 int main(void)
 {
     int sock;
-    struct sockaddr addr;
+    struct sockaddr cln_addr;
+    char buf[1024], bufAns[1024];
+    int bytes_read;
 
     if ((sock = socket(AF_UNIX, SOCK_DGRAM, 0)) == -1)
     {
@@ -25,17 +27,25 @@ int main(void)
         exit(1);
     }
 
-    addr.sa_family = AF_UNIX;
-    strcpy(addr.sa_data, "./test_sock");
+    cln_addr.sa_family = AF_UNIX;
+    strcpy(cln_addr.sa_data, "./test_sock");
 
-    char buf[128];
-    snprintf(buf, 128, "Client (pid %d) send message", getpid());
+    snprintf(buf, 1024, "Client (pid %d) send message", getpid());
 
     if (sendto(sock, buf, strlen(buf) + 1, 0, &addr, sizeof(addr)) == -1)
     {
         perror("Ошибка sendto");
         exit(1);
     }
+
+    if ((bytes_read = recvfrom(sock, bufAns, 1024, 0, NULL, NULL)) == -1)
+    {
+        perror("Ошибка recvfrom");
+        exit(1);
+    }
+
+    bufAns[bytes_read] = '\0';
+    printf("Cliend (pid %d) get answer from Server: %s\n", getpid(), buf);
 
     close(sock);
 
