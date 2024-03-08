@@ -39,12 +39,6 @@ int main(void)
     srv_addr.sa_family = AF_UNIX;
     sprintf(srv_addr.sa_data, "./sock.srv");
 
-    if (connect(sock, &srv_addr, sizeof(srv_addr)) < 0)
-    {
-        perror("Ошибка connect");
-        exit(EXIT_FAILURE);
-    }
-
     snprintf(buf, 1024, "client pid = %d", getpid());
 
     if (sendto(sock, buf, strlen(buf) + 1, 0, &srv_addr, sizeof(srv_addr)) == -1)
