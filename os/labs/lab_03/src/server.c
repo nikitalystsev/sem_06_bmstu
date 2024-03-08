@@ -25,7 +25,7 @@ int main(void)
     if ((sock = socket(AF_UNIX, SOCK_DGRAM, 0)) == -1)
     {
         perror("Ошибка socket");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     srv_addr.sa_family = AF_UNIX;
@@ -34,7 +34,7 @@ int main(void)
     if (bind(sock, &srv_addr, sizeof(srv_addr)))
     {
         perror("Ошибка bind");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     while (1)
@@ -43,7 +43,7 @@ int main(void)
         if ((bytes_read = recvfrom(sock, buf, 1024, 0, &cln_addr, &buf_size)) == -1)
         {
             perror("Ошибка recvfrom");
-            exit(1);
+            exit(EXIT_FAILURE);
         }
 
         buf[bytes_read] = '\0';
@@ -54,7 +54,7 @@ int main(void)
         if (sendto(sock, bufAns, strlen(bufAns) + 1, 0, &cln_addr, sizeof(cln_addr)) == -1)
         {
             perror("Ошибка sendto");
-            exit(1);
+            exit(EXIT_FAILURE);
         }
 
         sleep(1);
@@ -62,5 +62,5 @@ int main(void)
 
     close(sock);
 
-    return 0;
+    return EXIT_SUCCESS;
 }
