@@ -27,7 +27,6 @@ void sigint_handler()
 
 int main(void)
 {
-    // int sock;
     struct sockaddr srv_addr, cln_addr;
     char buf[1024], bufAns[1024];
     int bytes_read;
@@ -63,7 +62,7 @@ int main(void)
         }
 
         buf[bytes_read] = '\0';
-        printf("Server get message: %s\n", buf);
+        printf("Server receive: %s\n", buf);
 
         snprintf(bufAns, 1024, "server pid %d", getpid());
 
@@ -72,11 +71,7 @@ int main(void)
             perror("Ошибка sendto");
             exit(EXIT_FAILURE);
         }
-
-        sleep(1);
     }
-
-    // close(sock);
 
     return EXIT_SUCCESS;
 }

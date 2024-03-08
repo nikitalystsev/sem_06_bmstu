@@ -47,15 +47,6 @@ int main(void)
         exit(EXIT_FAILURE);
     }
 
-    if ((bytes_read = recvfrom(sock, bufAns, 1024, 0, NULL, NULL)) == -1)
-    {
-        perror("Ошибка recvfrom");
-        exit(EXIT_FAILURE);
-    }
-
-    bufAns[bytes_read] = '\0';
-    printf("Cliend (pid %d) get answer from Server: %s\n", getpid(), bufAns);
-
     close(sock);
 
     return EXIT_SUCCESS;
