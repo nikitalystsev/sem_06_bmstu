@@ -54,7 +54,7 @@ int main(void)
     }
 
     bufAns[bytes_read] = '\0';
-    printf("Cliend (pid %d) get answer from Server: %s\n", getpid(), buf);
+    printf("Cliend (pid %d) get answer from Server: %s\n", getpid(), bufAns);
 
     close(sock);
 

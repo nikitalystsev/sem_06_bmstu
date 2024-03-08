@@ -13,10 +13,21 @@
 #include <netinet/in.h>
 #include <inttypes.h>
 #include <strings.h>
+#include <signal.h>
+
+int sock;
+
+void sigint_handler()
+{
+    close(sock);
+    unlink("./sock.srv");
+    printf("Server shutdown...\n");
+    exit(0);
+}
 
 int main(void)
 {
-    int sock;
+    // int sock;
     struct sockaddr srv_addr, cln_addr;
     char buf[1024], bufAns[1024];
     int bytes_read;
@@ -37,9 +48,14 @@ int main(void)
         exit(EXIT_FAILURE);
     }
 
+    if (signal(SIGINT, sigint_handler) == (void *)-1)
+    {
+        perror("Ошибка signal");
+        exit(EXIT_FAILURE);
+    }
+
     while (1)
     {
-
         if ((bytes_read = recvfrom(sock, buf, 1024, 0, &cln_addr, &buf_size)) == -1)
         {
             perror("Ошибка recvfrom");
@@ -60,7 +76,7 @@ int main(void)
         sleep(1);
     }
 
-    close(sock);
+    // close(sock);
 
     return EXIT_SUCCESS;
 }
