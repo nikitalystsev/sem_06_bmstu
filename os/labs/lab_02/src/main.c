@@ -4,6 +4,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
+#include <sys/wait.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
 
 int main(int argc, char **argv)
 {
@@ -27,7 +34,7 @@ int main(int argc, char **argv)
     {
         // код процесса потомка
         char msg[] = "aaaaaaaaa";
-        close(sockets[1]);
+        close(sockets[1]); // закрываем для другого процесса
 
         printf("Child send: %s\n", msg);
         write(sockets[0], msg, sizeof(msg));
@@ -35,12 +42,14 @@ int main(int argc, char **argv)
         printf("Child recieve: %s\n", buf);
 
         close(sockets[0]);
+
+        exit(EXIT_SUCCESS);
     }
     else
     {
         // код процесса предка
         char msg[] = "bbbbbbb";
-        close(sockets[0]);
+        close(sockets[0]); // закрываем для другого процесса
 
         read(sockets[1], buf, sizeof(buf));
         printf("Parent send: %s\n", msg);
@@ -48,6 +57,30 @@ int main(int argc, char **argv)
         printf("Parent recieve: %s\n", buf);
 
         close(sockets[1]);
+    }
+
+    pid_t w_pid;
+    int status;
+
+    w_pid = wait(&status);
+
+    if (w_pid == -1)
+    {
+        perror("Ошибка wait");
+        exit(EXIT_FAILURE);
+    }
+
+    if (WIFEXITED(status))
+    {
+        printf("Child process: PID = %d завершился с кодом %d\n", w_pid, WEXITSTATUS(status));
+    }
+    else if (WIFSIGNALED(status))
+    {
+        printf("Child process: PID = %d killed by signal %d\n", w_pid, WTERMSIG(status));
+    }
+    else if (WIFSTOPPED(status))
+    {
+        printf("Child process: PID = %d stopped by signal %d\n", w_pid, WSTOPSIG(status));
     }
 
     return EXIT_SUCCESS;
