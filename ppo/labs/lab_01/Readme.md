@@ -30,4 +30,4 @@
 
 ## 7. Use-Case - диаграмма
 
-   ![use-case-diag](.\img\use-case-diag.png)
+   ![use-case-diag](img/use-case-diag.png)
