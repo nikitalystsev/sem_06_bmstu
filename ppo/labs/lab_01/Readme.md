@@ -42,4 +42,4 @@
 
 ## 8. ER-диаграмма сущностей
 
-![er-diag](img/er-diag.png)
+![er-diag](img/er-diag.svg)
