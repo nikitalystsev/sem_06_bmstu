@@ -31,3 +31,7 @@
 ## 7. Use-Case - диаграмма
 
    ![use-case-diag](img/use-case-diag.png)
+
+## 8. ER-диаграмма сущностей
+
+![er-diag](img/er-diag.png)
