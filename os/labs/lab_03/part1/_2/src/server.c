@@ -1,19 +1,9 @@
-#include <unistd.h>
-#include <sys/types.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <sys/wait.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <sys/wait.h>
-#include <unistd.h>
 #include <sys/socket.h>
-#include <stdio.h>
-#include <netinet/in.h>
-#include <inttypes.h>
-#include <strings.h>
+#include <unistd.h>
 #include <signal.h>
+#include <string.h>
 
 int sock;
 
@@ -65,12 +55,14 @@ int main(void)
 
         snprintf(bufAns, 1024, "server pid %d", getpid());
 
-        if (sendto(sock, bufAns, strlen(bufAns) + 1, 0, &cln_addr, sizeof(cln_addr)) == -1)
+        if (sendto(sock, bufAns, sizeof(bufAns), 0, &cln_addr, addr_size) == -1)
         {
             perror("Ошибка sendto");
             exit(EXIT_FAILURE);
         }
     }
+
+    unlink("./sock.srv");
 
     return EXIT_SUCCESS;
 }

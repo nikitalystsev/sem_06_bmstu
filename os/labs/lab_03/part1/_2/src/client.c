@@ -1,18 +1,8 @@
-#include <unistd.h>
-#include <sys/types.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <sys/wait.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <sys/wait.h>
-#include <unistd.h>
 #include <sys/socket.h>
-#include <stdio.h>
-#include <netinet/in.h>
-#include <inttypes.h>
-#include <strings.h>
+#include <unistd.h>
+#include <string.h>
 
 int main(void)
 {
@@ -40,7 +30,7 @@ int main(void)
     srv_addr.sa_family = AF_UNIX;
     sprintf(srv_addr.sa_data, "./sock.srv");
 
-    snprintf(buf, 1024, "client pid = %d", getpid());
+    snprintf(buf, 1024, "%d", getpid());
 
     if (sendto(sock, buf, strlen(buf) + 1, 0, &srv_addr, sizeof(srv_addr)) == -1)
     {
