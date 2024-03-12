@@ -1,0 +1,12 @@
+(defun set-equal(lst1 lst2)
+  (let ((len1 (length lst1))
+	(len2 (length lst2)))
+    (cond ((not (= len1 len2)) nil)
+	  (t (-set-equal lst1 lst2)))))
+
+(defun _set-equal(lst1 lst2)
+  (let ((inters (intersection lst1 lst2))
+	(len1 (length lst1))
+	(len2 (length lst2)))
+    (and (= len1 len2)
+	 (= len2 (length inters)))))

@@ -1,0 +1,12 @@
+(defun apply-or(lst)
+  (reduce #'(lambda(val1 val2)
+	      (or val1 val2)) lst))
+
+(defun apply-and(lst)
+  (reduce #'(lambda(val1 val2)
+	      (and val1 val2)) lst))
+
+(defun -set-equal(lst1 lst2)
+  (apply-and (mapcar #'(lambda(elem1)
+	      (apply-or (mapcar #'(lambda(elem2)
+	     			   (eql elem1 elem2)) lst2))) lst1)))

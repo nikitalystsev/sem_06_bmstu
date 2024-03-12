@@ -1,0 +1,4 @@
+(defun decart(lstX lstY)
+  (mapcan #'(lambda(x)
+	      (mapcar (lambda(y)
+			(list x y)) lstY)) lstX))

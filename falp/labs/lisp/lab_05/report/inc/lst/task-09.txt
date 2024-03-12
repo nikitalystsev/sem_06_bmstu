@@ -1,0 +1,3 @@
+(defun sum-all-num(list-of-list)
+  (reduce #'+ (mapcar #'(lambda(list)
+			  (length list)) list-of-list)))

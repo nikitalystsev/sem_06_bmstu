@@ -1,7 +1,0 @@
-(defun get_last_elem(x)
-    (car (last x))
-)
-
-(defun get_last_elem2(x)
-    (car (reverse x))
-)

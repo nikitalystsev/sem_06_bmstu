@@ -1,0 +1,3 @@
+(defun f3-1(n lst)
+  (mapcar #'(lambda(elem)
+	      (* elem n)) lst))

@@ -1,0 +1,6 @@
+(defun f1-for-elem(elem)
+  (cond ((numberp elem) (- elem 10))
+	(t elem)))
+	
+(defun f1(lst)
+  (mapcar #'f1-for-elem lst))

@@ -1,0 +1,4 @@
+(defun f2(lst)
+  (mapcar #'(lambda(elem)
+	      (cond ((numberp elem) (* elem elem))
+		    (t elem))) lst))

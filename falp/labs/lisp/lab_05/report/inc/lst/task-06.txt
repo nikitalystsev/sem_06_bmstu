@@ -1,0 +1,3 @@
+(defun select-between(n m lst)
+  (remove-if #'(lambda(elem)
+		 (or (< elem n) (> elem m))) lst))

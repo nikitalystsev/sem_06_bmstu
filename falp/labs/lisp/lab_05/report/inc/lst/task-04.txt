@@ -1,0 +1,7 @@
+(defun cmp-list(lst1 lst2)
+  (reduce #'(lambda(val1 val2)
+	      (and val1 val2)) (mapcar #'eql lst1 lst2)))
+
+(defun is-palindrome(lst)
+  (apply #'(lambda(lst1 lst2)
+	     (cmp-list lst1 lst2)) (list lst (reverse lst))))
