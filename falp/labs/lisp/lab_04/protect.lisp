@@ -1,13 +1,12 @@
 (setf b `(+ * / -))
-(setf a b)
+(setf a `b)
 
-(defun b(oper lst_args)
-  (apply oper lst_args)
+(defun b(num)
+  (nth num b)
   )
 
-(defun a(num lst_opers)
-  (nth num lst_opers)
+(defun a(num lst_args)
+  (apply (b num) lst_args)
   )
 
-(apply #'(lambda(num lst_args)
-	   (apply (a num a) lst_args)) `(3 (2 4)))
+(apply (funcall a 2) `(3 4))
