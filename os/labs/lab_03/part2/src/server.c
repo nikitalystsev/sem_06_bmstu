@@ -1,14 +1,11 @@
-#define _GNU_SOURCE
-
 #include <netinet/in.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/epoll.h>
 #include <sys/socket.h>
 #include <unistd.h>
-#include <fcntl.h>
 
-#define MAX_EVENTS 4
+#define MAX_EVENTS 10
 #define BUFF_SIZE 32
 
 int main(void)
@@ -41,7 +38,7 @@ int main(void)
         exit(EXIT_FAILURE);
     }
 
-    if (listen(listen_sock, MAX_EVENTS) == -1)
+    if (listen(listen_sock, 1) == -1)
     {
         perror("Ошибка listen");
         close(listen_sock);
@@ -63,8 +60,6 @@ int main(void)
         close(listen_sock);
         exit(EXIT_FAILURE);
     }
-
-    printf("server_pid: %d\n", getpid());
 
     for (;;)
     {
@@ -124,4 +119,8 @@ int main(void)
             }
         }
     }
+
+    close(listen_sock);
+
+    return EXIT_SUCCESS;
 }
