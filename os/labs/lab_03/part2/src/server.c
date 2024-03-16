@@ -6,18 +6,17 @@
 #include <unistd.h>
 
 #define MAX_EVENTS 10
-#define BUFF_SIZE 32
 #define PORT 5000
 
 int main(void)
 {
     struct sockaddr_in srv_addr;
     struct sockaddr cln_addr;
-    socklen_t cln_len;
     struct epoll_event ev, events[MAX_EVENTS];
     int listen_sock, conn_sock, nfds, epollfd;
-    char buff_to[BUFF_SIZE], buff_from[BUFF_SIZE];
-    int rc;
+    char buff_to[256], buff_from[256];
+    int bytes_read;
+    int addr_size;
 
     if ((listen_sock = socket(AF_INET, SOCK_STREAM, 0)) == -1)
     {
@@ -32,21 +31,18 @@ int main(void)
     if (bind(listen_sock, (struct sockaddr *)&srv_addr, sizeof(srv_addr)) == -1)
     {
         perror("Ошибка bind");
-        close(listen_sock);
         exit(EXIT_FAILURE);
     }
 
     if (listen(listen_sock, 1) == -1)
     {
         perror("Ошибка listen");
-        close(listen_sock);
         exit(EXIT_FAILURE);
     }
 
     if ((epollfd = epoll_create1(0)) == -1)
     {
         perror("epoll_create1");
-        close(listen_sock);
         exit(EXIT_FAILURE);
     }
 
@@ -55,7 +51,6 @@ int main(void)
     if (epoll_ctl(epollfd, EPOLL_CTL_ADD, listen_sock, &ev) == -1)
     {
         perror("epoll_ctl: listen_sock");
-        close(listen_sock);
         exit(EXIT_FAILURE);
     }
 
@@ -72,7 +67,7 @@ int main(void)
         {
             if (events[i].data.fd == listen_sock)
             {
-                if ((conn_sock = accept(listen_sock, (struct sockaddr *)&cln_addr, &cln_len)) == -1)
+                if ((conn_sock = accept(listen_sock, (struct sockaddr *)&cln_addr, &addr_size)) == -1)
                 {
                     perror("accept");
                     exit(EXIT_FAILURE);
@@ -89,17 +84,16 @@ int main(void)
             }
             else
             {
-                buff_to[BUFF_SIZE - 1] = 0;
-                buff_from[BUFF_SIZE - 1] = 0;
-
-                if ((rc = read(events[i].data.fd, buff_from, sizeof(buff_from))) == -1)
+                if ((bytes_read = read(events[i].data.fd, buff_from, sizeof(buff_from))) == -1)
                 {
                     perror("Ошибка read");
                     exit(EXIT_FAILURE);
                 }
 
+                buff_from[bytes_read] = '\0';
+
                 printf("\nServer received: %s\n", buff_from);
-                sprintf(buff_to, "server pid = %d", getpid());
+                snprintf(buff_to, 256, "server pid = %d", getpid());
 
                 if (send(events[i].data.fd, buff_to, sizeof(buff_to), 0) == -1)
                 {
