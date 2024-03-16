@@ -51,5 +51,5 @@ int main(void)
 
     close(sock);
 
-    return 0;
+    return EXIT_SUCCESS;
 }

@@ -59,7 +59,6 @@ int main(void)
         if ((nfds = epoll_wait(epollfd, events, MAX_EVENTS, -1)) == -1)
         {
             perror("Ошибка epoll_wait");
-            close(listen_sock);
             exit(EXIT_FAILURE);
         }
 
@@ -69,7 +68,7 @@ int main(void)
             {
                 if ((conn_sock = accept(listen_sock, (struct sockaddr *)&cln_addr, &addr_size)) == -1)
                 {
-                    perror("accept");
+                    perror("Ошибка accept");
                     exit(EXIT_FAILURE);
                 }
 
