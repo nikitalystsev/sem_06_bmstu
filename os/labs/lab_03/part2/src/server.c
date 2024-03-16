@@ -7,18 +7,16 @@
 
 #define MAX_EVENTS 10
 #define BUFF_SIZE 32
+#define PORT 5000
 
 int main(void)
 {
-    int port = 5000;
-
     struct sockaddr_in srv_addr;
-    struct sockaddr client_addr;
-    socklen_t client_len;
+    struct sockaddr cln_addr;
+    socklen_t cln_len;
     struct epoll_event ev, events[MAX_EVENTS];
     int listen_sock, conn_sock, nfds, epollfd;
-    int conn;
-    char msg_to[BUFF_SIZE], msg_from[BUFF_SIZE];
+    char buff_to[BUFF_SIZE], buff_from[BUFF_SIZE];
     int rc;
 
     if ((listen_sock = socket(AF_INET, SOCK_STREAM, 0)) == -1)
@@ -29,7 +27,7 @@ int main(void)
 
     srv_addr.sin_family = AF_INET;
     srv_addr.sin_addr = (struct in_addr){.s_addr = INADDR_ANY};
-    srv_addr.sin_port = htons(port);
+    srv_addr.sin_port = htons(PORT);
 
     if (bind(listen_sock, (struct sockaddr *)&srv_addr, sizeof(srv_addr)) == -1)
     {
@@ -74,7 +72,7 @@ int main(void)
         {
             if (events[i].data.fd == listen_sock)
             {
-                if ((conn_sock = accept(listen_sock, (struct sockaddr *)&client_addr, &client_len)) == -1)
+                if ((conn_sock = accept(listen_sock, (struct sockaddr *)&cln_addr, &cln_len)) == -1)
                 {
                     perror("accept");
                     exit(EXIT_FAILURE);
@@ -86,36 +84,32 @@ int main(void)
                 if (epoll_ctl(epollfd, EPOLL_CTL_ADD, conn_sock, &ev) == -1)
                 {
                     perror("epoll_ctl: conn_sock");
-                    close(listen_sock);
                     exit(EXIT_FAILURE);
                 }
             }
             else
             {
-                conn = events[i].data.fd;
+                buff_to[BUFF_SIZE - 1] = 0;
+                buff_from[BUFF_SIZE - 1] = 0;
 
-                msg_to[BUFF_SIZE - 1] = 0;
-                msg_from[BUFF_SIZE - 1] = 0;
-
-                if ((rc = read(conn, msg_from, sizeof(msg_from))) == -1)
+                if ((rc = read(events[i].data.fd, buff_from, sizeof(buff_from))) == -1)
                 {
                     perror("Ошибка read");
-                    close(conn);
                     exit(EXIT_FAILURE);
                 }
 
-                printf("\nServer received: %s\n", msg_from);
-                sprintf(msg_to, "%d_%s", getpid(), msg_from);
+                printf("\nServer received: %s\n", buff_from);
+                sprintf(buff_to, "server pid = %d", getpid());
 
-                if (send(conn, msg_to, sizeof(msg_to), 0) == -1)
+                if (send(events[i].data.fd, buff_to, sizeof(buff_to), 0) == -1)
                 {
                     perror("Ошибка send");
                     exit(EXIT_FAILURE);
                 }
 
-                printf("Server send: %s\n", msg_to);
+                printf("Server send: %s\n", buff_to);
 
-                close(conn);
+                close(events[i].data.fd);
             }
         }
     }
