@@ -4,19 +4,58 @@
 #include <sys/epoll.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <signal.h>
+#include <fcntl.h>
 
 #define MAX_EVENTS 10
 #define PORT 5000
+
+int listen_sock;
+
+void signal_handler(int signum)
+{
+    printf("\nShutdowning server...\n");
+    close(listen_sock);
+    exit(EXIT_SUCCESS);
+}
+
+void setnonblocking(int sockfd)
+{
+    int flags = fcntl(sockfd, F_GETFL, 0);
+    if (flags == -1)
+    {
+        perror("fcntl F_GETFL");
+        exit(EXIT_FAILURE);
+    }
+
+    if (fcntl(sockfd, F_SETFL, flags | O_NONBLOCK) == -1)
+    {
+        perror("fcntl F_SETFL O_NONBLOCK");
+        exit(EXIT_FAILURE);
+    }
+}
 
 int main(void)
 {
     struct sockaddr_in srv_addr;
     struct sockaddr cln_addr;
     struct epoll_event ev, events[MAX_EVENTS];
-    int listen_sock, conn_sock, nfds, epollfd;
+    int conn_sock, nfds, epollfd;
     char buff_to[256], buff_from[256];
     int bytes_read;
     int addr_size;
+    struct sigaction sa;
+
+    sa.sa_handler = signal_handler;
+    sa.sa_flags = 0;
+
+    sigemptyset(&sa.sa_mask);
+
+    if (sigaction(SIGINT, &sa, NULL) < 0)
+    {
+        perror("Ошибка sigaction");
+        exit(EXIT_FAILURE);
+    }
 
     if ((listen_sock = socket(AF_INET, SOCK_STREAM, 0)) == -1)
     {
@@ -71,6 +110,8 @@ int main(void)
                     perror("Ошибка accept");
                     exit(EXIT_FAILURE);
                 }
+
+                setnonblocking(conn_sock);
 
                 ev.events = EPOLLIN | EPOLLET;
                 ev.data.fd = conn_sock;
