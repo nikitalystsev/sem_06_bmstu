@@ -18,9 +18,14 @@
 (setf lst `(a b c d))
 
 (fiveam:test f_test_1
-	(fiveam:is (equal (f2 lst) `(6 b -6 12))))
+	(fiveam:is (equal (f2 lst) `(18 -9 c 12))))
+
+(setf lst2 `(a))
+
+(fiveam:test f_test_2
+  (fiveam:is (equal (f2 lst2) `(18))))
 
 (fiveam:test f_test_3
-  (fiveam:is (equal (f2 lst) '(10))))
+  (fiveam:is (equal (f2 lst2) `(18))))
 
 (fiveam::run!)
