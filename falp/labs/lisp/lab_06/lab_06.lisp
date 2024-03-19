@@ -8,58 +8,51 @@
   (_my-reverse lst nil))
 
 					; задача 2
-(defun get_noempt_list_elem(lst)
+(defun get_first_noempt_lst(lst)
   (cond ((null lst) nil)
 	((and (listp (car lst)) (> (length (car lst)) 0)) (car lst))
-	(t (get_noempt_elem (cdr lst)))))
-
-(defun get_first_noempt_list_elem(lst) ; если нужно найти первый аргумент первого непустого списка-элемента списка
-  (cond ((null lst) nil)
-	((and (listp (car lst)) (> (length (car lst)) 0)) (caar lst))
-	(t (get_noempt_elem (cdr lst)))))
+	(t (get_first_noempt_lst (cdr lst)))))
 
 					; задача 3
-(defun select_between_a_b(a b lst)
+(defun select_between1(a b lst)
   (cond ((null lst) nil)
 	((and (numberp (car lst)) (> (car lst) a) (< (car lst) b))
-	 (cons (car lst) (select_between_a_b a b (cdr lst))))
-	((atom (car lst)) (select_between_a_b a b (cdr lst)))
-	(t (select_between_a_b a b (car lst)))))
+	 (cons (car lst) (select_between1 a b (cdr lst))))
+	((atom (car lst)) (select_between1 a b (cdr lst)))
+	(t (select_between1 a b (car lst)))))
 
 					; задача 4
-(defun mul_numb_by_num(n lst) ; все элементы списка - числа
+(defun mul_list_by_num(n lst) ; все элементы списка - числа
   (cond ((null lst) nil)
-	(t (cons (* (car lst) n) (mul_numb_by_num n (cdr lst))))))
+	(t (cons (* (car lst) n) (mul_list_by_num n (cdr lst))))))
 
-(defun _mul_numb_by_num2(n lst res) ; все элементы списка - любые объекты
+(defun _mul_list_by_num2(n lst res) ; все элементы списка - любые объекты
     (cond ((null lst) res)
-          ((numberp (car lst)) (_mul_numb_by_num2  n (cdr lst) (cons (* (car lst) n) res)))
-          ((atom (car lst)) (_mul_numb_by_num2 n (cdr lst) (cons (car lst) res)))
-          (t (_mul_numb_by_num2 n (cdr lst) (cons (_mul_numb_by_num2 n (car lst) ()) res)))))
+          ((numberp (car lst)) (_mul_list_by_num2  n (cdr lst) (cons (* (car lst) n) res)))
+          ((atom (car lst)) (_mul_list_by_num2 n (cdr lst) (cons (car lst) res)))
+          (t (_mul_list_by_num2 n (cdr lst) (cons (_mul_list_by_num2 n (car lst) ()) res)))))
 
-(defun mul-numb_by_num2(n lst)
-  (reverse (_mul_numb_by_num2 n lst ())))
+(defun mul_list_by_num2(n lst)
+  (reverse (_mul_list_by_num2 n lst ())))
 
 					; задача 5
 					; то же самое, что и 3-я
 
 					; задача 6
-
-(defun rec_add(lst) ; одноуровнего смешанного
+(defun rec-add(lst) ; одноуровнего смешанного
   (cond ((null lst) 0)
 	((numberp (car lst))
-	 (+ (car lst) (rec_add (cdr lst))))
-	(t (rec_add (cdr lst)))))
+	 (+ (car lst) (rec-add (cdr lst))))
+	(t (rec-add (cdr lst)))))
 
-(defun _rec_add2(lst end_sum); структурированного
+(defun _rec-add2(lst end_sum); структурированного
   (cond ((null lst) end_sum)
-	((numberp (car lst)) (_rec_add2 (cdr lst) (+ (car lst) end_sum)))
-	((atom (car lst)) (_rec_add2 (cdr lst) end_sum))
-	(t (_rec_add2 (cdr lst) (_rec_add2 (car lst) end_sum)))))
+	((numberp (car lst)) (_rec-add2 (cdr lst) (+ (car lst) end_sum)))
+	((atom (car lst)) (_rec-add2 (cdr lst) end_sum))
+	(t (_rec-add2 (cdr lst) (_rec-add2 (car lst) end_sum)))))
 
-(defun rec_add2(lst)
-  (_rec_add2 lst 0))
-
+(defun rec-add2(lst)
+  (_rec-add2 lst 0))
 
 					; задача 7
 (defun _recnth(n lst ind)
