@@ -1,0 +1,3 @@
+(defun get_list_square(lst_num)
+  (cond ((null lst_num) nil)
+	(t (cons (* (car lst_num) (car lst_num)) (get_list_square (cdr lst_num))))))

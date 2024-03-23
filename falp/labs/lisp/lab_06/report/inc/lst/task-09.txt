@@ -1,0 +1,5 @@
+(defun get_first_odd(lst)
+  (cond ((and (numberp lst) (oddp lst)) lst)
+	((atom lst) nil)
+	(t (or (get_first_odd (car lst))
+	       (get_first_odd (cdr lst))))))

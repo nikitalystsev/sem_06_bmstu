@@ -1,0 +1,6 @@
+(defun select_between(a b lst)
+  (cond ((null lst) nil)
+	((and (numberp (car lst)) (> (car lst) a) (< (car lst) b))
+	 (cons (car lst) (select_between a b (cdr lst))))
+	((atom (car lst)) (select_between a b (cdr lst)))
+	(t (select_between a b (car lst)))))

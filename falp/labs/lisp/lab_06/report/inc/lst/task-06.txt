@@ -1,0 +1,14 @@
+(defun rec-add(lst) ; одноуровнего смешанного
+  (cond ((null lst) 0)
+	((numberp (car lst))
+	 (+ (car lst) (rec-add (cdr lst))))
+	(t (rec-add (cdr lst)))))
+
+(defun _rec-add2(lst end_sum); структурированного
+  (cond ((null lst) end_sum)
+	((numberp (car lst)) (_rec-add2 (cdr lst) (+ (car lst) end_sum)))
+	((atom (car lst)) (_rec-add2 (cdr lst) end_sum))
+	(t (_rec-add2 (cdr lst) (_rec-add2 (car lst) end_sum)))))
+
+(defun rec-add2(lst)
+  (_rec-add2 lst 0))

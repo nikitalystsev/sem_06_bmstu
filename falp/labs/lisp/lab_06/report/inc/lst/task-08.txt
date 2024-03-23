@@ -1,0 +1,4 @@
+(defun allodd(lst)
+  (cond ((null lst) t)
+	((evenp (car lst)) nil)
+	(t (allodd (cdr lst)))))

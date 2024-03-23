@@ -1,0 +1,7 @@
+(defun _recnth(n lst ind)
+  (cond ((null lst) nil)
+	((= ind n) (car lst))
+	(t (_recnth n (cdr lst) (+ ind 1)))))
+
+(defun recnth(n lst)
+  (_recnth n lst 0))

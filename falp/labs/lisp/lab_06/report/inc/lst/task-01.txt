@@ -1,0 +1,6 @@
+(defun _my-reverse(lst res)
+  (cond ((null lst) res)
+	(t (_my-reverse (cdr lst) (cons (car lst) res)))))
+
+(defun my-reverse(lst)
+  (_my-reverse lst nil))

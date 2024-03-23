@@ -1,0 +1,12 @@
+(defun mul_list_by_num(n lst) ; все элементы списка - числа
+  (cond ((null lst) nil)
+	(t (cons (* (car lst) n) (mul_list_by_num n (cdr lst))))))
+
+(defun _mul_list_by_num2(n lst res) ; все элементы списка - любые объекты
+    (cond ((null lst) res)
+          ((numberp (car lst)) (_mul_list_by_num2  n (cdr lst) (cons (* (car lst) n) res)))
+          ((atom (car lst)) (_mul_list_by_num2 n (cdr lst) (cons (car lst) res)))
+          (t (_mul_list_by_num2 n (cdr lst) (cons (_mul_list_by_num2 n (car lst) ()) res)))))
+
+(defun mul_list_by_num2(n lst)
+  (reverse (_mul_list_by_num2 n lst ())))

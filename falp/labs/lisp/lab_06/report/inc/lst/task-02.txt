@@ -1,0 +1,4 @@
+(defun get_first_noempt_lst(lst)
+  (cond ((null lst) nil)
+	((and (listp (car lst)) (> (length (car lst)) 0)) (car lst))
+	(t (get_first_noempt_lst (cdr lst)))))
