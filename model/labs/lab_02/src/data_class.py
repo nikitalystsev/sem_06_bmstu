@@ -1,6 +1,5 @@
-import matplotlib.pyplot as plt
-import numpy as np
 from lsm_for_line import LeastSquaresMethodLine
+import numpy as np
 
 
 class DataClass:
@@ -31,13 +30,11 @@ class DataClass:
         self.__log_data_k1, self.__a1, self.__b1 = self.__data_to_interp(self.__orig_data_k1)
         self.__log_data_k2, self.__a2, self.__b2 = self.__data_to_interp(self.__orig_data_k2)
 
-        self.__plot_data()
-
     def t(self, z: int | float):
         """
         Функция нахождения температурного поля в цилиндре
         """
-        t_z = (self.__t_w - self.__t_0) * z ** self.__p + self.__t_0
+        t_z = (self.__t_w - self.__t_0) * (z ** self.__p) + self.__t_0
 
         return t_z
 
@@ -63,10 +60,11 @@ class DataClass:
         f = f(z) - значение функции F в точке z
         u = u(z) - значение функции u в точке z
         """
+        common_part = self.__r * self.__c * self.k1(z) * (self.u_p(z) - u)
 
-        return -f / z + self.__r * self.__c * self.k1(z) * (self.u_p(z) - u)
+        return -f / z + common_part if abs(z) > 1e-4 else common_part / 2
 
-    def k1(self, t: int | float | list | np.ndarray):
+    def k1(self, t: int | float):
         """
         Функция для получения значения первого варианта коэффициента поглощения
         в точках между узлами
@@ -75,7 +73,7 @@ class DataClass:
 
         return res
 
-    def k2(self, t: int | float | list | np.ndarray):
+    def k2(self, t: int | float):
         """
         Функция для получения значения первого варианта коэффициента поглощения
         в точках между узлами
@@ -119,25 +117,3 @@ class DataClass:
             log_data_k[psi[i]] = teta[i]
 
         return log_data_k, a, b
-
-    def __plot_data(self):
-        """
-        Временный метод для построения графика
-        """
-        # fig1 = plt.figure(figsize=(10, 7))
-        # plot = fig1.add_subplot()
-        #
-        # res = self.k1(list(self.__orig_data_k1.keys()))
-
-        # print(res)
-        # print(list(self.orig_data_k1.values()), res, sep='\n')
-
-        # # plot.plot(self.data_k1.keys(), self.data_k1.values(), label="Первый вариант k")
-        # plot.plot(self.orig_data_k1.keys(), self.orig_data_k1.values(), label="Первый вариант k (логарифм)")
-        # plot.plot(self.__log_data_k1.keys(), res, label="Первый вариант k (логарифм) 2")
-        # plot.plot(self.__log_data_k1.keys(), self.__log_data_k1.values(), label="первый вариант к (прямая)")
-
-        # plt.legend()
-        # plt.grid()
-        #
-        # plt.show()
