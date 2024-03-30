@@ -48,21 +48,30 @@ class RadiationTransferSystem:
 
         return u_p_z
 
-    def der_u(self, z, f):
+    def der_u(self, z, f, is_k1=True):
         """
         Функция правой части первого уравнения
         f = f(z) - значение функции F в точке z
         """
+        # мда, треш, долго доходило, что не k(z), а k(t(z))
+        if is_k1:
+            res = -3 * self.__r * self.k1(self.t(z)) / self.__c * f
+        else:
+            res = -3 * self.__r * self.k2(self.t(z)) / self.__c * f
 
-        return - 3 * self.__r * self.k1(z) / self.__c * f
+        return res
 
-    def der_f(self, z, u, f):
+    def der_f(self, z, u, f, is_k1=True):
         """
         Функция правой части первого уравнения
         f = f(z) - значение функции F в точке z
         u = u(z) - значение функции u в точке z
         """
-        common_part = self.__r * self.__c * self.k1(z) * (self.u_p(z) - u)
+
+        if is_k1:
+            common_part = self.__r * self.__c * self.k1(self.t(z)) * (self.u_p(z) - u)
+        else:
+            common_part = self.__r * self.__c * self.k2(self.t(z)) * (self.u_p(z) - u)
 
         return -f / z + common_part if abs(z) > EPS else common_part / 2
 

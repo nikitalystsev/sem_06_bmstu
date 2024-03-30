@@ -1,4 +1,4 @@
-from task import Task
+from solution_system import SolutionSystem
 
 
 def main() -> None:
@@ -7,9 +7,8 @@ def main() -> None:
     """
 
     # какая-то логика
-    ex = Task()
-    ex.get_solve()
-    ex.plot_solve()
+    ex = SolutionSystem()
+    ex.solve()
 
 
 if __name__ == '__main__':

@@ -13,7 +13,9 @@ class SolutionSystem:
     def __init__(
             self
     ) -> None:
-        self.__system = RadiationTransferSystem()  # c отладочными параметрами
+        # класс системы уравнений
+        self.__system = RadiationTransferSystem()
+
         # 0 <= z <= 1
         self.__a = 0
         self.__b = 1
@@ -35,7 +37,7 @@ class SolutionSystem:
         alpha = 1  # задаваемый параметр
         half_h = self.__h / 2
 
-        z_res = np.arange(self.__a, self.__b + half_h, self.__h)
+        z_res = np.arange(self.__a, self.__b + self.__h, self.__h)
         u_res = np.zeros(len(z_res))
         f_res = np.zeros(len(z_res))
 
@@ -46,11 +48,11 @@ class SolutionSystem:
             u_res[i] = u_n
             f_res[i] = f_n
 
-            k1 = self.__data_class.der_u(z, f_n)
-            q1 = self.__data_class.der_f(z, u_n, f_n)
+            k1 = self.__system.der_u(z, f_n)
+            q1 = self.__system.der_f(z, u_n, f_n)
 
-            k2 = self.__data_class.der_u(z + half_h, f_n + half_h * q1)
-            q2 = self.__data_class.der_f(z + half_h, u_n + half_h * k1, f_n + half_h * q1)
+            k2 = self.__system.der_u(z + half_h, f_n + half_h * q1)
+            q2 = self.__system.der_f(z + half_h, u_n + half_h * k1, f_n + half_h * q1)
 
             u_n += self.__h * ((alpha - 1) * k1 + alpha * k2)
             f_n += self.__h * ((alpha - 1) * q1 + alpha * q2)
@@ -67,10 +69,9 @@ class SolutionSystem:
         """
         half_h = self.__h / 2
 
-        z_res = list(np.arange(self.__a, self.__b + half_h, self.__h))
-
-        u_res = list(np.zeros(len(z_res)))
-        f_res = list(np.zeros(len(z_res)))
+        z_res = np.arange(self.__a, self.__b + self.__h, self.__h)
+        u_res = np.zeros(len(z_res))
+        f_res = np.zeros(len(z_res))
 
         u_n = u_0
         f_n = f_0
@@ -79,17 +80,17 @@ class SolutionSystem:
             u_res[i] = u_n
             f_res[i] = f_n
 
-            k1 = self.__data_class.der_u(z, f_n)
-            q1 = self.__data_class.der_f(z, u_n, f_n)
+            k1 = self.__system.der_u(z, f_n)
+            q1 = self.__system.der_f(z, u_n, f_n)
 
-            k2 = self.__data_class.der_u(z + half_h, f_n + half_h * q1)
-            q2 = self.__data_class.der_f(z + half_h, u_n + half_h * k1, f_n + half_h * q1)
+            k2 = self.__system.der_u(z + half_h, f_n + half_h * q1)
+            q2 = self.__system.der_f(z + half_h, u_n + half_h * k1, f_n + half_h * q1)
 
-            k3 = self.__data_class.der_u(z + half_h, f_n + half_h * q2)
-            q3 = self.__data_class.der_f(z + half_h, u_n + half_h * k2, f_n + half_h * q2)
+            k3 = self.__system.der_u(z + half_h, f_n + half_h * q2)
+            q3 = self.__system.der_f(z + half_h, u_n + half_h * k2, f_n + half_h * q2)
 
-            k4 = self.__data_class.der_u(z + self.__h, f_n + self.__h * q3)
-            q4 = self.__data_class.der_f(z + self.__h, u_n + self.__h * k3, f_n + self.__h * q3)
+            k4 = self.__system.der_u(z + self.__h, f_n + self.__h * q3)
+            q4 = self.__system.der_f(z + self.__h, u_n + self.__h * k3, f_n + self.__h * q3)
 
             u_n += (self.__h / 6) * (k1 + 2 * k2 + 2 * k3 + k4)
             f_n += (self.__h / 6) * (q1 + 2 * q2 + 2 * q3 + q4)
@@ -101,17 +102,14 @@ class SolutionSystem:
         Функция правого краевого условия
         """
 
-        return f - 0.393 * self.__data_class.c * u
+        return f - 0.393 * self.__system.c * u
 
     def __get_step_solve(self, psi):
         """
         Функция для определения решений задачи Коши методом Рунге Кутта 2 порядка точности
         для текущего параметра psi
         """
-        _, u, f = self.runge_kutta4(
-            psi * self.__data_class.u_p(0),
-            self.__f_0
-        )
+        _, u, f = self.runge_kutta4(psi * self.__system.u_p(0), self.__f_0)
 
         # нужно смотреть удовлетворение правому краевому условию
         res = self.__get_psi(u[-1], f[-1])
@@ -131,7 +129,7 @@ class SolutionSystem:
 
         count_iter = 0
 
-        while condition and count_iter < 100:
+        while condition:
             ksi_curr = (ksi_from + ksi_to) / 2  # находим середину текущего интервала неопределенности
 
             if self.__get_step_solve(ksi_from) * self.__get_step_solve(ksi_curr) < 0:
@@ -144,6 +142,8 @@ class SolutionSystem:
             if abs((ksi_to - ksi_from) / ksi_curr) <= EPS:
                 condition = False
 
+        print(f"ksi принадлежит интервалу ({ksi_from: <10.7f}, {ksi_to: 10.7f})")
+
         return ksi_curr
 
     def __get_u_0(self):
@@ -152,39 +152,47 @@ class SolutionSystem:
         удовлетворяло правому краевому условию
         """
         # диапазоны значений для psi
-        ksi_a = 1e-4
+        ksi_a = 1e-2
         ksi_b = 1
 
-        return self.__get_ksi(ksi_a, ksi_b) * self.__data_class.u_p(0)
+        return self.__get_ksi(ksi_a, ksi_b) * self.__system.u_p(0)
 
-    def get_solve(self):
+    def solve(self):
         """
-        Метод получает решение методом Рунге-Кутта 2-го порядка точности
-        """
-        return self.runge_kutta4(self.__u_0, self.__f_0)
-
-    def plot_solve(self):
-        """
-        Метод для визуализации решения
+        Метод для получения решения
         """
 
-        z, u, f = self.get_solve()
+        z, u, f = self.runge_kutta4(self.__u_0, self.__f_0)
 
-        data = list()
+        # Создание графиков
+        fig, axs = plt.subplots(2, 3, figsize=(11, 7))
 
-        for i in range(len(u)):
-            data.append(self.__data_class.k1(self.__data_class.t(z[i])))
+        # Первый график
+        axs[0, 0].plot(z, f)
+        axs[0, 0].set_title('F(z)')
+        axs[0, 0].grid(True)
 
-        fig1 = plt.figure(figsize=(10, 7))
-        plot = fig1.add_subplot()
+        # # Второй график
+        axs[0, 1].plot(z, u)
+        axs[0, 1].set_title('u(z)')
+        axs[0, 1].grid(True)
 
-        # plot.plot(z, f, label="F(z)")
-        # plot.plot(z, u, label="u(z)")
+        # # Третий график
+        axs[0, 2].plot(z, self.__system.u_p(z))
+        axs[0, 2].set_title('u_p(z)')
+        axs[0, 2].grid(True)
 
-        plot.plot(z, data, label="k1(z)")
+        # # Четвертый график
+        # axs[1, 0].plot(x4, y4)
+        # axs[1, 0].set_title('График 4')
+        #
+        # # Пятый график
+        # axs[1, 1].plot(x5, y5)
+        # axs[1, 1].set_title('График 5')
+        #
+        # # Шестой график
+        # axs[1, 2].plot(x6, y6)
+        # axs[1, 2].set_title('График 6')
 
-        plt.legend()
-        plt.grid()
-        plt.title("Сравнение методов")
-
+        plt.tight_layout()
         plt.show()
