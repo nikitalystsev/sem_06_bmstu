@@ -71,6 +71,8 @@ class RadiativeTransferSolver:
             k1 = zStep * self.system.derU(z, fCur)
             l1 = zStep * self.system.derF(z, fCur, uCur)
 
+            print(f"k1 = {k1}, l1 = {l1}")
+
             halfL1 = l1 / 2
             k2 = zStep * self.system.derU(z + halfStep, fCur + halfL1)
             l2 = zStep * self.system.derF(z + halfStep, fCur + halfL1, uCur + k1 / 2)
@@ -97,6 +99,8 @@ class RadiativeTransferSolver:
             self.zMax,
             xi * self.system.Up(0),
             0)
+
+        print(u, f, sep='\n')
         return self.psi(u[-1], f[-1])
 
     def getXiInterval(self):
@@ -105,6 +109,8 @@ class RadiativeTransferSolver:
             self.xiInit + self.xiStep,
             self.psiEnd(self.xiInit + self.xiStep)
         )
+
+        # print(f"psiFrom = {psiFrom}, xiInit = {self.xiInit}")
 
         while xiTo < self.xiMax - self.xiStep / 2 and psiFrom * psiTo > 0:
             xiFrom, psiFrom = xiTo, psiTo

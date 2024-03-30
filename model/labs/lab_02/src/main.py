@@ -1,4 +1,4 @@
-from task_solver import TaskSolver
+from task import Task
 
 
 def main() -> None:
@@ -7,9 +7,9 @@ def main() -> None:
     """
 
     # какая-то логика
-    ex = TaskSolver()
-    print(TaskSolver().__dict__)
+    ex = Task()
     ex.get_solve()
+    ex.plot_solve()
 
 
 if __name__ == '__main__':

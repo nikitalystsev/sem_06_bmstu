@@ -27,8 +27,9 @@ class DataClass:
         self.__orig_data_k1: dict = self.__read_k("../data/k1.txt")
         self.__orig_data_k2: dict = self.__read_k("../data/k2.txt")
 
-        self.__log_data_k1, self.__a1, self.__b1 = self.__data_to_interp(self.__orig_data_k1)
-        self.__log_data_k2, self.__a2, self.__b2 = self.__data_to_interp(self.__orig_data_k2)
+        # коэффициенты уравнения прямой
+        self.__a1, self.__b1 = self.__data_to_interp(self.__orig_data_k1)
+        self.__a2, self.__b2 = self.__data_to_interp(self.__orig_data_k2)
 
     def t(self, z: int | float):
         """
@@ -102,18 +103,13 @@ class DataClass:
         return data_k
 
     @staticmethod
-    def __data_to_interp(orig_data_k: dict) -> tuple[dict, float, float]:
+    def __data_to_interp(orig_data_k: dict) -> tuple[float, float]:
         """
         Метод интерполирует таблицу значений коэффициента поглощения прямой
         """
-        log_data_k = dict()
-
-        psi = np.log(list(orig_data_k.keys()))  # мб и не нужно
+        psi = np.log(list(orig_data_k.keys()))
         teta = np.log(list(orig_data_k.values()))
 
         a, b = LeastSquaresMethodLine(x=psi, y=teta).get_solve()
 
-        for i in range(len(orig_data_k)):
-            log_data_k[psi[i]] = teta[i]
-
-        return log_data_k, a, b
+        return a, b
