@@ -1,39 +1,40 @@
 from lsm_for_line import LeastSquaresMethodLine
 import numpy as np
+from dataclasses import dataclass
+
+EPS = 1e-4
 
 
-class DataClass:
+@dataclass
+class RadiationTransferSystem:
     """
     Класс данных и функций задачи второй лабораторной
     """
+    __orig_data_k1: dict = None
+    __orig_data_k2: dict = None
+    __a1: int | float = None
+    __b1: int | float = None
+    __a2: int | float = None
+    __b2: int | float = None
+    # параметры для отладки (переписал правильно)
+    __c: int = 3e10
+    __r: int | float = 0.35
+    __t_w: int = 2000
+    __t_0: int = 1e4
+    __p: int = 4
 
-    def __init__(
-            self,
-            c: int = 3e10,  # отладочные значения
-            r: int | float = 0.35,
-            t_w: int = 2000,
-            t_0: int = 1e4,
-            p: int = 4
-    ) -> None:
+    def __post_init__(self):
         """
-        Инициализация атрибутов класса
+        Пост-инициализация атрибутов класса
         """
-        self.__c = c
-        self.__r = r
-        self.__t_w = t_w
-        self.__t_0 = t_0
-        self.__p = p
-
-        self.__orig_data_k1: dict = self.__read_k("../data/k1.txt")
-        self.__orig_data_k2: dict = self.__read_k("../data/k2.txt")
-
-        # коэффициенты уравнения прямой
+        self.__orig_data_k1 = self.__read_k("../data/k1.txt")
+        self.__orig_data_k2 = self.__read_k("../data/k2.txt")
         self.__a1, self.__b1 = self.__data_to_interp(self.__orig_data_k1)
-        self.__a2, self.__b2 = self.__data_to_interp(self.__orig_data_k2)
+        self.__a2, self.__b2 = self.__data_to_interp(self.__orig_data_k1)
 
     def t(self, z: int | float):
         """
-        Функция нахождения температурного поля в цилиндре
+        Функция нахождения значения температурного поля в цилиндре
         """
         t_z = (self.__t_w - self.__t_0) * (z ** self.__p) + self.__t_0
 
@@ -63,7 +64,7 @@ class DataClass:
         """
         common_part = self.__r * self.__c * self.k1(z) * (self.u_p(z) - u)
 
-        return -f / z + common_part if abs(z) > 1e-4 else common_part / 2
+        return -f / z + common_part if abs(z) > EPS else common_part / 2
 
     def k1(self, t: int | float):
         """
@@ -76,7 +77,7 @@ class DataClass:
 
     def k2(self, t: int | float):
         """
-        Функция для получения значения первого варианта коэффициента поглощения
+        Функция для получения значения второго варианта коэффициента поглощения
         в точках между узлами
         """
 
@@ -113,3 +114,11 @@ class DataClass:
         a, b = LeastSquaresMethodLine(x=psi, y=teta).get_solve()
 
         return a, b
+
+    @staticmethod
+    def __print_dict(_dict: dict) -> None:
+        """
+        Вывод словаря
+        """
+        for key, value in _dict.items():
+            print(f"{key}: {value}")

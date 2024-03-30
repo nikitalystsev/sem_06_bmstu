@@ -1,11 +1,11 @@
-from data_class import DataClass
+from radiation_transfer_system import RadiationTransferSystem
 import numpy as np
 import matplotlib.pyplot as plt
 
 EPS = 1e-4
 
 
-class Task:
+class SolutionSystem:
     """
     Класс для решения задачи второй лабораторной
     """
@@ -13,7 +13,7 @@ class Task:
     def __init__(
             self
     ) -> None:
-        self.__data_class = DataClass()  # c отладочными параметрами
+        self.__system = RadiationTransferSystem()  # c отладочными параметрами
         # 0 <= z <= 1
         self.__a = 0
         self.__b = 1
