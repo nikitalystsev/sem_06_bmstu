@@ -8,16 +8,9 @@
 #include <fcntl.h>
 
 #define MAX_EVENTS 10
-#define PORT 5000
+#define PORT 9877
 
 int listen_sock;
-
-void signal_handler(int signum)
-{
-    printf("\nShutdowning server...\n");
-    close(listen_sock);
-    exit(EXIT_SUCCESS);
-}
 
 void setnonblocking(int sockfd)
 {
@@ -44,18 +37,6 @@ int main(void)
     char buff_to[256], buff_from[256];
     int bytes_read;
     int addr_size;
-    struct sigaction sa;
-
-    sa.sa_handler = signal_handler;
-    sa.sa_flags = 0;
-
-    sigemptyset(&sa.sa_mask);
-
-    if (sigaction(SIGINT, &sa, NULL) < 0)
-    {
-        perror("Ошибка sigaction");
-        exit(EXIT_FAILURE);
-    }
 
     if ((listen_sock = socket(AF_INET, SOCK_STREAM, 0)) == -1)
     {
@@ -64,7 +45,7 @@ int main(void)
     }
 
     srv_addr.sin_family = AF_INET;
-    srv_addr.sin_addr = (struct in_addr){.s_addr = INADDR_ANY};
+    srv_addr.sin_addr = (struct in_addr){.s_addr = htonl(INADDR_LOOPBACK)};
     srv_addr.sin_port = htons(PORT);
 
     if (bind(listen_sock, (struct sockaddr *)&srv_addr, sizeof(srv_addr)) == -1)

@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <string.h>
 
-#define PORT 5000
+#define PORT 9877
 
 int main(void)
 {
