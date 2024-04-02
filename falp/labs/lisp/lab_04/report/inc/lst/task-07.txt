@@ -1,3 +1,2 @@
-(defun list_is_palindrome(x)
-    (equal x (reverse x))
-)
+(defun list_is_pal(lst)
+  (equal lst (reverse lst)))

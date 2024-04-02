@@ -1,9 +1,6 @@
 (defun get_list_without_last(x)
-    (nreverse (cdr (reverse x)))
-)
+    (reverse (cdr (reverse x))))
 
-(defun get_list_without_last2(x)
-    (if (cdr x)
-        (cons (car x) (get_list_without_last (cdr x)))
-    )
-)
+(defun get_list_without_last2(lst)
+  (cond ((null (cdr lst)) nil)
+	(t (cons (car lst) (get_list_without_last2 (cdr lst))))))

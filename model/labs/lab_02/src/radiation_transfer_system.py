@@ -29,8 +29,12 @@ class RadiationTransferSystem:
         """
         self.__orig_data_k1 = self.__read_k("../data/k1.txt")
         self.__orig_data_k2 = self.__read_k("../data/k2.txt")
+
         self.__a1, self.__b1 = self.__data_to_interp(self.__orig_data_k1)
-        self.__a2, self.__b2 = self.__data_to_interp(self.__orig_data_k1)
+        self.__a2, self.__b2 = self.__data_to_interp(self.__orig_data_k2)
+
+        # print(f"self.__a1, self.__b1 = {self.__a1, self.__b1}")
+        # print(f"self.__a2, self.__b2 = {self.__a2, self.__b2}")
 
     def t(self, z: int | float):
         """
@@ -67,13 +71,17 @@ class RadiationTransferSystem:
         f = f(z) - значение функции F в точке z
         u = u(z) - значение функции u в точке z
         """
+        if u < 0:
+            u = self.u_p(z)
 
         if is_k1:
             common_part = self.__r * self.__c * self.k1(self.t(z)) * (self.u_p(z) - u)
         else:
             common_part = self.__r * self.__c * self.k2(self.t(z)) * (self.u_p(z) - u)
 
-        return -f / z + common_part if abs(z) > EPS else common_part / 2
+        res = -f / z + common_part if abs(z) > EPS else common_part / 2
+
+        return res
 
     def k1(self, t: int | float):
         """
@@ -119,6 +127,8 @@ class RadiationTransferSystem:
         """
         psi = np.log(list(orig_data_k.keys()))
         teta = np.log(list(orig_data_k.values()))
+
+        # RadiationTransferSystem.__print_dict(orig_data_k)
 
         a, b = LeastSquaresMethodLine(x=psi, y=teta).get_solve()
 

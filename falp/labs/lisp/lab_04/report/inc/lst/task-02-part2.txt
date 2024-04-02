@@ -1,0 +1,4 @@
+(reverse ()) ; nil 
+(reverse `((a b c))) ; ((a b c)) 
+(last `(a b (c))) ; ((c)) 
+(last ()) ; nil 

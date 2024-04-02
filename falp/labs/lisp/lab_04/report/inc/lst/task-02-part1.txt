@@ -1,0 +1,6 @@
+(reverse `(a b c)) ;; (c b a)
+(reverse `(a b (c (d)))) ;; ((с (d)) b a)
+(reverse `(a)) ; (a)
+(last `(a b c)) ; (c) 
+(last `(a)) ; (a) 
+(last `((a b c))) ; ((a b c)) 

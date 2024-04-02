@@ -1,86 +1,49 @@
-; первое задание
-; (defun feg(x)
-;     (if (evenp x) 
-;         x 
-;     (+ x 1) 
-;     )
-; )
 
-; (defun feg2(x)
-;     (cond ((evenp x) x)
-;         ((not (evenp x)) (+ x 1))
-;     )
-; )
+					; задача 1
+(defun feg(x)
+  (if (evenp x) x (+ x 1)))
 
-; (defun feg3(x)
-;     (cond ((evenp x) x)
-;         ((oddp x) (+ x 1))
-;     )
-; )
+(defun feg-v2(x)
+  (cond ((evenp x) x)
+	(t (+ x 1))))
 
-; второе задание
+					; задача 2
+(defun spec-inc(x)
+  (if (> x 0) (+ x 1) (- x 1)))
 
-; (defun spec_inc(x)
-;     (if (> x 0)
-;         (+ x 1)
-;     (- x 1)
-;     )
-; )
-
-; (defun spec_inc2(x)
-;     (cond ((> x 0) (+ x 1))
-;         ((< x 0) (- x 1))
-;     )
-; )
+(defun spec-inc-v2(x)
+  (cond ((> x 0) (+ x 1))
+	(t (- x 1))))
 
 
-;  третье задание
+					;  задача 3
+(defun get-asc-list(x y)
+  (if (> x y) (cons y (cons x nil)) (cons x (cons y nil))))
 
-; (defun get_asc_list(x y)
-;     (if (> x y)
-;         (cons y (cons x nil))
-;     (cons x (cons y nil))
-;     )
-; )
+					; задача 4
+(defun first-is-between(x y z)
+  (or (and (> x y) (< x z)) (and (> x z) (< x y))))
 
-;  четвертое задание
+					; задача 5 (на листочке)
 
-; (defun first_is_between(x y z)
-;     (or (and (> x y) (< x z)) (and (> x z) (< x y)))
-; )
 
-; пятое задание (на листочке)
+					; задача 6
+(defun is-first-no-less(x y)
+  (>= x y))
 
-; шестое задание 
+					; задача 7 (на листочке)
 
-; (defun is_first_no_less(x y)
-;     (or (>= x y))
-; )
+					; задача 8
 
-; седьмое задание (на листочке)
 
-; (defun pred2(x)
-;     (and (plusp x) (numberp x))
-; )
+					; только if
+(defun first-is-between-only-if(x y z)
+  (if (> x y) (< x z) (> x z)))
 
-; восьмое задание
-
-; только if
-
-; (defun first_is_between2(x y z)
-;     (if (> x y)
-;         (< x z)
-;     (> x z)
-;     )
-; )
-
-; только cond
-
-; (defun first_is_between3(x y z)
-;     (cond ((> x y) (< x z))
-;         ((> x z) (> x y))
-;     )
-; )
+					; только cond
+(defun first_is_between-only-cond(x y z)
+  (cond ((> x y) (< x z))
+	((> x z) (> x y))))
 
 ; девятое задание
 
@@ -94,23 +57,12 @@
 ;     )
 ; )
 
-; (defun how_alike2(x y)
-;     (if (or (= x y) (equal x y))
-;         `the_same
-;         (if (and (oddp x) (oddp y))
-;             `both_odd
-;             (if (and (evenp x) (evenp y))
-;                 `both_even
-;             `difference
-;             )
-;         )
-;     )
-; )
+(defun how_alike-with-if(x y)
+  (if (or (= x y) (equal x y)) `the_same
+      (if (and (oddp x) (oddp y)) `both_odd
+	  (if (and (evenp x) (evenp y)) `both_even `difference))))
 
-; (defun how_alike3(x y)
-;     (or (and (or (= x y) (equal x y)) `the_same)
-;         (and (and (oddp x) (oddp y)) `both_odd)
-;         (and (and (evenp x) (evenp y)) `both_even)
-;         `difference
-;     )
-; )
+(defun how_alike-with-and-or(x y)
+  (or (and (or (= x y) (equal x y)) `the_same)
+      (and (and (oddp x) (oddp y)) `both_odd)
+      (and (and (evenp x) (evenp y)) `both_even) `difference))
