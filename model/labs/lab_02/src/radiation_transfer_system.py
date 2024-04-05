@@ -71,9 +71,6 @@ class RadiationTransferSystem:
         f = f(z) - значение функции F в точке z
         u = u(z) - значение функции u в точке z
         """
-        if u < 0:
-            u = self.u_p(z)
-
         if is_k1:
             common_part = self.__r * self.__c * self.k1(self.t(z)) * (self.u_p(z) - u)
         else:
