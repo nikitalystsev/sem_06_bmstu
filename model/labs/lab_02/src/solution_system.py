@@ -2,7 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import solve_ivp
 from typing import Callable
-from decimal import Decimal
 
 from radiation_transfer_system import RadiationTransferSystem
 
@@ -25,7 +24,7 @@ class SolutionSystemByShootingMethod:
         self.__a = 0
         self.__b = 1
 
-        self.__n = 10  # число узлов
+        self.__n = 31  # число узлов
         self.__h = (self.__b - self.__a) / self.__n  # шаг
 
         # ksi <= 1 и, наверное, больше нуля
@@ -188,7 +187,7 @@ class SolutionSystemByShootingMethod:
 
             err = abs((ksi_end - ksi_start) / ksi_curr)
 
-            print(f"err = {err: <10.7e}")
+            # print(f"err = {err: <10.7e}")
 
             if err <= EPS:
                 condition = False
@@ -206,7 +205,7 @@ class SolutionSystemByShootingMethod:
 
         z, u, f, ksi_start, ksi_end = self.__get_solve_by_rk(
             a=self.__a,
-            b=self.__b,
+            b=self.__b + self.__h,
             h=self.__h,
             func_rk=self.__runge_kutta_2
         )
@@ -219,7 +218,7 @@ class SolutionSystemByShootingMethod:
         """
         z, u, f, ksi_start, ksi_end = self.__get_solve_by_rk(
             a=self.__a,
-            b=self.__b,
+            b=self.__b + self.__h,
             h=self.__h,
             func_rk=self.__runge_kutta_4
         )
@@ -270,7 +269,7 @@ class SolutionSystemByShootingMethod:
                 if err < EPS:
                     count += 1
 
-            if count == len(u_rk2):
+            if count == len(u_rk2) - 1:
                 break
 
             self.__n += 1  # число узлов
@@ -297,51 +296,60 @@ class SolutionSystemByShootingMethod:
         Пытаюсь реализовать автоматический выбор шага
         """
         z = self.__a
-        h = 0.001
+        h = 0.1
 
         z_res, u_res, f_res = list(), list(), list()
 
-        while z <= self.__b:
-            print(f"cacl by h")
-            _, u_h, _, _, _ = self.__get_solve_by_rk(self.__a, z + 2 * h, h, self.__runge_kutta_4)
-            print(f"cacl by h / 2")
-            _, u_h_2, _, _, _ = self.__get_solve_by_rk(self.__a, z + 2 * h, h / 2, self.__runge_kutta_4)
+        with open(f"../data/auto_step_sel.txt", "w", encoding="utf-8") as file:
+            file.write("-" * 61 + "\n")
+            file.write(f'| {"x": ^7} | {"u(z) РК4": ^22} | {"f(z) РК4": ^22} |\n')
+            file.write("-" * 61 + "\n")
 
-            # print(f"cacl by h")
-            # _, u_h, _, = self.__runge_kutta_4(self.__a, z + 2 * h, h, 0.1530 * self.__system.u_p(0), self.__f_0)
-            # print(f"cacl by h / 2")
-            # _, u_h_2, _, = self.__runge_kutta_4(self.__a, z + 2 * h, h / 2, 0.1530 * self.__system.u_p(0), self.__f_0)
-
-            # локальная погрешность по формуле Рунге
-            abs_err = abs((u_h_2[-1] - u_h[-1]) / (1 - 1 / 2 ** 4))
-            print(f"abs_err = {abs_err: <10.7e}")
-
-            while abs_err > EPS:
-                h = h / 2
-
+            while z <= self.__b:
+                # print(f"cacl by h")
                 _, u_h, _, _, _ = self.__get_solve_by_rk(self.__a, z + 2 * h, h, self.__runge_kutta_4)
+                # print(f"cacl by h / 2")
                 _, u_h_2, _, _, _ = self.__get_solve_by_rk(self.__a, z + 2 * h, h / 2, self.__runge_kutta_4)
 
+                # print(f"cacl by h")
                 # _, u_h, _, = self.__runge_kutta_4(self.__a, z + 2 * h, h, 0.1530 * self.__system.u_p(0), self.__f_0)
-                # _, u_h_2, _, = self.__runge_kutta_4(self.__a, z + 2 * h, h / 2, 0.1530 * self.__system.u_p(0),
-                #                                     self.__f_0)
+                # print(f"cacl by h / 2")
+                # _, u_h_2, _, = self.__runge_kutta_4(self.__a, z + 2 * h, h / 2, 0.1530 * self.__system.u_p(0), self.__f_0)
 
                 # локальная погрешность по формуле Рунге
                 abs_err = abs((u_h_2[-1] - u_h[-1]) / (1 - 1 / 2 ** 4))
+                # print(f"abs_err = {abs_err: <10.7e}")
 
-            _, u_h, f_h, = self.__runge_kutta_4(self.__a, z + 2 * h, h, 0.1530 * self.__system.u_p(0), self.__f_0)
-            # _, u_h, f_h, _, _ = self.__get_solve_by_rk(self.__a, z + 2 * h, h, self.__runge_kutta_4)
+                while abs_err > EPS:
+                    h = h / 2
 
-            z += h
-            z_res.append(z)
-            u_res.append(u_h[-1])
-            f_res.append(f_h[-1])
+                    _, u_h, _, _, _ = self.__get_solve_by_rk(self.__a, z + 2 * h, h, self.__runge_kutta_4)
+                    _, u_h_2, _, _, _ = self.__get_solve_by_rk(self.__a, z + 2 * h, h / 2, self.__runge_kutta_4)
 
-            if abs_err < EPS / 32:
-                h *= 2
+                    # _, u_h, _, = self.__runge_kutta_4(self.__a, z + 2 * h, h, 0.1530 * self.__system.u_p(0), self.__f_0)
+                    # _, u_h_2, _, = self.__runge_kutta_4(self.__a, z + 2 * h, h / 2, 0.1530 * self.__system.u_p(0),
+                    #                                     self.__f_0)
 
-            if z + h > self.__b:
-                break
+                    # локальная погрешность по формуле Рунге
+                    abs_err = abs((u_h_2[-1] - u_h[-1]) / (1 - 1 / 2 ** 4))
+
+                _, u_h, f_h, = self.__runge_kutta_4(self.__a, z + 2 * h, h, 0.1530 * self.__system.u_p(0), self.__f_0)
+                # _, u_h, f_h, _, _ = self.__get_solve_by_rk(self.__a, z + 2 * h, h, self.__runge_kutta_4)
+
+                z += h
+                z_res.append(z)
+                u_res.append(u_h[-1])
+                f_res.append(f_h[-1])
+
+                file.write(f"| {z: ^7.5f} | {u_h[-1]: ^22.6e} | {f_h[-1]: ^22.6e} |\n")
+
+                if abs_err < EPS / 32:
+                    h *= 2
+
+                if z + h > self.__b:
+                    break
+
+            file.write("-" * 61)
 
         z_res = np.array(z_res)
         u_res = np.array(u_res)

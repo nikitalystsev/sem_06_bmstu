@@ -28,6 +28,12 @@ class RadiationTransferSystem:
         Пост-инициализация атрибутов класса
         """
         self.__orig_data_k1 = self.__read_k("../data/k1.txt")
+
+        # const = 20
+        #
+        # for i, val in enumerate(self.__orig_data_k1):
+        #     self.__orig_data_k1[val] *= const
+
         self.__orig_data_k2 = self.__read_k("../data/k2.txt")
 
         self.__a1, self.__b1 = self.__data_to_interp(self.__orig_data_k1)
@@ -99,6 +105,10 @@ class RadiationTransferSystem:
     @property
     def c(self):
         return self.__c
+
+    @property
+    def orig_data_k1(self):
+        return self.__orig_data_k1
 
     @staticmethod
     def __read_k(filename: str) -> dict:
