@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import solve_ivp
 from typing import Callable
+from decimal import Decimal
 
 from radiation_transfer_system import RadiationTransferSystem
 
@@ -35,6 +36,9 @@ class SolutionSystemByShootingMethod:
 
     def __runge_kutta_2(
             self,
+            a: int | float,  # диапазон значений аргумента и шаг
+            b: int | float,
+            h: int | float,
             u_0: int | float,  # параметры - начальные условия задачи Коши
             f_0: int | float
     ):
@@ -45,9 +49,9 @@ class SolutionSystemByShootingMethod:
         # is_k1 = False
 
         alpha = 1  # задаваемый параметр
-        half_h = self.__h / 2
+        half_h = h / 2
 
-        z_res = np.arange(self.__a, self.__b + self.__h, self.__h)
+        z_res = np.arange(a, b, h)  # b не включительно, поэтому передаем чуть больше
         u_res = np.zeros(len(z_res))
         f_res = np.zeros(len(z_res))
 
@@ -64,13 +68,16 @@ class SolutionSystemByShootingMethod:
             k2 = self.__system.der_u(z + half_h, f_n + half_h * q1, is_k1=is_k1)
             q2 = self.__system.der_f(z + half_h, u_n + half_h * k1, f_n + half_h * q1, is_k1=is_k1)
 
-            u_n += self.__h * ((alpha - 1) * k1 + alpha * k2)
-            f_n += self.__h * ((alpha - 1) * q1 + alpha * q2)
+            u_n += h * ((alpha - 1) * k1 + alpha * k2)
+            f_n += h * ((alpha - 1) * q1 + alpha * q2)
 
         return z_res, u_res, f_res
 
     def __runge_kutta_4(
             self,
+            a: int | float,  # диапазон значений аргумента и шаг
+            b: int | float,
+            h: int | float,
             u_0: int | float,  # параметры - начальные условия задачи Коши
             f_0: int | float
     ):
@@ -80,9 +87,9 @@ class SolutionSystemByShootingMethod:
         is_k1 = True
         # is_k1 = False
 
-        half_h = self.__h / 2
+        half_h = h / 2
 
-        z_res = np.arange(self.__a, self.__b + self.__h, self.__h)
+        z_res = np.arange(a, b, h)
         u_res = np.zeros(len(z_res))
         f_res = np.zeros(len(z_res))
 
@@ -102,16 +109,19 @@ class SolutionSystemByShootingMethod:
             k3 = self.__system.der_u(z + half_h, f_n + half_h * q2, is_k1=is_k1)
             q3 = self.__system.der_f(z + half_h, u_n + half_h * k2, f_n + half_h * q2, is_k1=is_k1)
 
-            k4 = self.__system.der_u(z + self.__h, f_n + self.__h * q3, is_k1=is_k1)
-            q4 = self.__system.der_f(z + self.__h, u_n + self.__h * k3, f_n + self.__h * q3, is_k1=is_k1)
+            k4 = self.__system.der_u(z + h, f_n + h * q3, is_k1=is_k1)
+            q4 = self.__system.der_f(z + h, u_n + h * k3, f_n + h * q3, is_k1=is_k1)
 
-            u_n += (self.__h / 6) * (k1 + 2 * k2 + 2 * k3 + k4)
-            f_n += (self.__h / 6) * (q1 + 2 * q2 + 2 * q3 + q4)
+            u_n += (h / 6) * (k1 + 2 * k2 + 2 * k3 + k4)
+            f_n += (h / 6) * (q1 + 2 * q2 + 2 * q3 + q4)
 
         return z_res, u_res, f_res
 
     def __scipy_solve(
             self,
+            a: int | float,  # диапазон значений аргумента и шаг
+            b: int | float,
+            h: int | float,
             u_0: int | float,  # параметры - начальные условия задачи Коши
             f_0: int | float
     ):
@@ -131,10 +141,10 @@ class SolutionSystemByShootingMethod:
 
             return [dudz, dfdz]
 
-        z_res = np.arange(self.__a, self.__b + self.__h, self.__h)
+        z_res = np.arange(a, b, h)
         s0 = [u_0, f_0]
 
-        solution = solve_ivp(f, (self.__a, self.__b), s0, t_eval=z_res)
+        solution = solve_ivp(f, (a, b - h), s0, t_eval=z_res)  # для b передаем чуть больше
 
         return z_res, solution.y[0], solution.y[1]
 
@@ -145,15 +155,15 @@ class SolutionSystemByShootingMethod:
 
         return f - 0.393 * self.__system.c * u
 
-    def __get_init_cond(self, curr_ksi, func_rk: Callable):
+    def __get_init_cond(self, curr_ksi, a, b, h, func_rk: Callable):
         """
         Метод для получения начальных условий при решении методом стрельбы
         """
-        _, u, f = func_rk(curr_ksi * self.__system.u_p(0), self.__f_0)
+        _, u, f = func_rk(a, b, h, curr_ksi * self.__system.u_p(0), self.__f_0)
 
         return self.__psi(u[-1], f[-1])
 
-    def __get_solve_by_rk(self, func_rk: Callable):
+    def __get_solve_by_rk(self, a, b, h, func_rk: Callable):
         """
         Метод, реализующий общее методов Рунге-Кутты
         """
@@ -167,21 +177,25 @@ class SolutionSystemByShootingMethod:
         while condition:
             ksi_curr = (ksi_start + ksi_end) / 2  # находим середину текущего интервала неопределенности
 
-            f_ksi_start = self.__get_init_cond(ksi_start, func_rk)
-            f_ksi_curr = self.__get_init_cond(ksi_curr, func_rk)
-            f_ksi_end = self.__get_init_cond(ksi_end, func_rk)
+            f_ksi_start = self.__get_init_cond(ksi_start, a, b, h, func_rk)
+            f_ksi_curr = self.__get_init_cond(ksi_curr, a, b, h, func_rk)
+            f_ksi_end = self.__get_init_cond(ksi_end, a, b, h, func_rk)
 
             if f_ksi_start * f_ksi_curr < 0:
                 ksi_end = ksi_curr
             if f_ksi_curr * f_ksi_end < 0:
                 ksi_start = ksi_curr
 
-            if abs((ksi_end - ksi_start) / ksi_curr) <= EPS:
+            err = abs((ksi_end - ksi_start) / ksi_curr)
+
+            print(f"err = {err: <10.7e}")
+
+            if err <= EPS:
                 condition = False
 
         u_0 = ksi_curr * self.__system.u_p(0)
 
-        z, u, f = func_rk(u_0=u_0, f_0=self.__f_0)
+        z, u, f = func_rk(a, b, h, u_0=u_0, f_0=self.__f_0)
 
         return z, u, f, ksi_start, ksi_end
 
@@ -189,7 +203,13 @@ class SolutionSystemByShootingMethod:
         """
         Метод для получения решения системы методом Рунге-Кутты 2-го порядка точности
         """
-        z, u, f, ksi_start, ksi_end = self.__get_solve_by_rk(self.__runge_kutta_2)
+
+        z, u, f, ksi_start, ksi_end = self.__get_solve_by_rk(
+            a=self.__a,
+            b=self.__b,
+            h=self.__h,
+            func_rk=self.__runge_kutta_2
+        )
 
         return z, u, f, ksi_start, ksi_end
 
@@ -197,7 +217,12 @@ class SolutionSystemByShootingMethod:
         """
         Метод для получения решения системы методом Рунге-Кутты 4-го порядка точности
         """
-        z, u, f, ksi_start, ksi_end = self.__get_solve_by_rk(self.__runge_kutta_4)
+        z, u, f, ksi_start, ksi_end = self.__get_solve_by_rk(
+            a=self.__a,
+            b=self.__b,
+            h=self.__h,
+            func_rk=self.__runge_kutta_4
+        )
 
         return z, u, f, ksi_start, ksi_end
 
@@ -205,9 +230,158 @@ class SolutionSystemByShootingMethod:
         """
         Метод для получения решения системы мат пакетом
         """
-        z, u, f, ksi_start, ksi_end = self.__get_solve_by_rk(self.__scipy_solve)
+        z, u, f, ksi_start, ksi_end = self.__get_solve_by_rk(
+            a=self.__a,
+            b=self.__b,
+            h=self.__h,
+            func_rk=self.__scipy_solve
+        )
 
         return z, u, f, ksi_start, ksi_end
+
+    @staticmethod
+    def __calc_error(u_h: int | float, u_h_half_2: int | float):
+        """
+        Функция для вычисления относительной погрешности
+        :param u_h: условно точное значение
+        :param u_h_half_2: условно приближенное значение
+        """
+
+        return np.abs(u_h - u_h_half_2) / (np.abs(u_h_half_2) + 1e-10)
+
+    def cmp_rk2_rk4(self):
+        """
+        Метод для нахождения максимального шага, при котором РК2 и РК4 совпадают с заданной точностью
+        """
+        # начальные данные для поиска шага
+        self.__n = 10  # число узлов
+        self.__h = (self.__b - self.__a) / self.__n  # шаг
+
+        while True:
+            _, u_rk2, _, _, _ = self.get_solve_by_rk_2()
+            _, u_rk4, _, _, _ = self.get_solve_by_rk_4()
+
+            count = 0
+
+            for i in range(len(u_rk2)):
+                # относительная точность
+                err = np.abs(u_rk2[i] - u_rk4[i]) / (np.abs(u_rk4[i]) + 1e-10)
+
+                if err < EPS:
+                    count += 1
+
+            if count == len(u_rk2):
+                break
+
+            self.__n += 1  # число узлов
+            self.__h = (self.__b - self.__a) / self.__n  # шаг
+
+        z, u_rk2, _, _, _ = self.get_solve_by_rk_2()
+        z, u_rk4, _, _, _ = self.get_solve_by_rk_4()
+
+        with open(f"../data/cmp_rk2_rk4.txt", "w", encoding="utf-8") as file:
+            file.write(f"Максимальный шаг, при которых РК2 и РK4 совпадают h = {self.__h: <22.6e}\n")
+            file.write(f"Число узлов n = {self.__n} при данном h\n")
+
+            file.write("-" * 61 + "\n")
+            file.write(f'| {"x": ^7} | {"u(z) РК2": ^22} | {"u(z) РК4": ^22} |\n')
+            file.write("-" * 61 + "\n")
+
+            for i in range(len(u_rk2)):
+                file.write(f"| {z[i]: ^7.5f} | {u_rk2[i]: ^22.6e} | {u_rk4[i]: ^22.6e} |\n")
+
+            file.write("-" * 61)
+
+    def __get_solve_by_auto_step_sel(self):
+        """
+        Пытаюсь реализовать автоматический выбор шага
+        """
+        z = self.__a
+        h = 0.001
+
+        z_res, u_res, f_res = list(), list(), list()
+
+        while z <= self.__b:
+            print(f"cacl by h")
+            _, u_h, _, _, _ = self.__get_solve_by_rk(self.__a, z + 2 * h, h, self.__runge_kutta_4)
+            print(f"cacl by h / 2")
+            _, u_h_2, _, _, _ = self.__get_solve_by_rk(self.__a, z + 2 * h, h / 2, self.__runge_kutta_4)
+
+            # print(f"cacl by h")
+            # _, u_h, _, = self.__runge_kutta_4(self.__a, z + 2 * h, h, 0.1530 * self.__system.u_p(0), self.__f_0)
+            # print(f"cacl by h / 2")
+            # _, u_h_2, _, = self.__runge_kutta_4(self.__a, z + 2 * h, h / 2, 0.1530 * self.__system.u_p(0), self.__f_0)
+
+            # локальная погрешность по формуле Рунге
+            abs_err = abs((u_h_2[-1] - u_h[-1]) / (1 - 1 / 2 ** 4))
+            print(f"abs_err = {abs_err: <10.7e}")
+
+            while abs_err > EPS:
+                h = h / 2
+
+                _, u_h, _, _, _ = self.__get_solve_by_rk(self.__a, z + 2 * h, h, self.__runge_kutta_4)
+                _, u_h_2, _, _, _ = self.__get_solve_by_rk(self.__a, z + 2 * h, h / 2, self.__runge_kutta_4)
+
+                # _, u_h, _, = self.__runge_kutta_4(self.__a, z + 2 * h, h, 0.1530 * self.__system.u_p(0), self.__f_0)
+                # _, u_h_2, _, = self.__runge_kutta_4(self.__a, z + 2 * h, h / 2, 0.1530 * self.__system.u_p(0),
+                #                                     self.__f_0)
+
+                # локальная погрешность по формуле Рунге
+                abs_err = abs((u_h_2[-1] - u_h[-1]) / (1 - 1 / 2 ** 4))
+
+            _, u_h, f_h, = self.__runge_kutta_4(self.__a, z + 2 * h, h, 0.1530 * self.__system.u_p(0), self.__f_0)
+            # _, u_h, f_h, _, _ = self.__get_solve_by_rk(self.__a, z + 2 * h, h, self.__runge_kutta_4)
+
+            z += h
+            z_res.append(z)
+            u_res.append(u_h[-1])
+            f_res.append(f_h[-1])
+
+            if abs_err < EPS / 32:
+                h *= 2
+
+            if z + h > self.__b:
+                break
+
+        z_res = np.array(z_res)
+        u_res = np.array(u_res)
+        f_res = np.array(f_res)
+
+        return z_res, u_res, f_res
+
+    def get_solve_by_auto_step_sel(self):
+        """
+        Функция обертка для АВШ
+        """
+
+        z, u, f = self.__get_solve_by_auto_step_sel()
+
+        # Отключаем интерактивный режим
+        plt.ioff()
+
+        fig, axs = plt.subplots(2, 3, figsize=(11, 7))
+
+        # Первый график
+        axs[0, 0].plot(z, f)
+        axs[0, 0].set_title('F(z)')
+        axs[0, 0].grid(True)
+
+        # # Второй график
+        axs[0, 1].plot(z, u)
+        # axs[0, 1].plot(z, self.__system.u_p(z))
+        axs[0, 1].set_title('u(z)')
+        axs[0, 1].grid(True)
+
+        # # Третий график
+        axs[0, 2].plot(z, self.__system.u_p(z))
+        axs[0, 2].set_title('u_p(z)')
+        axs[0, 2].grid(True)
+
+        # Сохраняем графики в файл
+        fig.savefig(f"../data/auto_step_sel.png")
+
+        # Включаем интерактивный режим обратно
+        plt.ion()
 
     def print_solve(self, func_solve: Callable, filename: str):
         """

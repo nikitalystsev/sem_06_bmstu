@@ -16,7 +16,7 @@ class RadiationTransferSystem:
     __b1: int | float = None
     __a2: int | float = None
     __b2: int | float = None
-    # параметры для отладки (переписал правильно)
+    # параметры для отладки
     __c: int = 3e10
     __r: int | float = 0.35
     __t_w: int = 2000
@@ -33,9 +33,6 @@ class RadiationTransferSystem:
         self.__a1, self.__b1 = self.__data_to_interp(self.__orig_data_k1)
         self.__a2, self.__b2 = self.__data_to_interp(self.__orig_data_k2)
 
-        # print(f"self.__a1, self.__b1 = {self.__a1, self.__b1}")
-        # print(f"self.__a2, self.__b2 = {self.__a2, self.__b2}")
-
     def t(self, z: int | float):
         """
         Функция нахождения значения температурного поля в цилиндре
@@ -44,7 +41,7 @@ class RadiationTransferSystem:
 
         return t_z
 
-    def u_p(self, z: int | float):
+    def u_p(self, z: int | float | np.ndarray):
         """
         Функция Планка
         """
@@ -124,8 +121,6 @@ class RadiationTransferSystem:
         """
         psi = np.log(list(orig_data_k.keys()))
         teta = np.log(list(orig_data_k.values()))
-
-        # RadiationTransferSystem.__print_dict(orig_data_k)
 
         a, b = LeastSquaresMethodLine(x=psi, y=teta).get_solve()
 
