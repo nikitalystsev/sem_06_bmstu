@@ -1,0 +1,7 @@
+    if (data > root->data)
+    {
+        return search(root->right, data, count_compare);
+    }
+
+    return root;
+}

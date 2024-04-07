@@ -1,0 +1,15 @@
+typedef struct vertex_t vertex_t;
+typedef struct tree_t tree_t;
+
+struct vertex_t
+{
+    int data;
+    int height;      
+    vertex_t *left;  
+    vertex_t *right; 
+};
+
+struct tree_t
+{
+    vertex_t *root;
+};

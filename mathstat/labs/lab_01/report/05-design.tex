@@ -1,0 +1,69 @@
+\chapter{Конструкторский раздел}
+
+\section{Алгоритм поиска}
+
+Определим следующие операторы и функции:
+
+\begin{itemize}[label*=--]
+	\item оператор $\gets$ обозначает присваивание значение переменной;
+	\item функция $root(T)$ возвращает узел --- корень дерева $T$;
+	\item функция $key(x)$ возвращает ключ узла $x$;
+	\item функция $left(x)$ возвращает узел --- левое поддерево узла $x$;
+	\item функция $right(x)$ возвращает узел --- правое поддерево узла $x$.
+\end{itemize}
+
+На рисунке \ref{alg:alg_01} представлен псевдокод рекурсивного алгоритма поиска узла по ключу в ДДП и АВЛ-дереве.
+
+\begin{algorithm}[H]
+	\caption{Псевдокод рекурсивного алгоритма поиска узла по ключу в ДДП и АВЛ-дереве}
+	\label{alg:alg_01}
+	\text{\textbf{На входе}: дерево $T$, $k$ --- значение ключа}\\
+	\begin{algorithmic}[1]
+		\Function{TreeRecSearch}{$T$, $k$}
+		\State $x \gets root(T)$
+		
+		\If{$x = NULL$ \textbf{and} $k = key(x)$}
+		\State \Return $x$
+		\EndIf
+		
+		\If{$k < key(x)$}
+		\State \Return \Call{TreeRecSearch}{$left(x)$, $k$}
+		\Else
+		\State \Return \Call{TreeRecSearch}{$right(x)$, $k$}
+		\EndIf
+		
+		\EndFunction
+	\end{algorithmic}
+\end{algorithm}
+
+%На рисунке \ref{alg:alg_02} представлен псевдокод итеративного алгоритма поиска узла по ключу в ДДП и АВЛ-дереве.
+%
+%\begin{algorithm}[H]
+%	\caption{Псевдокод итеративного алгоритма поиска узла по ключу в ДДП и АВЛ-дереве}
+%	\label{alg:alg_02}
+%	\text{\textbf{На входе}: дерево $T$, $k$ --- значение ключа}\\
+%	\begin{algorithmic}[1]
+%		\Function{TreeItSearch}{$T$, $k$}
+%		\State $x \gets root(T)$
+%		
+%		\While{$x \neq NULL$ \textbf{and} $k \neq key(x)$}
+%		\If{$k < key(x)$}
+%		\State $x \gets left(x)$
+%		\Else
+%		\State $x \gets right(x)$
+%		\EndIf
+%		\EndWhile
+%		
+%		\State \Return $x$
+%		
+%		\EndFunction
+%	\end{algorithmic}
+%\end{algorithm}
+
+
+\section*{Вывод}
+
+В данном разделе были описан псевдокод для алгоритма поиска значения по ключу в несбалансированнном двоичном дереве поиска и в АВЛ-дереве.
+
+
+
