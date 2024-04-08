@@ -1,0 +1,36 @@
+x_values = M_min : 1e-3 : M_max;
+
+func_density_norm = normpdf(x_values, mu, sqrt(S_quad));
+
+plot(x_values, func_density_norm, 'r', 'LineWidth', 2);
+grid;
+
+fprintf("\nе) построение на другой координатной плоскости графика \n" + ...
+    "эмпирической функции распределения и функции распределения \n" + ...
+    "нормальной случайной величины с математическим ожиданием \n" + ...
+    "mu и дисперсией S_quad\n");
+
+t = zeros(1, n + 2);
+
+t(1)     = x(1) - 1;
+t(n + 2) = x(n) + 1;
+
+for i = 2 : n + 1
+    t(i) = x(i - 1);
+end
+
+t_size = length(t);
+
+F_n = zeros(t_size, 1);
+
+for i = 1 : t_size
+    count = 0;
+
+    for j = 1 : n
+        if x(j) <= t(i)
+            count = count + 1;
+        end
+    end
+
+    F_n(i) = count / n;
+end

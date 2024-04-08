@@ -1,0 +1,36 @@
+function lab_01()
+
+x = load('sel.txt'); 
+x = sort(x);
+
+n = length(x);
+
+fprintf("a) Вычисление максимального значения M_max " + ...
+    "и минимального значения M_min\n");
+
+M_max = max(x);
+M_min = min(x);
+
+fprintf("\nM_max = %.4f\n", M_max);
+fprintf("M_min  = %.4f\n", M_min);
+
+fprintf("\nб) Вычисление размаха R\n");
+
+R = M_max - M_min;
+
+fprintf("\nR = %.4f\n", R);
+
+fprintf("\nв) Вычисление оценок mu и S_quad " + ...
+    "математического ожидания MX и дисперсии DX\n");
+
+mu = sum(x) / n; 
+S_quad = sum((x - mu) .^2) / (n - 1); 
+
+fprintf("\nmu = %.4f\n", mu);
+fprintf("\nS_quad = %.4f\n", S_quad);
+
+fprintf("\nг) Группировка значений выборки в m = [log2 n] + 2 интервала\n\n");
+
+m = floor(log2(n)) + 2;
+
+fprintf("Кол-во интервалов m = %3d\n\n", m);
