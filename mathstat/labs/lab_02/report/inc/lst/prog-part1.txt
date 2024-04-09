@@ -1,0 +1,36 @@
+function lab_02()
+
+x = load("sel.txt");
+
+N = length(x);
+
+fprintf("\n1.a) вычисление оценок mu и S_quad " + ...
+    "математического ожидания MX и дисперсии DX соответственно\n");
+
+mu = sum(x) / N;
+S_quad = sum((x - mu) .^2) / (N - 1);
+
+fprintf("\nmu = %.4f\n", mu);
+fprintf("\nS_quad = %.4f\n", S_quad);
+
+gamma = 0.9; 
+
+fprintf("\n1.б) вычисление нижней и верхней границдля " + ...
+    "gamma-доверительного интервала для математического ожидания MX\n");
+
+quant_St = tinv((1 + gamma) / 2, N - 1); 
+
+mu_lower = mu - (sqrt(S_quad) * quant_St / sqrt(N));
+mu_upper = mu + (sqrt(S_quad) * quant_St / sqrt(N));
+
+fprintf("\nНижняя граница gamma-доверительного " + ...
+    "интервала для mu = %.4f\n", mu_lower);
+fprintf("Верхняя граница gamma-доверительного " + ...
+    "интервала для mu = %.4f\n", mu_upper);
+fprintf("\ngamma-доверительный интервал для mu: " + ...
+    "(%.4f, %.4f)\n", mu_lower, mu_upper);
+
+fprintf("\n1.в) вычисление нижней и верхней границ для " + ...
+    "gamma-доверительного интервала для дисперсии DX\n");
+
+quant_chi1 = chi2inv((1 - gamma) / 2, N - 1);

@@ -1,0 +1,38 @@
+quant_chi2 = chi2inv((1 + gamma) / 2, N - 1);
+
+sigma_lower = S_quad * (N - 1) / quant_chi2;
+sigma_upper = S_quad * (N - 1) / quant_chi1;
+
+fprintf("\nНижняя граница gamma-доверительного интервала " + ...
+    "для sigma = %.4f\n", sigma_lower);
+fprintf("Верхняя граница gamma-доверительного интервала " + ...
+    "для sigma = %.4f\n", sigma_upper);
+
+fprintf("\ngamma-доверительный интервал для " + ...
+    "sigma: (%.4f, %.4f)\n", sigma_lower, sigma_upper);
+
+mu_N = zeros(N, 1) + mu;
+mu_n = zeros(N, 1);
+mu_lower_n = zeros(N, 1);
+mu_upper_n = zeros(N, 1);
+
+S_quad_N = zeros(N, 1) + S_quad;
+S_quad_n = zeros(N, 1);
+S_quad_lower_n = zeros(N, 1);
+S_quad_upper_n = zeros(N, 1);
+
+for i = 1 : N
+    mu_n(i) = sum(x(1 : i)) / i;
+    S_quad_n(i) = sum((x(1 : i) - mu_n(i)) .^2) / (i - 1);
+
+    quant_st_i = tinv((1 + gamma) / 2, i - 1);
+
+    mu_lower_n(i) = mu_n(i) - (quant_st_i * sqrt(S_quad_n(i)) / sqrt(i));
+    mu_upper_n(i) = mu_n(i) + (quant_st_i * sqrt(S_quad_n(i)) / sqrt(i)); 
+
+    quant_chi1_i = chi2inv((1 - gamma) / 2, i - 1);
+    quant_chi2_i = chi2inv((1 + gamma) / 2, i - 1);
+    
+    S_quad_lower_n(i) = S_quad_n(i) * (i - 1) / quant_chi2_i;
+    S_quad_upper_n(i) = S_quad_n(i) * (i - 1) / quant_chi1_i;
+end
