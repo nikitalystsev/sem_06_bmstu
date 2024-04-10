@@ -1,28 +1,8 @@
-domains
-	% person
-	surname = string
-	phone = string
-	
-	% address
-	city = string
-	street = string
-	num_house = integer
-	num_flat = integer
-	addr = address(city, street, num_house, num_flat)
-	
-	% car
-	brand = string
-	color = string
-	cost = integer
 	number = string
-	
 predicates
 	person(surname, phone, addr)
 	car(surname, brand, color, cost, number)
-	
-	% conjunctive rule
 	search_rule(brand, color, surname, city, phone)
-	
 clauses
 	person("Lystsev", "8(931)402-25-94", address("Arkhangelsk", "Voskresenskaya", 5, 32)).
 	person("Voloshenko", "8(964)291-56-88", address("Mirnyy", "Galushino", 2, 134)).
@@ -43,11 +23,4 @@ clauses
   	car("Lystseva", "Volkswagen", "white", 2400000, "G042VS174"). 
   	
   	search_rule(Brand, Color, Surname, City, Phone) :- person(Surname, Phone, address(City, _, _, _)), car(Surname, Brand, Color, _, _).
- 
  goal
- 	% person("Sidorov", _, address("Arkhangelsk", _, _, _)).
- 	% person(Surname, _, address("SaintPetersburg", _, _, _)).
- 	% car("Lystsev", Brand, _, _, _).
- 	% car(Surname, Brand, "burgundy", _, Number).
- 	
- 	search_rule("Mazda", "black", Surname, City, Phone).

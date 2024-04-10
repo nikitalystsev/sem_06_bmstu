@@ -1,0 +1,5 @@
+ goal
+ 	car(Surname, Brand, "burgundy", _, Number).
+	
+Ответ: Surname=Frolova, Brand=audi, Number=S042GB562
+	   1 Solution

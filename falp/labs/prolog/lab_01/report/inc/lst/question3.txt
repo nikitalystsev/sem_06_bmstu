@@ -1,0 +1,6 @@
+ goal
+ 	car("Lystsev", Brand, _, _, _).
+	
+Ответ: Brand=Nissan
+	   Brand=Mazda
+       2 Solutions

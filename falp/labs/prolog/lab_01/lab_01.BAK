@@ -35,7 +35,7 @@ clauses
 	person("Shcherbakova", "8(915)711-23-17", address("SaintPetersburg", "Altai", 34, 98)).
 	
 	car("Lystsev", "Nissan", "black", 3000000, "M704XC790").
-	car("Lystsev", "Mazda", "blue", 4000000, "H982FN846").   
+	car("Lystsev", "Mazda", "black", 4000000, "H982FN846").   
   	car("Shcherbakova", "mercedes", "ping", 5000000, "P777AA774").   
   	car("Frolova", "audi", "burgundy", 2500000, "S042GB562").   
   	car("Lystseva", "Mitsubishi", "grey", 1500000, "F001VS148"). 
