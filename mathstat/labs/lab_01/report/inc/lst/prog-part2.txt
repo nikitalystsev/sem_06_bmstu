@@ -1,35 +1,31 @@
-delta = (x(n) - x(1)) / m;
-
 J = M_min : delta : M_max;
 
-Ji_arr = zeros(m, 1);
+J_table = zeros(m, 1);  
 
 for i = 1:m-1
-    Ji_arr(i) = sum(x >= J(i) & x < J(i + 1));
-    fprintf(" %d. [%.3f; %.3f), кол-во элементов: %d\n", i, J(i), J(i + 1), Ji_arr(i));
+    J_table(i) = sum(x >= J(i) & x < J(i + 1));
+    fprintf("%d. [%.3f; %.3f), кол-во элементов: %d\n", i, J(i), J(i + 1), J_table(i));
 end
 
-% последний интервал
-Ji_arr(m) = sum(x >= J(m) & x <= J(m + 1));
-fprintf(" %d. [%.3f; %.3f], кол-во элементов: %d\n", m, J(m), J(m + 1), Ji_arr(m));
+J_table(m) = sum(x >= J(m) & x <= J(m + 1));
+fprintf(" %d. [%.3f; %.3f], кол-во элементов: %d\n", m, J(m), J(m + 1), J_table(m));
 
 fprintf("\nд) построение на одной координатной плоскости гистограммы и \n" + ...
     "графика функции плотности распределения вероятностей нормальной \n" + ...
     "случайной величины с математическим ожиданием mu и дисперсией S_quad\n");
 
-% Гистограмма	
-
-mid_intervals = zeros(m, 1);
-
-for i = 1 : m
-    mid_intervals(i) = (J(i) + J(i + 1)) / 2;
-end
-
-f_n = zeros(m, 1);
-
-for i = 1 : m
-    f_n(i) = Ji_arr(i) / (n * delta);
-end
-
-bar(mid_intervals, f_n, 1, 'b');
+histogram(x, m, Normalization="pdf", LineStyle='--', FaceAlpha=0.01);
 hold on;
+x_values = M_min : 1e-3 : M_max;
+f = normpdf(x_values, mu, sqrt(S_quad));
+
+plot(x_values, f, 'r', LineWidth=1);
+grid;
+xlabel("x");
+ylabel('f');
+legend('histogr', 'f\_density');
+
+fprintf("\nе) построение на другой координатной плоскости графика \n" + ...
+    "эмпирической функции распределения и функции распределения \n" + ...
+    "нормальной случайной величины с математическим ожиданием \n" + ...
+    "mu и дисперсией S_quad\n");

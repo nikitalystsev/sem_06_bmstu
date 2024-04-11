@@ -1,36 +1,34 @@
 fprintf('\nЗадание 3.a)\n');
 fprintf('График в отдельном окне\n');
 
-plot((1 : N), mu_N, 'r', 'LineWidth', 1);
+plot((1 : N), mu_N, 'r', LineWidth=1);
 hold on;
-plot((1 : N), mu_n, 'g', 'LineWidth', 1);
+plot((1 : N), mu_n, 'm--', LineWidth=1);
 hold on;
-plot((1 : N), mu_lower_n, 'b', 'LineWidth', 1);
+plot((1 : N), mu_lower_n, 'b-o', MarkerIndices=1:5:length(mu_lower_n), LineWidth=1);
 hold on;
-plot((1 : N), mu_upper_n, 'k', 'LineWidth', 1);
+plot((1 : N), mu_upper_n, 'k-*', MarkerIndices=1:5:length(mu_lower_n), LineWidth=1);
 hold on;
 grid on;
 xlabel("n");
 ylabel('\mu');
-legend('\mu\^(x_N)', '\mu\^(x_n)', '\mu^{-}(x_n)', '\mu_{-}(x_n)');
+legend('\mu\^(x_N)', '\mu\^(x_n)', '\mu_{-}(x_n)', '\mu^{-}(x_n)');
 
 
 fprintf('\nЗадание 3.б)\n');
 fprintf('График в отдельном окне\n');
 
 figure()
-
-plot((1 : N), S_quad_N, 'r', 'LineWidth', 1);
+plot((1 : N), S_quad_N, 'r', LineWidth=1);
 hold on;
-plot((1 : N), S_quad_n, 'g', 'LineWidth', 1);
+plot((1 : N), S_quad_n, 'm--', LineWidth=1);
 hold on;
-plot((1 : N), S_quad_lower_n, 'b', 'LineWidth', 1);
+plot((1 : N), S_quad_lower_n, 'b-o', MarkerIndices=1:5:length(mu_lower_n), LineWidth=1);
 hold on;
-plot((1 : N), S_quad_upper_n, 'k', 'LineWidth', 1);
+plot((1 : N), S_quad_upper_n, 'k-*', MarkerIndices=1:5:length(mu_lower_n), LineWidth=1);
 hold on;
 grid on;
 xlabel("n");
 ylabel('\sigma');
-legend('S^2(x_N)', 'S^2(x_n)', '\sigma^{2 -}(x_n)', '\sigma^2_{-}(x_n)');
-
+legend('S^2(x_N)', 'S^2(x_n)', '\sigma^2_{-}(x_n)', '\sigma^{2 -}(x_n)');
 end

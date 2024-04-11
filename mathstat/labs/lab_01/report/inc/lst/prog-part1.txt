@@ -1,7 +1,6 @@
 function lab_01()
 
 x = load('sel.txt'); 
-x = sort(x);
 
 n = length(x);
 
@@ -34,3 +33,5 @@ fprintf("\nг) Группировка значений выборки в m = [lo
 m = floor(log2(n)) + 2;
 
 fprintf("Кол-во интервалов m = %3d\n\n", m);
+
+delta = (M_max - M_min) / m;
