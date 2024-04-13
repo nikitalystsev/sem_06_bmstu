@@ -13,7 +13,7 @@ F_n = zeros(length(t), 1);
 for i = 1 : length(t)
     count = 0;
     for j = 1 : n
-        if x(j) < t(i)
+        if (t(i) >= x(j))
             count = count + 1;
         end
     end
