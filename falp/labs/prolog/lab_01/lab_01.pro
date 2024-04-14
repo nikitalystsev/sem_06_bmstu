@@ -16,6 +16,8 @@ domains
 	cost = integer
 	number = string
 	
+	% human
+	sex = string
 predicates
 	person(surname, phone, addr)
 	car(surname, brand, color, cost, number)
@@ -23,7 +25,19 @@ predicates
 	% conjunctive rule
 	search_rule(brand, color, surname, city, phone)
 	
+	human(surname, sex)
+  	family(surname, surname)
+  	grandson_car(brand, color, surname, surname, sex)
+	
 clauses
+ 	human("Lystsev", "Male").
+  	human("Voloshenko", "Male").
+  	human("Sidorov", "Male").
+  	human("Lystseva", "Female").
+  	human("Malyshev", "Male").
+  	human("Frolova", "Female").
+  	human("Shcherbakova", "Female").
+  	
 	person("Lystsev", "8(931)402-25-94", address("Arkhangelsk", "Voskresenskaya", 5, 32)).
 	person("Voloshenko", "8(964)291-56-88", address("Mirnyy", "Galushino", 2, 134)).
 	person("Sidorov", "8(921)672-17-05", address("Arkhangelsk", "Varavino", 7, 13)).
@@ -43,11 +57,21 @@ clauses
   	car("Lystseva", "Volkswagen", "white", 2400000, "G042VS174"). 
   	
   	search_rule(Brand, Color, Surname, City, Phone) :- person(Surname, Phone, address(City, _, _, _)), car(Surname, Brand, Color, _, _).
- 
+ 	
+ 	family("Lystsev", "Lystseva").
+  	family("Lystseva", "Shcherbakova").
+  	family("Sidorov", "Voloshenko").
+  	family("Frolova", "Malyshev").
+
+  	grandson_car(Brand, Color, Grandson, Grandparent, Line) :- car(Grandson, Brand, Color, _, _), family(Grandson, X), 
+  								   family(X, Grandparent), human(Grandparent, Line).
+
  goal
  	% person("Sidorov", _, address("Arkhangelsk", _, _, _)).
  	% person(Surname, _, address("SaintPetersburg", _, _, _)).
  	% car("Lystsev", Brand, _, _, _).
  	% car(Surname, Brand, "burgundy", _, Number).
  	
- 	search_rule("Mazda", "black", Surname, City, Phone).
+ 	% search_rule("Mazda", "black", Surname, City, Phone).
+ 	
+ 	grandson_car(_, "black", _, Grandparent, "Female").
