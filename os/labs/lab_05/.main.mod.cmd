@@ -1,0 +1,1 @@
+savedcmd_/home/nikitalystsev/bmstu/sem_06/os/labs/lab_05/main.mod := printf '%s\n'   main.o | awk '!x[$$0]++ { print("/home/nikitalystsev/bmstu/sem_06/os/labs/lab_05/"$$0) }' > /home/nikitalystsev/bmstu/sem_06/os/labs/lab_05/main.mod

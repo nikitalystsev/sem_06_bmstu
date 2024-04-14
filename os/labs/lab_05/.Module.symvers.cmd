@@ -1,0 +1,1 @@
+savedcmd_/home/nikitalystsev/bmstu/sem_06/os/labs/lab_05/Module.symvers :=  scripts/mod/modpost -m -a      -o /home/nikitalystsev/bmstu/sem_06/os/labs/lab_05/Module.symvers -T /home/nikitalystsev/bmstu/sem_06/os/labs/lab_05/modules.order -i Module.symvers -e 
