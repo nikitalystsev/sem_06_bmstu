@@ -1,1 +1,0 @@
-savedcmd_/home/nikitalystsev/bmstu/sem_06/os/labs/lab_05/modules.order := {   echo /home/nikitalystsev/bmstu/sem_06/os/labs/lab_05/main.o; :; } > /home/nikitalystsev/bmstu/sem_06/os/labs/lab_05/modules.order
