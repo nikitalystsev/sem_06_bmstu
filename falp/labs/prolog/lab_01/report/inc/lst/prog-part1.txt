@@ -1,0 +1,13 @@
+domains
+	surname = string
+	phone = string
+	
+	city = string
+	street = string
+	num_house = integer
+	num_flat = integer
+	addr = address(city, street, num_house, num_flat)
+	
+	brand = string
+	color = string
+	cost = integer

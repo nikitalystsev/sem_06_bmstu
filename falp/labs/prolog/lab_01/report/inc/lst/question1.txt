@@ -1,0 +1,4 @@
+ goal
+ 	person("Sidorov", _, address("Arkhangelsk", _, _, _)).
+	
+Ответ: yes
