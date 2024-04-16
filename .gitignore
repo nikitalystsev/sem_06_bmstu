@@ -3,6 +3,18 @@
 /falp/lects/lect_02/*.m4a
 /falp/lects/lect_03/*.m4a
 /falp/labs/audio_labs/lab_01/*.m4a
+/falp/labs/prolog/*.pro
+/falp/labs/prolog/*.bk1
+/falp/labs/prolog/*.grd
+/falp/labs/prolog/*.inc
+/falp/labs/prolog/*.pre
+/falp/labs/prolog/*.prj
+/falp/labs/prolog/*.vpr
+/falp/labs/prolog/Exe
+/falp/labs/prolog/Obj
+/falp/labs/prolog/lab_01/*.BAK
+/falp/labs/prolog/lab_02/*.BAK
+
 
 /ecol/lects/lect_01/*.m4a
 /ecol/lects/lect_02/*.m4a
