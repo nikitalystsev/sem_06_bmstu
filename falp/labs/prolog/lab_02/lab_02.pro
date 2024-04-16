@@ -16,18 +16,19 @@ domains
 	area, floors, price = integer
 	brand, color = symbol
 	number = string
-	name = string
+	title = string
 	
-	property = car(name, brand, color, price, number);
-    		   building(name, price, area, floors);
-    	 	   site(name, price, area);
-                   water_vehicle(name, price, brand, color).
+	property = car(title, brand, color, price, number);
+    		   building(title, price, area, floors);
+    	 	   site(title, price, area);
+                   water_vehicle(title, price, brand, color).
 predicates
 	phonebook(surname, phone, addr)
 	owner(surname, property)
 	depositor(surname, bank, account, amount)
 	
-	properties_by_surname(surname, name)
+	properties_title_by_surname(surname, title)
+	properties_title_price_by_surname(surname, title, price)
 	
 clauses
 	phonebook(lystsev, "8(931)402-25-94", address(arkhangelsk, voskresenskaya, 5, 32)).
@@ -65,10 +66,16 @@ clauses
   	owner(sidorov, water_vehicle("cruiser", 150000, yamaha, red)).
   	
  	
-	properties_by_surname(Surname, Name) :- owner(Surname, car(Name, _, _, _, _));
-						owner(Surname, building(Name, _, _, _));
-						owner(Surname, site(Name, _, _));
-						owner(Surname, water_vehicle(Name, _, _, _)).
+	properties_title_by_surname(Surname, Name) :- owner(Surname, car(Name, _, _, _, _));
+							owner(Surname, building(Name, _, _, _));
+							owner(Surname, site(Name, _, _));
+							owner(Surname, water_vehicle(Name, _, _, _)).
+						
+	properties_title_price_by_surname(Surname, Name, Price) :- owner(Surname, car(Name, _, _, Price, _));
+									owner(Surname, building(Name, Price, _, _));
+									owner(Surname, site(Name, Price, _));
+									owner(Surname, water_vehicle(Name, Price, _, _)).
 							
  goal
- 	properties_by_surname(lystsev, Name).
+ 	% properties_title_by_surname(lystsev, Name).
+ 	properties_title_price_by_surname(lystsev, Name, Price).
