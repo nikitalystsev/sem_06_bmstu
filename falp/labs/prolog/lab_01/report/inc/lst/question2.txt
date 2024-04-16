@@ -1,6 +1,0 @@
- goal
- 	person(Surname, _, address("SaintPetersburg", _, _, _)).
-	
-Ответ: Surname=Frolova
-	   Surname=Shcherbakova
-       2 Solutions

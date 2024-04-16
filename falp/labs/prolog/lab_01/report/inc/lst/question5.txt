@@ -1,5 +1,0 @@
- goal
- 	search_rule("Mazda", "black", Surname, City, Phone).
-
-Ответ: Surname=Sidorov, City=Arkhangelsk, Phone=8(921)672-17-05
-	   1 Solution
