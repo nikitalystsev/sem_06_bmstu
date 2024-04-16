@@ -27,6 +27,9 @@ predicates
 	owner(surname, property)
 	depositor(surname, bank, account, amount)
 	
+	property_title(property, title)
+	property_title_price(property, title, price)
+	
 	properties_title_by_surname(surname, title)
 	properties_title_price_by_surname(surname, title, price)
 	
@@ -65,16 +68,19 @@ clauses
 	owner(sidorov, car("F", mazda, black, 3500000, "W042BM342")). 
   	owner(sidorov, water_vehicle("cruiser", 150000, yamaha, red)).
   	
- 	
-	properties_title_by_surname(Surname, Name) :- owner(Surname, car(Name, _, _, _, _));
-							owner(Surname, building(Name, _, _, _));
-							owner(Surname, site(Name, _, _));
-							owner(Surname, water_vehicle(Name, _, _, _)).
-						
-	properties_title_price_by_surname(Surname, Name, Price) :- owner(Surname, car(Name, _, _, Price, _));
-									owner(Surname, building(Name, Price, _, _));
-									owner(Surname, site(Name, Price, _));
-									owner(Surname, water_vehicle(Name, Price, _, _)).
+  	property_title(car(Title, _, _, _, _), Title).
+	property_title(building(Title, _, _, _), Title).
+	property_title(site(Title, _, _), Title).
+	property_title(water_vehicle(Title, _, _, _), Title).
+	
+	property_title_price(car(Title, _, _, Price, _), Title, Price).
+	property_title_price(building(Title, Price, _, _), Title, Price).
+	property_title_price(site(Title, Price, _), Title, Price).
+	property_title_price(water_vehicle(Title, Price, _, _), Title, Price).
+	
+  	properties_title_by_surname(Surname, Title) :- owner(Surname, Property), property_title(Property, Title).
+	
+	properties_title_price_by_surname(Surname, Title, Price) :- owner(Surname, Property), property_title_price(Property, Title, Price).
 							
  goal
  	% properties_title_by_surname(lystsev, Name).
