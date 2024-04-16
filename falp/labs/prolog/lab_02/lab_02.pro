@@ -22,6 +22,9 @@ domains
     		   building(title, price, area, floors);
     	 	   site(title, price, area);
                    water_vehicle(title, price, brand, color).
+                   
+       	type = string
+       	
 predicates
 	phonebook(surname, phone, addr)
 	owner(surname, property)
@@ -32,6 +35,9 @@ predicates
 	
 	properties_title_by_surname(surname, title)
 	properties_title_price_by_surname(surname, title, price)
+	
+	cost(surname, type, price).
+	totalPropCost(surname, price).
 	
 clauses
 	phonebook(lystsev, "8(931)402-25-94", address(arkhangelsk, voskresenskaya, 5, 32)).
@@ -81,7 +87,22 @@ clauses
   	properties_title_by_surname(Surname, Title) :- owner(Surname, Property), property_title(Property, Title).
 	
 	properties_title_price_by_surname(Surname, Title, Price) :- owner(Surname, Property), property_title_price(Property, Title, Price).
-							
+	
+	cost(Lastname, "car", Cost) :- owner(Lastname, car(_, _, _, Cost, _)), !.
+	cost(Lastname, "building", Cost) :- owner(Lastname, building(_, Cost, _, _)), !.
+	cost(Lastname, "region", Cost) :- owner(Lastname, site(_, Cost, _)), !.
+	cost(Lastname, "ship", Cost) :- owner(Lastname, water_vehicle(_, Cost, _, _)), !.
+	cost(_, _, 0).
+
+	totalPropCost(Lastname, Cost) :-
+	cost(Lastname, "car", CarCost),
+	cost(Lastname, "building", BuildingCost),
+	cost(Lastname, "region", RegionCost),
+	cost(Lastname, "ship", ShipCost),
+	Cost = CarCost + BuildingCost + RegionCost + ShipCost.	
  goal
  	% properties_title_by_surname(lystsev, Name).
- 	properties_title_price_by_surname(lystsev, Name, Price).
+ 	% properties_title_price_by_surname(lystsev, Name, Price).
+ 	
+ 	totalPropCost(sidorov, TotalCost).
+ 	
