@@ -7,10 +7,9 @@
 
 \textbf{Опр.} Интервальной оценкой c уровнем доверия $\gamma \in (0, 1)$ параметра $\theta$ называется пара статистик $\underline \theta (\vec X)$ и $\overline \theta (\vec X)$ таких, что выполняется равенство:
 
-\begin{equation}
-	\label{eq:P_interv}
+$$ 
 	 P\{ \underline \theta (\vec X) < \theta  < \overline \theta (\vec X)\} = \gamma.
-\end{equation}
+$$
 
 \textbf{Опр.} Доверительным интервалом с уровнем доверия $\gamma$ для параметра $\theta$ называется интервал $(\underline \theta (\vec x), \overline \theta (\vec x))$, отвечающий выборочным значениям статистики $\underline \theta$, $\overline \theta$, задающих оценку уровня $\gamma$ для $\theta$.
 
@@ -21,58 +20,49 @@
 Тогда для построения $\gamma$-доверительного интервала для $\mu$ используется
 центральная статистика
 
-\begin{equation}
+$$
 	\label{eq:T_1}
 	T(\vec X, \mu) = \frac{\mu - \overline X}{S(\vec X)} \sqrt n \sim St(n - 1),
-\end{equation}
+$$
 
 \noindentи границы $\gamma$-доверительного интервала для $\mu$ вычисляются по
 формулам:
 
-\begin{equation}
+$$
 	\label{eq:mu_lower}
 	\underline \mu (\vec X) = \overline X - \frac{S(\vec X)t^{(n-1)}_{\frac{1 +
 				\gamma}{2}}}{\sqrt n},
-\end{equation}
+$$
 
-\begin{equation}
+$$
 	\label{eq:mu_upper}
 	\overline \mu (\vec X) = \overline X + \frac{S(\vec X)t^{(n-1)}_{\frac{1 +
 				\gamma}{2}}}{\sqrt n},
-\end{equation}
+$$
 
 
-\noindentгде $\overline X = \frac{1}{n} \sum\limits_{i=1}^{n} X_i$, $S(\vec X) = \sqrt{\frac{1}{n-1} \sum\limits_{i=1}^{n} (X_i - \overline X)^2}$,
-
-\noindent~~~~~$t_{\frac{1+\gamma}{2}}^{(n-1)}$ --- квантиль уровня $\frac{1+\gamma}{2}$ распределения Стьюдента с \mbox{$n-1$~степенями} свободы,
-
-\noindent~~~~~$n$ --- объем выборки.
+\noindentгде $\overline X = \frac{1}{n} \sum\limits_{i=1}^{n} X_i$, $S(\vec X) = \sqrt{\frac{1}{n-1} \sum\limits_{i=1}^{n} (X_i - \overline X)^2}$, $t_{\frac{1+\gamma}{2}}^{(n-1)}$ --- квантиль уровня $\frac{1+\gamma}{2}$ распределения Стьюдента с \mbox{$n-1$~степенями} свободы, $n$ --- объем выборки.
 
 Для построения $\gamma$-доверительного интервала для $\sigma^2$ используется
 центральная статистика
 
-\begin{equation}
+$$
 	\label{eq:T_2}
 	T(\vec X, \sigma^2) = \frac{(n-1)S^2(\vec X)}{\sigma^2} \sim \chi^2(n - 1),
-\end{equation}
+$$
 
 \noindentи границы $\gamma$-доверительного интервала для $\sigma^2$ вычисляются по
 формулам:
 
-\begin{equation}
+$$
 	\label{eq:S_quad_lower}
 	\underline \sigma^2 (\vec X) = \frac{(n-1)S^2(\vec X)}{h_{\frac{1+\gamma}{2}}^{(n-1)}},
-\end{equation}
+$$
 
-\begin{equation}
+$$
 	\label{eq:S_quad_upper}
 	\overline \sigma^2 (\vec X) = \frac{(n-1)S^2(\vec X)}{h_{\frac{1-\gamma}{2}}^{(n-1)}},
-\end{equation}
+$$
 
 
-\noindentгде $n$ --- объем выборки,
-
-\noindent~~~~~$S^2(\vec X) = \frac{1}{n-1} \sum\limits_{i=1}^{n} (X_i -
-\overline X)^2$,
-
-\noindent~~~~~$h_{\frac{1+\gamma}{2}}^{(n-1)}$ и $h_{\frac{1-\gamma}{2}}^{(n-1)}$ --- квантили уровня $\frac{1+\gamma}{2}$ и $\frac{1-\gamma}{2}$ соответственно распределения хи-квадрат с \mbox{$n-1$~степенями} свободы.
+\noindentгде $n$ --- объем выборки, $S^2(\vec X) = \frac{1}{n-1} \sum\limits_{i=1}^{n} (X_i - \overline X)^2$, $h_{\frac{1+\gamma}{2}}^{(n-1)}$ и $h_{\frac{1-\gamma}{2}}^{(n-1)}$ --- квантили уровня $\frac{1+\gamma}{2}$ и $\frac{1-\gamma}{2}$ соответственно распределения хи-квадрат с \mbox{$n-1$~степенями} свободы.

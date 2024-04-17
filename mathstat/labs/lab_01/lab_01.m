@@ -37,7 +37,7 @@ fprintf("Кол-во интервалов m = %3d\n\n", m);
 
 delta = (M_max - M_min) / m;
 
-J = (M_min - 1) : delta : (M_max + 1);
+J = M_min : delta : M_max;
 
 % нижняя строка таблицы интервального статистического ряда
 J_table = zeros(m, 1);  
@@ -88,14 +88,13 @@ t(n + 2) = x(n) + 1;
 for i = 2 : n + 1
     t(i) = x(i - 1);
 end
-
 % Значения эмпирической функции распреления
 F_n = zeros(length(t), 1);
 
 for i = 1 : length(t)
     count = 0;
     for j = 1 : n
-        if (t(i) >= x(j))
+        if (x(j) <= t(i))
             count = count + 1;
         end
     end
