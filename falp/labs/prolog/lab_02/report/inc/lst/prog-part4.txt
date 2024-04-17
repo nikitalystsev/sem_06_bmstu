@@ -1,0 +1,15 @@
+	cost(Surname, "site", Cost) :- owner(Surname, site(_, Cost, _)), !.
+	cost(Surname, "water", Cost) :- owner(Surname, water_vehicle(_, Cost, _, _)), !.
+	cost(_, _, 0).
+
+	totalPropertyPrice(Surname, Price) :-
+	cost(Surname, "car", CarPrice),
+	cost(Surname, "building", BuildingPrice),
+	cost(Surname, "site", SitePrice),
+	cost(Surname, "water", WaterPrice),
+	Price = CarPrice + BuildingPrice + SitePrice + WaterPrice.	
+ goal
+ 	% properties_title_by_surname(lystsev, Name).
+ 	% properties_title_price_by_surname(shcherbakova, Title, Price).
+ 	
+ 	totalPropertyPrice(sidorov, TotalPrice).
