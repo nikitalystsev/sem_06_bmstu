@@ -102,7 +102,7 @@ clauses
 	Cost = CarCost + BuildingCost + RegionCost + ShipCost.	
  goal
  	% properties_title_by_surname(lystsev, Name).
- 	% properties_title_price_by_surname(lystsev, Name, Price).
+ 	properties_title_price_by_surname(lystsev, Name, Price).
  	
- 	totalPropCost(sidorov, TotalCost).
+ 	% totalPropCost(sidorov, TotalCost).
  	
