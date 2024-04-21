@@ -4,11 +4,16 @@ from lsm_for_line import LeastSquaresMethodLine
 import numpy as np
 from matplotlib import pyplot as plt
 
+"""
+https://swsu.ru/sveden/files/MU_Vychislitelynaya_matematika_LZNo_4.pdf
+про аппроксимацию производной конечными разностями
+"""
+
 a1, b1 = LeastSquaresMethodLine(x=np.log(t_k), y=np.log(k1)).get_solve()
 a2, b2 = LeastSquaresMethodLine(x=np.log(t_k), y=np.log(k2)).get_solve()
 
-# is_k1 = True
-is_k1 = False
+is_k1 = True
+# is_k1 = False
 
 EPS = 1e-4
 
@@ -75,12 +80,22 @@ def der_f(z, u, _f):
     return res
 
 
+def div_flux(z, u):
+    """
+    divF(z)
+    """
+    if is_k1:
+        return c * k1(z) * (u_p(z) - u)
+
+    return c * k2(z) * (u_p(z) - u)
+
+
 def _lambda(z):
     """
     Функция λ(z)
     """
     if is_k1:
-        c / (3 * k1(z))
+        return c / (3 * k1(z))
 
     return c / (3 * k2(z))
 
@@ -90,7 +105,7 @@ def _p(z):
     Функция p(z)
     """
     if is_k1:
-        c * k1(z)
+        return c * k1(z)
 
     return c * k2(z)
 
@@ -197,6 +212,71 @@ def right_sweep(a, b, h):
     return u
 
 
+def left_sweep(a, b, h):
+    """
+    Реализация левой прогонки (ну по приколу)
+    """
+
+    # Прямой ход
+    k0, m0, p0 = left_boundary_condition(a, 0, h)
+
+    kn, mn, pn = right_boundary_condition(b, h)
+
+    ksi = [-kn / mn, 0]
+    eta = [pn / mn, 0]
+
+    z = b - h
+    n = -2
+    cnt = 1
+
+    while z > a - h / 2:
+        a_n = (z - h / 2) * (kappa1(z - h, z)) / (r ** 2 * h)
+        c_n = ((z + h / 2) * kappa1(z, z + h)) / (r ** 2 * h)
+        b_n = a_n + c_n + _p(z) * v_n(z, h)
+        d_n = f(z) * v_n(z, h)
+
+        ksi.insert(0, a_n / (b_n - c_n * ksi[n]))
+        eta.insert(0, (c_n * eta[n] + d_n) / (b_n - c_n * ksi[n]))
+
+        n -= 1
+        z -= h
+        cnt += 1
+
+    # Обратный ход
+    u = [0] * cnt
+
+    u[0] = (p0 - k0 * eta[0]) / (m0 + k0 * ksi[0])
+
+    for i in range(1, cnt):
+        u[i] = ksi[i - 1] * u[i - 1] + eta[i - 1]
+
+    return u
+
+
+def flux1(u, z, h):
+    """
+    Вычисление F(z) аппроксимацией производной центральным аналогом
+    (2-й порядок точности)
+    """
+    f_res = [0]
+
+    for i in range(1, len(u) - 1):
+        curr_f = -(_lambda(z[i]) / r) * (u[i + 1] - u[i - 1]) / (2 * h)
+        f_res.append(curr_f)
+
+    f_res.append(-(_lambda(z[len(u) - 1]) / r) * (3 * u[-1] - 4 * u[-2] + u[-3]) / (2 * h))
+
+    return f_res
+
+
+def flux2(z, h, un, un1):
+    """
+    Вычисление F(z) через интеграл (интеграл, ага ага)
+    """
+
+    return kappa1(z, z + h) * (un - un1) / (r * h)
+
+
 def main() -> None:
     """
     Главная функция
@@ -205,18 +285,43 @@ def main() -> None:
     n = 1000  # число узлов
     h = (b - a) / n
 
-    u_res = right_sweep(a, b, h)
-
+    # u_res = right_sweep(a, b, h)
+    u_res = left_sweep(a, b, h)
     z_res = np.arange(a, b + h, h)
 
+    f_res = flux1(u_res, z_res, h)
+
+    f_res2 = [0] * len(z_res)
+
+    for i in range(1, len(z_res)):
+        f_res2[i] = flux2(z_res[i], h, u_res[i - 1], u_res[i])
+
     up_res = [0] * len(z_res)
+    div_f = [0] * len(z_res)
 
     for i in range(len(z_res)):
         up_res[i] = u_p(z_res[i])
+        div_f[i] = div_flux(z_res[i], u_res[i])
 
+    plt.figure(figsize=(9, 6))  # Размеры окна 10x8 дюймов
     plt.subplot(2, 2, 1)
     plt.plot(z_res, u_res, 'r', label='u(z)')
-    plt.plot(z_res, up_res, 'g', label='u_p')
+    plt.plot(z_res, up_res, 'b', label='u_p')
+    plt.legend()
+    plt.grid()
+
+    plt.subplot(2, 2, 2)
+    plt.plot(z_res, f_res, 'g', label='F(z)')
+    plt.legend()
+    plt.grid()
+
+    plt.subplot(2, 2, 3)
+    plt.plot(z_res, f_res2, 'g', label='F(z) v2')
+    plt.legend()
+    plt.grid()
+
+    plt.subplot(2, 2, 4)
+    plt.plot(z_res, div_f, 'y', label='divF(z)')
     plt.legend()
     plt.grid()
 
