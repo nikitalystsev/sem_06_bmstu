@@ -262,7 +262,7 @@ def left_sweep(a, b, h):
 
 def meetings_sweep(a, b, h, n):
     """
-    Реализация встречной прогонки
+    Реализация встречной прогонки (ну захотелось мне, пацаны)
     """
     # Прямой ход
     k0, m0, p0 = left_boundary_condition(a, 0, h)
