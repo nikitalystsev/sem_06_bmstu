@@ -9,6 +9,11 @@ https://swsu.ru/sveden/files/MU_Vychislitelynaya_matematika_LZNo_4.pdf
 про аппроксимацию производной конечными разностями
 """
 
+"""
+https://elib.utmn.ru/jspui/bitstream/ru-tsu/3444/1/Gavrilova_1011_2019.pdf
+откуда взял инфу о встречной прогонке
+"""
+
 a1, b1 = LeastSquaresMethodLine(x=np.log(t_k), y=np.log(k1)).get_solve()
 a2, b2 = LeastSquaresMethodLine(x=np.log(t_k), y=np.log(k2)).get_solve()
 
@@ -190,8 +195,8 @@ def right_sweep(a, b, h):
     n = 1
 
     while z < b + h / 2:
-        a_n = (z - h / 2) * (kappa1(z - h, z)) / (r ** 2 * h)
-        c_n = ((z + h / 2) * kappa1(z, z + h)) / (r ** 2 * h)
+        a_n = (z - h / 2) * (kappa2(z - h, z)) / (r ** 2 * h)
+        c_n = ((z + h / 2) * kappa2(z, z + h)) / (r ** 2 * h)
         b_n = a_n + c_n + _p(z) * v_n(z, h)
         d_n = f(z) * v_n(z, h)
 
@@ -201,6 +206,8 @@ def right_sweep(a, b, h):
         n += 1
         z += h
 
+    # print(f"ksi = {ksi}")
+    # print(f"eta = {eta}")
     # Обратный ход
     u = [0] * n
 
@@ -253,6 +260,73 @@ def left_sweep(a, b, h):
     return u
 
 
+def meetings_sweep(a, b, h, n):
+    """
+    Реализация встречной прогонки
+    """
+    # Прямой ход
+    k0, m0, p0 = left_boundary_condition(a, 0, h)
+
+    kn, mn, pn = right_boundary_condition(b, h)
+
+    half_n = n // 2  # число узлов правой части прогонки
+
+    # правая часть прогонки
+    z = h
+    n = 1
+
+    ksi_r = [0, -k0 / m0]
+    eta_r = [0, p0 / m0]
+
+    while z < half_n * h:
+        a_n = (z - h / 2) * (kappa1(z - h, z)) / (r ** 2 * h)
+        c_n = ((z + h / 2) * kappa1(z, z + h)) / (r ** 2 * h)
+        b_n = a_n + c_n + _p(z) * v_n(z, h)
+        d_n = f(z) * v_n(z, h)
+
+        ksi_r.append(c_n / (b_n - a_n * ksi_r[n]))
+        eta_r.append((a_n * eta_r[n] + d_n) / (b_n - a_n * ksi_r[n]))
+
+        n += 1
+        z += h
+
+    # левая часть прогонки
+    ksi_l = [-kn / mn, 0]
+    eta_l = [pn / mn, 0]
+
+    z = b - h
+    n1 = -2
+    cnt = 1
+
+    while z > half_n * h - h / 2:
+        a_n = (z - h / 2) * (kappa1(z - h, z)) / (r ** 2 * h)
+        c_n = ((z + h / 2) * kappa1(z, z + h)) / (r ** 2 * h)
+        b_n = a_n + c_n + _p(z) * v_n(z, h)
+        d_n = f(z) * v_n(z, h)
+
+        ksi_l.insert(0, a_n / (b_n - c_n * ksi_l[n1]))
+        eta_l.insert(0, (c_n * eta_l[n1] + d_n) / (b_n - c_n * ksi_l[n1]))
+
+        n1 -= 1
+        z -= h
+        cnt += 1
+
+    # # Обратный ход
+    u = [0] * (n + cnt)
+
+    # вычисляем up (решая систему из двух уравнений) -- сопряжение решений
+    u[half_n] = (ksi_r[-1] * eta_l[0] + eta_r[-1]) / (1 - ksi_r[-1] * ksi_l[0])
+
+    for i in range(half_n - 1, -1, -1):
+        u[i] = ksi_r[i + 1] * u[i + 1] + eta_r[i + 1]
+
+    for i in range(half_n + 1, n + cnt):
+        _i = i - half_n
+        u[i] = ksi_l[_i - 1] * u[i - 1] + eta_l[_i - 1]
+
+    return u
+
+
 def flux1(u, z, h):
     """
     Вычисление F(z) аппроксимацией производной центральным аналогом
@@ -286,9 +360,9 @@ def main() -> None:
     h = (b - a) / n
 
     # u_res = right_sweep(a, b, h)
-    u_res = left_sweep(a, b, h)
+    # u_res = left_sweep(a, b, h)
+    u_res = meetings_sweep(a, b, h, n)
     z_res = np.arange(a, b + h, h)
-
     f_res = flux1(u_res, z_res, h)
 
     f_res2 = [0] * len(z_res)
