@@ -14,6 +14,8 @@ https://elib.utmn.ru/jspui/bitstream/ru-tsu/3444/1/Gavrilova_1011_2019.pdf
 откуда взял инфу о встречной прогонке
 """
 
+# коэффициенты уравнений прямых при аппроксимации таблицы значений с
+# коэффициентом поглощения
 a1, b1 = LeastSquaresMethodLine(x=np.log(t_k), y=np.log(k1)).get_solve()
 a2, b2 = LeastSquaresMethodLine(x=np.log(t_k), y=np.log(k2)).get_solve()
 
@@ -206,8 +208,6 @@ def right_sweep(a, b, h):
         n += 1
         z += h
 
-    # print(f"ksi = {ksi}")
-    # print(f"eta = {eta}")
     # Обратный ход
     u = [0] * n
 
@@ -221,7 +221,7 @@ def right_sweep(a, b, h):
 
 def left_sweep(a, b, h):
     """
-    Реализация левой прогонки (ну по приколу)
+    Реализация левой прогонки
     """
 
     # Прямой ход
@@ -260,16 +260,14 @@ def left_sweep(a, b, h):
     return u
 
 
-def meetings_sweep(a, b, h, n):
+def meetings_sweep(a, b, h, n_eq):
     """
-    Реализация встречной прогонки (ну захотелось мне, пацаны)
+    Реализация встречной прогонки
     """
     # Прямой ход
     k0, m0, p0 = left_boundary_condition(a, 0, h)
 
     kn, mn, pn = right_boundary_condition(b, h)
-
-    half_n = n // 2  # число узлов правой части прогонки
 
     # правая часть прогонки
     z = h
@@ -278,7 +276,7 @@ def meetings_sweep(a, b, h, n):
     ksi_r = [0, -k0 / m0]
     eta_r = [0, p0 / m0]
 
-    while z < half_n * h:
+    while z < n_eq * h:
         a_n = (z - h / 2) * (kappa1(z - h, z)) / (r ** 2 * h)
         c_n = ((z + h / 2) * kappa1(z, z + h)) / (r ** 2 * h)
         b_n = a_n + c_n + _p(z) * v_n(z, h)
@@ -298,7 +296,7 @@ def meetings_sweep(a, b, h, n):
     n1 = -2
     cnt = 1
 
-    while z > half_n * h - h / 2:
+    while z > n_eq * h - h / 2:
         a_n = (z - h / 2) * (kappa1(z - h, z)) / (r ** 2 * h)
         c_n = ((z + h / 2) * kappa1(z, z + h)) / (r ** 2 * h)
         b_n = a_n + c_n + _p(z) * v_n(z, h)
@@ -315,13 +313,15 @@ def meetings_sweep(a, b, h, n):
     u = [0] * (n + cnt)
 
     # вычисляем up (решая систему из двух уравнений) -- сопряжение решений
-    u[half_n] = (ksi_r[-1] * eta_l[0] + eta_r[-1]) / (1 - ksi_r[-1] * ksi_l[0])
+    u[n_eq] = (ksi_r[-1] * eta_l[0] + eta_r[-1]) / (1 - ksi_r[-1] * ksi_l[0])
 
-    for i in range(half_n - 1, -1, -1):
+    print(f"U в точке p = {n_eq} равно {u[n_eq]: <.7e}")
+
+    for i in range(n_eq - 1, -1, -1):
         u[i] = ksi_r[i + 1] * u[i + 1] + eta_r[i + 1]
 
-    for i in range(half_n + 1, n + cnt):
-        _i = i - half_n
+    for i in range(n_eq + 1, n + cnt):
+        _i = i - n_eq
         u[i] = ksi_l[_i - 1] * u[i - 1] + eta_l[_i - 1]
 
     return u
@@ -361,7 +361,7 @@ def main() -> None:
 
     # u_res = right_sweep(a, b, h)
     # u_res = left_sweep(a, b, h)
-    u_res = meetings_sweep(a, b, h, n)
+    u_res = meetings_sweep(a, b, h, 1)
     z_res = np.arange(a, b + h, h)
     f_res = flux1(u_res, z_res, h)
 
