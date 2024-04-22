@@ -1,4 +1,3 @@
-from config import *
 from lsm_for_line import LeastSquaresMethodLine
 
 import numpy as np
@@ -13,6 +12,19 @@ https://swsu.ru/sveden/files/MU_Vychislitelynaya_matematika_LZNo_4.pdf
 https://elib.utmn.ru/jspui/bitstream/ru-tsu/3444/1/Gavrilova_1011_2019.pdf
 откуда взял инфу о встречной прогонке
 """
+
+# отладочные параметры
+r = 0.35
+t_w = 2000
+t_0 = 1e4
+p = 4
+
+c = 3e10
+
+# таблица значений k
+t_k = [2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000]
+k1 = [8.2E-3, 2.768E-02, 6.560E-02, 1.281E-01, 2.214E-01, 3.516E-01, 5.248E-01, 7.472E-01, 1.025E+00]
+k2 = [1.600E+00, 5.400E+00, 1.280E+01, 2.500E+01, 4.320E+01, 6.860E+01, 1.024E+02, 1.458E+02, 2.000E+02]
 
 # коэффициенты уравнений прямых при аппроксимации таблицы значений с
 # коэффициентом поглощения
@@ -184,7 +196,6 @@ def right_sweep(a, b, h):
     """
     Реализация правой прогонки
     """
-
     # Прямой ход
     k0, m0, p0 = left_boundary_condition(a, 0, h)
 
@@ -351,6 +362,102 @@ def flux2(z, h, un, un1):
     return kappa1(z, z + h) * (un - un1) / (r * h)
 
 
+def write_result_to_file(filepath, z_res, u_res, f_res):
+    """
+    Запись результатов в файл
+    """
+    file = open(filepath, "w", encoding="utf-8")
+
+    file.write(f"Вариант коэфф-та k: {'k1' if is_k1 else 'k2'}\n")
+    file.write(f"Число узлов n = {len(z_res)}\n")
+    file.write("-" * 61 + "\n")
+    file.write(f'| {"x": ^7} | {"u(z)": ^22} | {"f(z)": ^22} |\n')
+    file.write("-" * 61 + "\n")
+
+    for i in range(len(z_res)):
+        file.write(f"| {z_res[i]: ^7.5f} | {u_res[i]: ^22.6e} | {f_res[i]: ^22.6e} |\n")
+
+    file.write("-" * 61)
+
+    file.close()
+
+
+def cmp_res_by_input_data(a, b, h):
+    """
+    5-е задание лабы
+    """
+    plt.ioff()
+
+    z_res = np.arange(a, b + h, h)
+    _t_0 = np.linspace(100, 1e6, 100)
+    u0_t_0_res = []
+    f0_t_0_res = []
+    global t_0
+    for curr_t_0 in _t_0:
+        t_0 = curr_t_0
+        u_res = right_sweep(a, b, h)
+        f_res = flux1(u_res, z_res, h)
+        u0_t_0_res.append(u_res[0])
+        f0_t_0_res.append(f_res[0])
+    t_0 = 1e4
+    fig, axs = plt.subplots(2, 3, figsize=(13, 9))
+    axs[0, 0].plot(_t_0, u0_t_0_res, 'r')
+    axs[0, 0].set_xlabel("T_0")
+    axs[0, 0].set_ylabel("u(0)")
+    axs[0, 0].grid()
+    axs[1, 0].plot(_t_0, f0_t_0_res, 'r')
+    axs[1, 0].set_xlabel("T_0")
+    axs[1, 0].set_ylabel("F(0)")
+    axs[1, 0].grid()
+
+    p_list = list(range(1, 11))
+    u0_p_res = []
+    f0_p_res = []
+    global p
+    for curr_p in p_list:
+        p = curr_p
+        u_res = right_sweep(a, b, h)
+        f_res = flux1(u_res, z_res, h)
+        u0_p_res.append(u_res[0])
+        f0_p_res.append(f_res[0])
+    p = 4
+    axs[0, 1].plot(p_list, u0_p_res, 'r')
+    axs[0, 1].set_xlabel("p")
+    axs[0, 1].set_ylabel("u(0)")
+    axs[0, 1].grid()
+    axs[1, 1].plot(p_list, f0_p_res, 'r')
+    axs[1, 1].set_xlabel("p")
+    axs[1, 1].set_ylabel("F(0)")
+    axs[1, 1].grid()
+
+    r_list = np.arange(0.1, 1 + 0.05, 0.05)
+    u0_r_res = []
+    f0_r_res = []
+    global r
+    for curr_r in r_list:
+        r = curr_r
+        u_res = right_sweep(a, b, h)
+        f_res = flux1(u_res, z_res, h)
+        u0_r_res.append(u_res[0])
+        f0_r_res.append(f_res[0])
+    r = 0.35
+    axs[0, 2].plot(r_list, u0_r_res, 'r')
+    axs[0, 2].set_xlabel("r")
+    axs[0, 2].set_ylabel("u(0)")
+    axs[0, 2].grid()
+
+    axs[1, 2].plot(r_list, f0_r_res, 'r')
+    axs[1, 2].set_xlabel("r")
+    axs[1, 2].set_ylabel("u(0)")
+    axs[1, 2].grid()
+
+    # Сохраняем графики в файл
+    fig.savefig(f"../data/cmp_res_by_input_data.png")
+
+    # Включаем интерактивный режим обратно
+    plt.ion()
+
+
 def main() -> None:
     """
     Главная функция
@@ -359,9 +466,9 @@ def main() -> None:
     n = 1000  # число узлов
     h = (b - a) / n
 
-    # u_res = right_sweep(a, b, h)
+    u_res = right_sweep(a, b, h)
     # u_res = left_sweep(a, b, h)
-    u_res = meetings_sweep(a, b, h, 1)
+    # u_res = meetings_sweep(a, b, h, 1)
     z_res = np.arange(a, b + h, h)
     f_res = flux1(u_res, z_res, h)
 
@@ -376,6 +483,10 @@ def main() -> None:
     for i in range(len(z_res)):
         up_res[i] = u_p(z_res[i])
         div_f[i] = div_flux(z_res[i], u_res[i])
+
+    write_result_to_file("../data/right_sweep.txt", z_res, u_res, f_res)
+    # write_result_to_file("../data/left_sweep.txt", z_res, u_res, f_res)
+    # write_result_to_file("../data/meetings_sweep.txt", z_res, u_res, f_res)
 
     plt.figure(figsize=(9, 6))
     plt.subplot(2, 2, 1)
@@ -400,6 +511,8 @@ def main() -> None:
     plt.grid()
 
     plt.show()
+
+    cmp_res_by_input_data(a, b, h)
 
 
 if __name__ == '__main__':
