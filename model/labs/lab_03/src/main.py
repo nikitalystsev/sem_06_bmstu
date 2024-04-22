@@ -377,7 +377,7 @@ def main() -> None:
         up_res[i] = u_p(z_res[i])
         div_f[i] = div_flux(z_res[i], u_res[i])
 
-    plt.figure(figsize=(9, 6))  # Размеры окна 10x8 дюймов
+    plt.figure(figsize=(9, 6))
     plt.subplot(2, 2, 1)
     plt.plot(z_res, u_res, 'r', label='u(z)')
     plt.plot(z_res, up_res, 'b', label='u_p')
