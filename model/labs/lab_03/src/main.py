@@ -13,6 +13,11 @@ https://elib.utmn.ru/jspui/bitstream/ru-tsu/3444/1/Gavrilova_1011_2019.pdf
 откуда взял инфу о встречной прогонке
 """
 
+"""
+https://ru.wikipedia.org/wiki/Формула_Симпсона
+откуда взял инфу про составную формулу Симпсона (формула Котеса)
+"""
+
 # отладочные параметры
 r = 0.35
 t_w = 2000
@@ -23,13 +28,13 @@ c = 3e10
 
 # таблица значений k
 t_k = [2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000]
-k1 = [8.2E-3, 2.768E-02, 6.560E-02, 1.281E-01, 2.214E-01, 3.516E-01, 5.248E-01, 7.472E-01, 1.025E+00]
-k2 = [1.600E+00, 5.400E+00, 1.280E+01, 2.500E+01, 4.320E+01, 6.860E+01, 1.024E+02, 1.458E+02, 2.000E+02]
+k_1 = [8.2E-3, 2.768E-02, 6.560E-02, 1.281E-01, 2.214E-01, 3.516E-01, 5.248E-01, 7.472E-01, 1.025E+00]
+k_2 = [1.600E+00, 5.400E+00, 1.280E+01, 2.500E+01, 4.320E+01, 6.860E+01, 1.024E+02, 1.458E+02, 2.000E+02]
 
 # коэффициенты уравнений прямых при аппроксимации таблицы значений с
 # коэффициентом поглощения
-a1, b1 = LeastSquaresMethodLine(x=np.log(t_k), y=np.log(k1)).get_solve()
-a2, b2 = LeastSquaresMethodLine(x=np.log(t_k), y=np.log(k2)).get_solve()
+a1, b1 = LeastSquaresMethodLine(x=np.log(t_k), y=np.log(k_1)).get_solve()
+a2, b2 = LeastSquaresMethodLine(x=np.log(t_k), y=np.log(k_2)).get_solve()
 
 is_k1 = True
 # is_k1 = False
@@ -354,12 +359,48 @@ def flux1(u, z, h):
     return f_res
 
 
-def flux2(z, h, un, un1):
+def flux2(z, u, h):
     """
-    Вычисление F(z) через интеграл (интеграл, ага ага)
+    Метод трапеций для вычисления интеграла при получении F(z)
     """
+    _f = [0]
+    f_res = [0]
 
-    return kappa1(z, z + h) * (un - un1) / (r * h)
+    if is_k1:
+        k = k1
+    else:
+        k = k2
+
+    for i in range(1, len(z)):
+        _f.append(k(z[i]) * (u_p(z[i]) - u[i]) * z[i])
+        f_res.append((c * r / z[i]) * h * ((_f[0] + _f[i]) / 2 + sum(_f[1:-1])))
+
+    return f_res
+
+
+def flux3(z, u, h):
+    """
+    Метод Симпсона для вычисления интеграла при получении F(z)
+    """
+    _f = [0]
+    f_res = [0]
+
+    if is_k1:
+        k = k1
+    else:
+        k = k2
+
+    for i in range(1, len(z)):
+        _f.append(k(z[i]) * (u_p(z[i]) - u[i]) * z[i])
+
+        _sum = 0
+
+        for _k in range(1, len(z[:i]), 2):
+            _sum += (_f[_k - 1] + 4 * _f[_k] + _f[_k + 1])
+
+        f_res.append((c * r / z[i]) * (h / 3) * _sum)
+
+    return f_res
 
 
 def write_result_to_file(filepath, z_res, u_res, f_res):
@@ -471,11 +512,11 @@ def main() -> None:
     # u_res = meetings_sweep(a, b, h, 1)
     z_res = np.arange(a, b + h, h)
     f_res = flux1(u_res, z_res, h)
-
-    f_res2 = [0] * len(z_res)
-
-    for i in range(1, len(z_res)):
-        f_res2[i] = flux2(z_res[i], h, u_res[i - 1], u_res[i])
+    # f_res2 = flux2(z_res, u_res, h)
+    f_res2 = flux3(z_res, u_res, h)
+    # f_res2 = [0] * len(z_res)
+    # for i in range(1, len(z_res)):
+    # f_res2[i] = flux2(z_res[i], h, u_res[i - 1], u_res[i])
 
     up_res = [0] * len(z_res)
     div_f = [0] * len(z_res)
@@ -512,7 +553,7 @@ def main() -> None:
 
     plt.show()
 
-    cmp_res_by_input_data(a, b, h)
+    # cmp_res_by_input_data(a, b, h)
 
 
 if __name__ == '__main__':
