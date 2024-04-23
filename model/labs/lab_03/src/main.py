@@ -542,7 +542,7 @@ def main() -> None:
     plt.grid()
 
     plt.subplot(2, 2, 3)
-    plt.plot(z_res, f_res2, 'g', label='F(z) v2')
+    plt.plot(z_res, f_res2, 'g', label='F(z) integral')
     plt.legend()
     plt.grid()
 
