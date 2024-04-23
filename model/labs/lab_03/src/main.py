@@ -403,7 +403,7 @@ def flux3(z, u, h):
     return f_res
 
 
-def write_result_to_file(filepath, z_res, u_res, f_res):
+def write_result_to_file(filepath, z_res, u_res, f_res, f_res2):
     """
     Запись результатов в файл
     """
@@ -411,14 +411,14 @@ def write_result_to_file(filepath, z_res, u_res, f_res):
 
     file.write(f"Вариант коэфф-та k: {'k1' if is_k1 else 'k2'}\n")
     file.write(f"Число узлов n = {len(z_res)}\n")
-    file.write("-" * 61 + "\n")
-    file.write(f'| {"x": ^7} | {"u(z)": ^22} | {"f(z)": ^22} |\n')
-    file.write("-" * 61 + "\n")
+    file.write("-" * 86 + "\n")
+    file.write(f'| {"x": ^7} | {"u(z)": ^22} | {"f(z)": ^22} | {"f(z) integral": ^22} |\n')
+    file.write("-" * 86 + "\n")
 
     for i in range(len(z_res)):
-        file.write(f"| {z_res[i]: ^7.5f} | {u_res[i]: ^22.6e} | {f_res[i]: ^22.6e} |\n")
+        file.write(f"| {z_res[i]: ^7.5f} | {u_res[i]: ^22.6e} | {f_res[i]: ^22.6e} | {f_res2[i]: ^22.6e} |\n")
 
-    file.write("-" * 61)
+    file.write("-" * 86)
 
     file.close()
 
@@ -525,9 +525,9 @@ def main() -> None:
         up_res[i] = u_p(z_res[i])
         div_f[i] = div_flux(z_res[i], u_res[i])
 
-    write_result_to_file("../data/right_sweep.txt", z_res, u_res, f_res)
-    # write_result_to_file("../data/left_sweep.txt", z_res, u_res, f_res)
-    # write_result_to_file("../data/meetings_sweep.txt", z_res, u_res, f_res)
+    write_result_to_file("../data/right_sweep.txt", z_res, u_res, f_res, f_res2)
+    # write_result_to_file("../data/left_sweep.txt", z_res, u_res, f_res, f_res2)
+    # write_result_to_file("../data/meetings_sweep.txt", z_res, u_res, f_res, f_res2)
 
     plt.figure(figsize=(9, 6))
     plt.subplot(2, 2, 1)
