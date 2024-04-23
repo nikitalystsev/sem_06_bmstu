@@ -24,7 +24,7 @@ class SolutionSystemByShootingMethod:
         self.__a = 0
         self.__b = 1
 
-        self.__n = 100000  # число узлов
+        self.__n = 5  # число узлов
         self.__h = (self.__b - self.__a) / self.__n  # шаг
 
         # ksi <= 1 и, наверное, больше нуля

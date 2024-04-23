@@ -124,6 +124,16 @@ def _lambda(z):
     return c / (3 * k2(z))
 
 
+def _lambda_new(z):
+    """
+    Функция λ(z) без с
+    """
+    if is_k1:
+        return 1 / (3 * k1(z))
+
+    return 1 / (3 * k2(z))
+
+
 def _p(z):
     """
     Функция p(z)
@@ -142,6 +152,26 @@ def f(z):
         return c * k1(z) * u_p(z)
 
     return c * k2(z) * u_p(z)
+
+
+def _p_new(z):
+    """
+    Функция p(z) без с
+    """
+    if is_k1:
+        return 1 * k1(z)
+
+    return 1 * k2(z)
+
+
+def f_new(z):
+    """
+    Функция f(z) без с
+    """
+    if is_k1:
+        return 1 * k1(z) * u_p(z)
+
+    return 1 * k2(z) * u_p(z)
 
 
 def v_n(z, h):
@@ -168,16 +198,25 @@ def kappa2(z1, z2):
     return (2 * _lambda(z1) * _lambda(z2)) / (_lambda(z1) + _lambda(z2))
 
 
+def kappa_new(z1, z2):
+    """
+    Убрали скорость света
+    """
+
+    return (_lambda_new(z1) + _lambda_new(z2)) / 2
+
+
 def left_boundary_condition(z0, g0, h):
     """
     Левое краевое условие метода правой прогонки
     """
 
-    k0 = kappa1(z0, z0 + h) * (z0 + h / 2) / (r ** 2 * h) - _p(z0 + h / 2) * (z0 + h / 2) * h / 8  # правильно
+    k0 = kappa_new(z0, z0 + h) * (z0 + h / 2) / (r ** 2 * h) - _p_new(z0 + h / 2) * (z0 + h / 2) * h / 8  # правильно
 
-    m0 = -kappa1(z0, z0 + h) * (z0 + h / 2) / (r ** 2 * h) - _p(z0 + h / 2) * (z0 + h / 2) * h / 8 - _p(z0) * z0 * h / 4
+    m0 = -kappa_new(z0, z0 + h) * (z0 + h / 2) / (r ** 2 * h) - _p_new(z0 + h / 2) * (z0 + h / 2) * h / 8 - _p_new(
+        z0) * z0 * h / 4
 
-    p0 = -z0 * g0 / r - (f(z0 + h / 2) * (z0 + h / 2) + f(z0) * z0) * h / 4
+    p0 = -z0 * g0 / r - (f_new(z0 + h / 2) * (z0 + h / 2) + f_new(z0) * z0) * h / 4
 
     return k0, m0, p0
 
@@ -187,12 +226,12 @@ def right_boundary_condition(zn, h):
     """
     Правое краевое условие метода правой прогонки
     """
-    kn = kappa1(zn - h, zn) * (zn - h / 2) / (r ** 2 * h) - _p(zn - h / 2) * (zn - h / 2) * h / 8  # правильно
+    kn = kappa_new(zn - h, zn) * (zn - h / 2) / (r ** 2 * h) - _p_new(zn - h / 2) * (zn - h / 2) * h / 8  # правильно
 
-    mn = -kappa1(zn - h, zn) * (zn - h / 2) / (r ** 2 * h) - 0.393 * c * zn / r - _p(zn) * zn * h / 4 - _p(
+    mn = -kappa_new(zn - h, zn) * (zn - h / 2) / (r ** 2 * h) - 0.393 * 1 * zn / r - _p_new(zn) * zn * h / 4 - _p_new(
         zn - h / 2) * (zn - h / 2) * h / 8
 
-    pn = -(f(zn) * zn + f(zn - h / 2) * (zn - h / 2)) * h / 4
+    pn = -(f_new(zn) * zn + f_new(zn - h / 2) * (zn - h / 2)) * h / 4
 
     return kn, mn, pn
 
@@ -258,6 +297,7 @@ def left_sweep(a, b, h):
         b_n = a_n + c_n + _p(z) * v_n(z, h)
         d_n = f(z) * v_n(z, h)
 
+        print(a_n, b_n, c_n, d_n)
         ksi.insert(0, a_n / (b_n - c_n * ksi[n]))
         eta.insert(0, (c_n * eta[n] + d_n) / (b_n - c_n * ksi[n]))
 
@@ -409,7 +449,6 @@ def write_result_to_file(filepath, z_res, u_res, f_res, f_res2):
     """
     file = open(filepath, "w", encoding="utf-8")
 
-    file.write(f"Вариант коэфф-та k: {'k1' if is_k1 else 'k2'}\n")
     file.write(f"Число узлов n = {len(z_res)}\n")
     file.write("-" * 86 + "\n")
     file.write(f'| {"x": ^7} | {"u(z)": ^22} | {"f(z)": ^22} | {"f(z) integral": ^22} |\n')
@@ -504,12 +543,12 @@ def main() -> None:
     Главная функция
     """
     a, b = 0, 1
-    n = 1000  # число узлов
+    n = 200  # число узлов
     h = (b - a) / n
 
     u_res = right_sweep(a, b, h)
     # u_res = left_sweep(a, b, h)
-    # u_res = meetings_sweep(a, b, h, 1)
+    # u_res = meetings_sweep(a, b, h, n // 2)
     z_res = np.arange(a, b + h, h)
     f_res = flux1(u_res, z_res, h)
     # f_res2 = flux2(z_res, u_res, h)
@@ -529,29 +568,29 @@ def main() -> None:
     # write_result_to_file("../data/left_sweep.txt", z_res, u_res, f_res, f_res2)
     # write_result_to_file("../data/meetings_sweep.txt", z_res, u_res, f_res, f_res2)
 
-    plt.figure(figsize=(9, 6))
-    plt.subplot(2, 2, 1)
-    plt.plot(z_res, u_res, 'r', label='u(z)')
-    plt.plot(z_res, up_res, 'b', label='u_p')
-    plt.legend()
-    plt.grid()
-
-    plt.subplot(2, 2, 2)
-    plt.plot(z_res, f_res, 'g', label='F(z)')
-    plt.legend()
-    plt.grid()
-
-    plt.subplot(2, 2, 3)
-    plt.plot(z_res, f_res2, 'g', label='F(z) integral')
-    plt.legend()
-    plt.grid()
-
-    plt.subplot(2, 2, 4)
-    plt.plot(z_res, div_f, 'y', label='divF(z)')
-    plt.legend()
-    plt.grid()
-
-    plt.show()
+    # plt.figure(figsize=(9, 6))
+    # plt.subplot(2, 2, 1)
+    # plt.plot(z_res, u_res, 'r', label='u(z)')
+    # plt.plot(z_res, up_res, 'b', label='u_p')
+    # plt.legend()
+    # plt.grid()
+    #
+    # plt.subplot(2, 2, 2)
+    # plt.plot(z_res, f_res, 'g', label='F(z)')
+    # plt.legend()
+    # plt.grid()
+    #
+    # plt.subplot(2, 2, 3)
+    # plt.plot(z_res, f_res2, 'g', label='F(z) integral')
+    # plt.legend()
+    # plt.grid()
+    #
+    # plt.subplot(2, 2, 4)
+    # plt.plot(z_res, div_f, 'y', label='divF(z)')
+    # plt.legend()
+    # plt.grid()
+    #
+    # plt.show()
 
     # cmp_res_by_input_data(a, b, h)
 
