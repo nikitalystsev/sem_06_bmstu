@@ -102,7 +102,7 @@ clauses
 	Price = CarPrice + BuildingPrice + SitePrice + WaterPrice.	
  goal
  	% properties_title_by_surname(lystsev, Name).
- 	% properties_title_price_by_surname(shcherbakova, Title, Price).
+ 	properties_title_price_by_surname(shcherbakova, Title, Price).
  	
- 	totalPropertyPrice(sidorov, TotalPrice).
+ 	% totalPropertyPrice(sidorov, TotalPrice).
  	
