@@ -1,12 +1,14 @@
-domains 
-	number=integer
-	
 predicates
-	fib(number, number)
+	fib(integer,integer)
+	fibb(integer,integer,integer,integer)
+ 
 clauses
-	fib(1,0) :- !.
-    	fib(2,1) :- !.
-    	fib(N,F) :- N1 = N - 1, N2 = N - 2, fib(N1,F1), fib(N2,F2), F = F1 + F2.
+	fibb(1,C,_,C):- !.
+	fibb(N,C,P,F):- N1=N-1,C1=C+P,P1=C,fibb(N1,C1,P1,F).
+ 
+	fib(N,F):-fibb(N,0, 1,F).
 goal
-	fib(10,Num).
+	fib(1,R).
+
+
 	

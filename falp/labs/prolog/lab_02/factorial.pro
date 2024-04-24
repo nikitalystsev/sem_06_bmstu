@@ -2,10 +2,12 @@ domains
 	number=integer
 predicates
 	factorial(number, number)
+	factoriall(number, number, number)
 clauses
-	factorial(0, 1) :- !.
-	factorial(1, 1) :- !.
-	factorial(N, R) :- New_N = N - 1, factorial(New_N, R1), R = N * R1.
+	factoriall(0, A, A) :- !.
+	factoriall(N, A, R) :- N1=N-1, NextA=A*N, factoriall(N1, NextA, R).
+    
+    	factorial(N, R) :- factoriall(N, 1, R).
 
 goal
 	factorial(5,R).
