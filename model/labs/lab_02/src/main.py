@@ -24,9 +24,6 @@ a2, b2 = LeastSquaresMethodLine(x=np.log(t_k), y=np.log(k_2)).get_solve()
 is_k1 = True
 # is_k1 = False
 
-# is_rk2 = True
-is_rk2 = False
-
 EPS = 1e-4
 
 
@@ -166,19 +163,17 @@ def psi(u, f):
     return f - 0.393 * c * u
 
 
-def get_init_cond(curr_ksi, a, b, h):
+def get_init_cond(curr_ksi, a, b, h, method):
     """
     Метод для получения начальных условий при решении методом стрельбы
     """
-    if is_rk2:
-        _, u, f = rk2(a, b, h, curr_ksi * u_p(0), 0)  # f_0 = 0
-    else:
-        _, u, f = rk4(a, b, h, curr_ksi * u_p(0), 0)
+
+    _, u, f = method(a, b, h, curr_ksi * u_p(0), 0)
 
     return psi(u[-1], f[-1])
 
 
-def get_solve_by_rk(a, b, h):
+def get_solve(a, b, h, method):
     """
     Метод, реализующий общее методов Рунге-Кутты
     """
@@ -192,9 +187,9 @@ def get_solve_by_rk(a, b, h):
     while condition:
         ksi_curr = (ksi_start + ksi_end) / 2  # находим середину текущего интервала неопределенности
 
-        f_ksi_start = get_init_cond(ksi_start, a, b, h)
-        f_ksi_curr = get_init_cond(ksi_curr, a, b, h)
-        f_ksi_end = get_init_cond(ksi_end, a, b, h)
+        f_ksi_start = get_init_cond(ksi_start, a, b, h, method)
+        f_ksi_curr = get_init_cond(ksi_curr, a, b, h, method)
+        f_ksi_end = get_init_cond(ksi_end, a, b, h, method)
 
         if f_ksi_start * f_ksi_curr < 0:
             ksi_end = ksi_curr
@@ -208,15 +203,12 @@ def get_solve_by_rk(a, b, h):
 
     u_0 = ksi_curr * u_p(0)
 
-    if is_rk2:
-        z, u, f = rk2(a, b, h, u_0, 0)  # f_0 = 0
-    else:
-        z, u, f = rk4(a, b, h, u_0, 0)
+    z, u, f = method(a, b, h, u_0, 0)
 
     return z, u, f, ksi_start, ksi_end
 
 
-def get_solve_by_auto_step(a, b):
+def get_solve_by_auto_step(a, b, method):
     """
     Пытаюсь реализовать автоматический выбор шага
     """
@@ -227,9 +219,9 @@ def get_solve_by_auto_step(a, b):
 
     while z <= b:
         # print(f"cacl by h")
-        _, u_h, _, _, _ = get_solve_by_rk(a, z + h, h)
+        _, u_h, _, _, _ = get_solve(a, z + h, h, method)
         # print(f"cacl by h / 2")
-        _, u_h_2, _, _, _ = get_solve_by_rk(a, z + h, h / 2)
+        _, u_h_2, _, _, _ = get_solve(a, z + h, h / 2, method)
 
         # локальная погрешность по формуле Рунге
         abs_err = abs((u_h_2[-1] - u_h[-1]) / (1 - 1 / 2 ** 4))
@@ -238,16 +230,13 @@ def get_solve_by_auto_step(a, b):
         while abs_err > EPS:
             h = h / 2
 
-            _, u_h, _, _, _ = get_solve_by_rk(a, z + h, h)
-            _, u_h_2, _, _, _ = get_solve_by_rk(a, z + h, h / 2)
+            _, u_h, _, _, _ = get_solve(a, z + h, h, method)
+            _, u_h_2, _, _, _ = get_solve(a, z + h, h / 2, method)
 
             # локальная погрешность по формуле Рунге
             abs_err = abs((u_h_2[-1] - u_h[-1]) / (1 - 1 / 2 ** 4))
 
-        if is_rk2:
-            _, u_h, f_h = rk2(a, z + h, h, 0.1530 * u_p(0), 0)  # f_0 = 0
-        else:
-            _, u_h, f_h, = rk4(a, z + h, h, 0.1530 * u_p(0), 0)
+        _, u_h, f_h, = method(a, z + h, h, 0.1530 * u_p(0), 0)
 
         z += h
         z_res.append(z)
@@ -287,10 +276,11 @@ def main() -> None:
     Главная функция
     """
     a, b = 0, 1
-    n = 200  # число узлов
+    n = 10000  # число узлов
     h = (b - a) / n
 
-    z_res, u_res, f_res, ksi_start, ksi_end = get_solve_by_rk(a, b, h)
+    # z_res, u_res, f_res, ksi_start, ksi_end = get_solve_by_rk(a, b, h, method=rk2)
+    z_res, u_res, f_res, ksi_start, ksi_end = get_solve(a, b, h, method=rk4)
     # z_res, u_res, f_res = get_solve_by_auto_step(a, b)
 
     up_res = [0] * len(z_res)
