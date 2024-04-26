@@ -3,6 +3,9 @@ from lsm_for_line import LeastSquaresMethodLine
 import numpy as np
 from matplotlib import pyplot as plt
 
+from scipy.integrate import solve_ivp
+from scipy.optimize import fsolve
+
 # отладочные параметры
 r = 0.35
 t_w = 2000
@@ -217,6 +220,8 @@ def get_solve_by_auto_step(a, b, method):
 
     z_res, u_res, f_res = list(), list(), list()
 
+    cnt = 0
+
     while z <= b:
         # print(f"cacl by h")
         _, u_h, _, _, _ = get_solve(a, z + h, h, method)
@@ -227,6 +232,7 @@ def get_solve_by_auto_step(a, b, method):
         abs_err = abs((u_h_2[-1] - u_h[-1]) / (1 - 1 / 2 ** 4))
         # print(f"abs_err = {abs_err: <10.7e}")
 
+        cnt2 = 0
         while abs_err > EPS:
             h = h / 2
 
@@ -236,7 +242,17 @@ def get_solve_by_auto_step(a, b, method):
             # локальная погрешность по формуле Рунге
             abs_err = abs((u_h_2[-1] - u_h[-1]) / (1 - 1 / 2 ** 4))
 
-        _, u_h, f_h, = method(a, z + h, h, 0.1530 * u_p(0), 0)
+            cnt2 += 1
+
+            if cnt2 % 10 == 0:
+                print(f"Выполнено {cnt} итераций цикла уменьшения шага")
+
+        _, u_h, f_h, _, _ = get_solve(a, z + h, h, method)
+
+        cnt += 1
+
+        if cnt % 10 == 0:
+            print(f"Выполнено {cnt} итераций")
 
         z += h
         z_res.append(z)
@@ -279,16 +295,17 @@ def main() -> None:
     n = 10000  # число узлов
     h = (b - a) / n
 
-    # z_res, u_res, f_res, ksi_start, ksi_end = get_solve_by_rk(a, b, h, method=rk2)
+    # # z_res, u_res, f_res, ksi_start, ksi_end = get_solve_by_rk(a, b, h, method=rk2)
     z_res, u_res, f_res, ksi_start, ksi_end = get_solve(a, b, h, method=rk4)
-    # z_res, u_res, f_res = get_solve_by_auto_step(a, b)
-
+    # # z_res, u_res, f_res = get_solve_by_auto_step(a, b, method=rk2)
+    # z_res, u_res, f_res = get_solve_by_auto_step(a, b, method=rk4)
+    #
     up_res = [0] * len(z_res)
 
     for i in range(len(z_res)):
         up_res[i] = u_p(z_res[i])
-
-    # write_result_to_file("../data/rk2.txt", z_res, u_res, f_res)
+    #
+    # # write_result_to_file("../data/rk2.txt", z_res, u_res, f_res)
     write_result_to_file("../data/rk4.txt", z_res, u_res, f_res)
     # write_result_to_file("../data/auto_step.txt", z_res, u_res, f_res)
 
@@ -298,11 +315,11 @@ def main() -> None:
     plt.plot(z_res, up_res, 'b', label='u_p')
     plt.legend()
     plt.grid()
-
-    plt.subplot(2, 2, 2)
-    plt.plot(z_res, f_res, 'g', label='F(z)')
-    plt.legend()
-    plt.grid()
+    #
+    # plt.subplot(2, 2, 2)
+    # plt.plot(z_res, f_res, 'g', label='F(z)')
+    # plt.legend()
+    # plt.grid()
     #
     # plt.subplot(2, 2, 3)
     # plt.plot(z_res, f_res2, 'g', label='F(z) integral')
