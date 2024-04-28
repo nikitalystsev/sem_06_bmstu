@@ -54,10 +54,7 @@ static int __init md_init(void)
     return 0;
 }
 
-static void __exit md_exit(void)
-{
-    printk(KERN_INFO "TASK_INFO: Good buy!\n");
-}
+static void __exit md_exit(void) {}
 
 module_init(md_init);
 module_exit(md_exit);
