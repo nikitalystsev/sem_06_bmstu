@@ -105,7 +105,7 @@ figure()
 
 plot((1 : N), S_quad_N, 'r', LineWidth=1);
 hold on;
-plot((1 : N), S_quad_n, 'm--', LineWidth=1);
+% plot((1 : N), S_quad_n, 'm--', LineWidth=1);
 hold on;
 plot((1 : N), S_quad_lower_n, 'b-o', MarkerIndices=1:5:length(mu_lower_n), LineWidth=1);
 hold on;

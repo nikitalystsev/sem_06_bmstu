@@ -1,7 +1,6 @@
 function lab_01()
 
 x = load('sel.txt'); 
-x = x;
 
 n = length(x);
 
@@ -62,7 +61,7 @@ hold on;
 
 % График функции плотности нормального распределения
 
-x_values = -7 : 1e-3 : -1;
+x_values = -7 : 1e-3 : 0;
 % normpdf - функция плотности нормального распределения
 f = normpdf(x_values, mu, sqrt(S_quad));
 
@@ -82,8 +81,8 @@ x = sort(x);
 
 t = zeros(n + 2, 1);
 
-t(1)     = x(1) - 1;
-t(n + 2) = x(n) + 1;
+t(1)     = -7;
+t(n + 2) = 0;
 
 for i = 2 : n + 1
     t(i) = x(i - 1);
