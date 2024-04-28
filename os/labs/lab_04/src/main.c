@@ -195,7 +195,7 @@ void fprintf_io_info(const int pid, FILE *out)
 
 void fprintf_maps_info(const int pid, FILE *out)
 {
-    char *line;
+    char *line = malloc(4096);
     int start_addr, end_addr, page_size = 4096;
     size_t line_size;
     ssize_t line_length;
@@ -205,20 +205,14 @@ void fprintf_maps_info(const int pid, FILE *out)
     FILE *file = fopen(pathToOpen, "r");
     fprintf(out, "\nMAPS:\n");
     int lengthOfRead;
-    fprintf(out, "%s\t\t%s\t\t%s\n", "bytes", "in pages", "addr-addr");
-    while ((line_length = getline(&line, &line_size, file)), !feof(file))
-    {
+    fprintf(out, "address                    perms offset  dev   inode                       pathnamet\t\t\t\t\t\t\t\t\t\t\t                              %s\t\t%s\n", "in pages", "bytes");
 
-        if (!feof(file) && line_length == -1)
-        {
-            perror("getline():");
-            fclose(file);
-            free(line);
-            exit(1);
-        }
+    while (!feof(file) && (line_length = getline(&line, &line_size, file)))
+    {
         sscanf(line, "%x-%x", &start_addr, &end_addr);
         total_page_num += end_addr - start_addr;
-        fprintf(out, "%d\t\t%d\t\t\t%s", (end_addr - start_addr), (end_addr - start_addr) / page_size, line);
+        line[strlen(line) - 1] = '\0';
+        fprintf(out, "%s\t\t%d\t\t\t\t%d\n", line, (end_addr - start_addr) / page_size, (end_addr - start_addr));
     }
     fclose(file);
     fprintf(out, "Total size (in bytes): %ld\n", total_page_num);
