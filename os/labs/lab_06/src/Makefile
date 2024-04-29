@@ -17,5 +17,5 @@ clean:
 	@rm -rf .tmp_versions
 
 disclean: clean
-	@rm *.ko *.symvers
+	@rm *.ko *.symvers *.mod .md1.o.d
 	
