@@ -12,4 +12,5 @@ static int __init md_init(void)
 
     return -1;
 }
+
 module_init(md_init);
