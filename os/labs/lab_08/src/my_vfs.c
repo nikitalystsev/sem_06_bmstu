@@ -8,7 +8,7 @@
 
 MODULE_LICENSE("GPL");
 
-#define MYFS_MAGIC_NUMBER 0x13131313
+#define MYFS_MAGIC_NUMBER 0x13131314
 
 struct myfs_inode
 {
