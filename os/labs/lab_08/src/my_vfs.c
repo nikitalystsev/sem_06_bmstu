@@ -1,22 +1,34 @@
-#include <linux/module.h>
-#include <linux/kernel.h>
+#include <linux/fs.h>
 #include <linux/init.h>
 #include <linux/init_task.h>
-#include <linux/fs.h>
+#include <linux/kernel.h>
+#include <linux/module.h>
 #include <linux/slab.h>
 #include <linux/time.h>
 
 MODULE_LICENSE("GPL");
 
 #define MYFS_MAGIC_NUMBER 0x13131313
+#define SLABNAME "myfsCache" // имя slab кэша
 
-struct kmem_cache * cache = NULL; // slab кэш, наверное
+// переменные, связанные с кэшем
+struct kmem_cache *cache = NULL; // slab кэш, наверное
+static void **line = NULL;
+static int sco = 0;
+static int number = 10; // типа сколько кирпичиков?
+static int size = 7;    // для наглядности - простые числа
 
 struct myfs_inode
 {
     int i_mode;
     unsigned long i_ino;
 } myfs_inode;
+
+void co(void *p)
+{
+    *(int *)p = (int)p;
+    sco++;
+}
 
 static void myfs_put_super(struct super_block *sb)
 {
@@ -101,10 +113,43 @@ static int __init myfs_init(void)
         return ret;
     }
 
-    cache = kmem_cache_create("myfsCache", )
-    printk(KERN_DEBUG "MYFS_MODULE loaded !\n");
+    line = kmalloc(sizeof(void *) * number, GFP_KERNEL);
+    if (!line)
+    {
+        printk(KERN_ERR "kmalloc error\n");
+        goto mout;
+    }
+
+    cache = kmem_cache_create(SLABNAME, size, 0, SLAB_HWCACHE_ALIGN, co);
+    if (!cache)
+    {
+        printk(KERN_ERR "kmem_cache_create error\n");
+        goto cout;
+    }
+
+    for (int i = 0; i < number; i++)
+        if (NULL == (line[i] = kmem_cache_alloc(cache, GFP_KERNEL)))
+        {
+            printk(KERN_ERR "kmem_cache_alloc error\n");
+            goto oout;
+        }
+
+    printk(KERN_INFO "allocate %d objects into slab: %s\n", number, SLABNAME);
+    printk(KERN_INFO "object size %d bytes, full size %ld bytes\n", size, (long)size * number);
+    printk(KERN_INFO "constructor called %d times\n", sco);
 
     return 0;
+oout:
+    for (int i = 0; i < number; i++)
+        kmem_cache_free(cache, line[i]);
+cout:
+    kmem_cache_destroy(cache);
+mout:
+    kfree(line);
+
+    printk(KERN_DEBUG "MYFS_MODULE loaded !\n");
+
+    return -ENOMEM;
 }
 
 static void __exit myfs_exit(void)
@@ -116,6 +161,11 @@ static void __exit myfs_exit(void)
         printk(KERN_ERR "MYFS_MODULE cannot unregister filesystem !\n");
         return;
     }
+
+    for (int i = 0; i < number; i++)
+        kmem_cache_free(cache, line[i]);
+    kmem_cache_destroy(cache);
+    kfree(line);
 
     printk(KERN_DEBUG "MYFS_MODULE unloaded !\n");
 }
