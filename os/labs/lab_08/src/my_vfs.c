@@ -10,6 +10,8 @@ MODULE_LICENSE("GPL");
 
 #define MYFS_MAGIC_NUMBER 0x13131313
 
+struct kmem_cache * cache = NULL; // slab кэш, наверное
+
 struct myfs_inode
 {
     int i_mode;
@@ -98,7 +100,10 @@ static int __init myfs_init(void)
         printk(KERN_ERR "MYFS_MODULE cannot register filesystem!\n");
         return ret;
     }
+
+    cache = kmem_cache_create("myfsCache", )
     printk(KERN_DEBUG "MYFS_MODULE loaded !\n");
+
     return 0;
 }
 
