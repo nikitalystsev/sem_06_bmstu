@@ -1,7 +1,7 @@
 #include <linux/init.h>
 #include <linux/module.h>
-#include <linux/vmalloc.h>
 #include <linux/proc_fs.h>
+#include <linux/vmalloc.h>
 
 MODULE_LICENSE("GPL");
 
@@ -15,8 +15,8 @@ static char *cookie_buf = NULL;
 
 char tmp_buf[COOKIE_BUF_SIZE];
 
-static int read_ind = 0;
-static int write_ind = 0;
+unsigned int read_index;
+unsigned int write_index;
 
 static void free_all(void)
 {
@@ -48,20 +48,20 @@ static ssize_t fortune_write(struct file *file, const char __user *buf, size_t l
 {
     printk(KERN_INFO "fortune: write called\n");
 
-    if (len > COOKIE_BUF_SIZE - write_ind + 1)
+    if (len > COOKIE_BUF_SIZE - write_index + 1)
     {
         printk(KERN_ERR "fortune: buffer overflow\n");
         return -ENOSPC;
     }
 
-    if (copy_from_user(&cookie_buf[write_ind], buf, len) != 0)
+    if (copy_from_user(&cookie_buf[write_index], buf, len) != 0)
     {
         printk(KERN_ERR "fortune: [ERROR] [can't copy_from_user]\n");
         return -EFAULT;
     }
 
-    write_ind += len;
-    cookie_buf[write_ind - 1] = '\0';
+    write_index += len;
+    cookie_buf[write_index - 1] = '\0';
 
     return len;
 }
@@ -72,13 +72,13 @@ static ssize_t fortune_read(struct file *file, char __user *buf, size_t len, lof
 
     printk(KERN_INFO "fortune: read called\n");
 
-    if ((*fPos > 0) || (write_ind == 0))
+    if ((*fPos > 0) || (write_index == 0))
         return 0;
 
-    if (read_ind >= write_ind)
-        read_ind = 0;
+    if (read_index >= write_index)
+        read_index = 0;
 
-    readLen = snprintf(tmp_buf, COOKIE_BUF_SIZE, "%s\n", &cookie_buf[read_ind]);
+    readLen = snprintf(tmp_buf, COOKIE_BUF_SIZE, "%s\n", &cookie_buf[read_index]);
 
     if (copy_to_user(buf, tmp_buf, readLen) != 0)
     {
@@ -86,7 +86,7 @@ static ssize_t fortune_read(struct file *file, char __user *buf, size_t len, lof
         return -EFAULT;
     }
 
-    read_ind += readLen;
+    read_index += readLen;
     *fPos += readLen;
 
     return readLen;
@@ -135,8 +135,8 @@ static int __init md_init(void)
         return -ENOMEM;
     }
 
-    read_ind = 0;
-    write_ind = 0;
+    read_index = 0;
+    write_index = 0;
 
     printk(KERN_INFO "fortune: loaded\n");
 
