@@ -138,6 +138,8 @@ static int __init myfs_init(void)
     printk(KERN_INFO "object size %d bytes, full size %ld bytes\n", size, (long)size * number);
     printk(KERN_INFO "constructor called %d times\n", sco);
 
+    printk(KERN_DEBUG "MYFS_MODULE loaded !\n");
+
     return 0;
 oout:
     for (int i = 0; i < number; i++)
@@ -146,8 +148,6 @@ cout:
     kmem_cache_destroy(cache);
 mout:
     kfree(line);
-
-    printk(KERN_DEBUG "MYFS_MODULE loaded !\n");
 
     return -ENOMEM;
 }
