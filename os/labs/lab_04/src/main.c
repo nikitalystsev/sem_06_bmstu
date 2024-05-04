@@ -200,8 +200,9 @@ void fprintf_maps_info(const int pid, FILE *out)
     char pathToOpen[PATH_MAX];
     snprintf(pathToOpen, PATH_MAX, "/proc/%d/maps", pid);
     FILE *file = fopen(pathToOpen, "r");
+
     fprintf(out, "\nMAPS\n");
-    fprintf(out, "%-32s %-6s %-s %-s %-s %6s %6s %28s\n", "address", "bytes", "in pages", "perms", "offset", "dev", "inode", "pathname");
+    fprintf(out, "%-30s %-6s %-s %-s %-s %6s %6s %28s\n", "address", "bytes", "in pages", "perms", "offset", "dev", "inode", "pathname");
 
     while ((line_length = getline(&line, &line_size, file)), !feof(file))
     {
@@ -221,7 +222,7 @@ void fprintf_maps_info(const int pid, FILE *out)
         sscanf(line, "%x-%x", &start_addr, &end_addr);
         total_page_num += end_addr - start_addr;
 
-        fprintf(out, "%s-%s\t\t%8d\t\t%6d ", addr1, addr2, (end_addr - start_addr), (end_addr - start_addr) / page_size);
+        fprintf(out, "%s-%s\t\t%6d\t\t%4d ", addr1, addr2, (end_addr - start_addr), (end_addr - start_addr) / page_size);
 
         for (int i = strlen(addr1) + strlen(addr2) + 1; line[i] != '\n'; i++)
             fprintf(out, "%c", line[i]);
