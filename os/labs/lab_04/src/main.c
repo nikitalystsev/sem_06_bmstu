@@ -1,21 +1,18 @@
 #include <dirent.h>
-#include <linux/limits.h>
-#include <stdio.h>
-#include <string.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <stdint.h>
 #include <errno.h>
-#include <fcntl.h>     /* open */
+#include <fcntl.h> /* open */
+#include <linux/limits.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/types.h> /* getpid */
-
-#include <sys/time.h>
-#include <time.h>
+#include <unistd.h>
 
 #include "stat_expl.h"
 
 #define _XOPEN_SOURCE 700
-#define BUFSIZE 1000
+#define BUF_SIZE 1000
 long int *buf[1000];
 
 void fprintf_cmdline_info(const int pid, FILE *out)
@@ -25,8 +22,8 @@ void fprintf_cmdline_info(const int pid, FILE *out)
 
     FILE *f = fopen(path, "r");
 
-    char buf[BUFSIZE + 1];
-    int len = fread(buf, 1, BUFSIZE, f);
+    char buf[BUF_SIZE + 1];
+    int len = fread(buf, 1, BUF_SIZE, f);
     buf[len] = '\0';
 
     fprintf(out, "CMDLINE: ");
@@ -40,8 +37,8 @@ void fprintf_cwd_info(const int pid, FILE *out)
     char path[PATH_MAX];
     snprintf(path, PATH_MAX, "/proc/%d/cwd", pid);
 
-    char buf[BUFSIZE + 1];
-    int len = readlink(path, buf, BUFSIZE);
+    char buf[BUF_SIZE + 1];
+    int len = readlink(path, buf, BUF_SIZE);
     buf[len] = '\0';
 
     fprintf(out, "CWD: ");
@@ -53,12 +50,12 @@ void fprintf_environ_info(const int pid, FILE *out)
     char path[PATH_MAX];
     snprintf(path, PATH_MAX, "/proc/%d/environ", pid);
 
-    char buf[BUFSIZE];
+    char buf[BUF_SIZE];
     size_t len;
 
-    fprintf(out, "ENVIRON:\n");
+    fprintf(out, "ENVIRON\n");
     FILE *f = fopen(path, "r");
-    while ((len = fread(buf, 1, BUFSIZE, f)) > 0)
+    while ((len = fread(buf, 1, BUF_SIZE, f)) > 0)
     {
         for (int i = 0; i < len; ++i)
             if (buf[i] == 0)
@@ -77,8 +74,8 @@ void fprintf_exe_info(const int pid, FILE *out)
     char path[PATH_MAX];
     snprintf(path, PATH_MAX, "/proc/%d/exe", pid);
 
-    char buf[BUFSIZE + 1];
-    int len = readlink(path, buf, BUFSIZE);
+    char buf[BUF_SIZE + 1];
+    int len = readlink(path, buf, BUF_SIZE);
     buf[len] = '\0';
 
     fprintf(out, "EXE: ");
@@ -90,8 +87,8 @@ void fprintf_root_info(const int pid, FILE *out)
     char path[PATH_MAX];
     snprintf(path, PATH_MAX, "/proc/%d/root", pid);
 
-    char buf[BUFSIZE + 1];
-    int len = readlink(path, buf, BUFSIZE);
+    char buf[BUF_SIZE + 1];
+    int len = readlink(path, buf, BUF_SIZE);
     buf[len] = '\0';
 
     fprintf(out, "ROOT: ");
@@ -105,16 +102,16 @@ void fprintf_fd_info(const int pid, FILE *out)
 
     DIR *dp = opendir(path);
     struct dirent *dirp;
-    char full_path[BUFSIZE + 1];
-    char buf[BUFSIZE + 1];
-    fprintf(out, "FD:\n");
+    char full_path[BUF_SIZE + 1];
+    char buf[BUF_SIZE + 1];
+    fprintf(out, "FD\n");
 
     while ((dirp = readdir(dp)) != NULL)
     {
         if ((strcmp(dirp->d_name, ".") != 0) && (strcmp(dirp->d_name, "..") != 0))
         {
             sprintf(full_path, "%s/%s", path, dirp->d_name);
-            int len = readlink(full_path, buf, BUFSIZE);
+            int len = readlink(full_path, buf, BUF_SIZE);
             buf[len] = '\0';
 
             fprintf(out, "%s -> %s\n", dirp->d_name, buf);
@@ -131,10 +128,10 @@ void fprintf_stat_info(const int pid, FILE *out)
     snprintf(path, PATH_MAX, "/proc/%d/stat", pid);
 
     FILE *f = fopen(path, "r");
-    fprintf(out, "STAT:\n");
+    fprintf(out, "STAT\n");
 
-    char buf[BUFSIZE + 1] = "\0";
-    fread(buf, 1, BUFSIZE, f);
+    char buf[BUF_SIZE + 1] = "\0";
+    fread(buf, 1, BUF_SIZE, f);
 
     char *stat = strtok(buf, " ");
     int i = 0;
@@ -154,8 +151,8 @@ void fprintf_statm_info(const int pid, FILE *out)
     snprintf(path, PATH_MAX, "/proc/%d/statm", pid);
 
     FILE *f = fopen(path, "r");
-    char buf[BUFSIZE];
-    fread(buf, 1, BUFSIZE, f);
+    char buf[BUF_SIZE];
+    fread(buf, 1, BUF_SIZE, f);
 
     char *statm = strtok(buf, " ");
     fprintf(out, "STATM: \n");
@@ -174,12 +171,12 @@ void fprintf_io_info(const int pid, FILE *out)
     snprintf(path, PATH_MAX, "/proc/%d/io", pid);
 
     FILE *f = fopen(path, "r");
-    fprintf(out, "IO:\n");
+    fprintf(out, "IO\n");
 
-    char buf[BUFSIZE + 1];
+    char buf[BUF_SIZE + 1];
     int len;
 
-    while ((len = fread(buf, 1, BUFSIZE, f)) > 0)
+    while ((len = fread(buf, 1, BUF_SIZE, f)) > 0)
     {
         for (int i = 0; i < len; ++i)
             if (buf[i] == 0)
@@ -195,7 +192,7 @@ void fprintf_io_info(const int pid, FILE *out)
 
 void fprintf_maps_info(const int pid, FILE *out)
 {
-    char *line = malloc(4096);
+    char *line;
     int start_addr, end_addr, page_size = 4096;
     size_t line_size;
     ssize_t line_length;
@@ -203,17 +200,34 @@ void fprintf_maps_info(const int pid, FILE *out)
     char pathToOpen[PATH_MAX];
     snprintf(pathToOpen, PATH_MAX, "/proc/%d/maps", pid);
     FILE *file = fopen(pathToOpen, "r");
-    fprintf(out, "\nMAPS:\n");
-    int lengthOfRead;
-    fprintf(out, "address                    perms offset  dev   inode                       pathnamet\t\t\t\t\t\t\t\t\t\t\t                              %s\t\t%s\n", "in pages", "bytes");
+    fprintf(out, "\nMAPS\n");
+    fprintf(out, "%-32s %-6s %-s %-s %-s %6s %6s %28s\n", "address", "bytes", "in pages", "perms", "offset", "dev", "inode", "pathname");
 
-    while (!feof(file) && (line_length = getline(&line, &line_size, file)))
+    while ((line_length = getline(&line, &line_size, file)), !feof(file))
     {
+
+        if (!feof(file) && line_length == -1)
+        {
+            perror("getline():");
+            fclose(file);
+            free(line);
+            exit(1);
+        }
+
+        char addr1[30], addr2[30];
+
+        sscanf(line, "%s-%s", addr1, addr2);
+
         sscanf(line, "%x-%x", &start_addr, &end_addr);
         total_page_num += end_addr - start_addr;
-        line[strlen(line) - 1] = '\0';
-        fprintf(out, "%s\t\t%d\t\t\t\t%d\n", line, (end_addr - start_addr) / page_size, (end_addr - start_addr));
+
+        fprintf(out, "%s-%s\t\t%8d\t\t%6d ", addr1, addr2, (end_addr - start_addr), (end_addr - start_addr) / page_size);
+
+        for (int i = strlen(addr1) + strlen(addr2) + 1; line[i] != '\n'; i++)
+            fprintf(out, "%c", line[i]);
+        fprintf(out, "\n");
     }
+
     fclose(file);
     fprintf(out, "Total size (in bytes): %ld\n", total_page_num);
     total_page_num /= page_size;
@@ -227,8 +241,8 @@ void fprintf_comm_info(const int pid, FILE *out)
 
     FILE *f = fopen(path, "r");
 
-    char buf[BUFSIZE + 1];
-    int len = fread(buf, 1, BUFSIZE, f);
+    char buf[BUF_SIZE + 1];
+    int len = fread(buf, 1, BUF_SIZE, f);
     buf[len] = '\0';
 
     fprintf(out, "COMM: ");
@@ -244,9 +258,9 @@ void fprintf_task_info(const int pid, FILE *out)
 
     DIR *dp = opendir(path);
     struct dirent *dirp;
-    char full_path[BUFSIZE + 1];
-    char buf[BUFSIZE + 1];
-    fprintf(out, "TASK:\n");
+    char full_path[BUF_SIZE + 1];
+    char buf[BUF_SIZE + 1];
+    fprintf(out, "TASK\n");
 
     while ((dirp = readdir(dp)) != NULL)
     {
@@ -328,7 +342,7 @@ int pagemap_get_entry(PagemapEntry *entry, int pagemap_fd, uintptr_t vaddr)
  */
 int virt_to_phys_user(uintptr_t *paddr, pid_t pid, uintptr_t vaddr)
 {
-    char pagemap_file[BUFSIZ];
+    char pagemap_file[BUF_SIZE];
     int pagemap_fd;
 
     snprintf(pagemap_file, sizeof(pagemap_file), "/proc/%ju/pagemap", (uintmax_t)pid);
@@ -347,136 +361,72 @@ int virt_to_phys_user(uintptr_t *paddr, pid_t pid, uintptr_t vaddr)
     return 0;
 }
 
-int fprintf_pagemap_info(const int pid, FILE *out)
+void print_page(uint64_t address, uint64_t data, FILE *out)
 {
-    char buffer[BUFSIZ];
-    char maps_file[BUFSIZ];
-    char pagemap_file[BUFSIZ];
-    int maps_fd;
-    int offset = 0;
-    int pagemap_fd;
+    fprintf(out, "0x%-15lx : %-10lx %-10ld %-10ld %-10ld %-10ld\n", address,
+            data & (((uint64_t)1 << 55) - 1), (data >> 55) & 1, (data >> 61) & 1, (data >> 62) & 1, (data >> 63) & 1);
+}
 
-    snprintf(maps_file, sizeof(maps_file), "/proc/%ju/maps", (uintmax_t)pid);
-    snprintf(pagemap_file, sizeof(pagemap_file), "/proc/%ju/pagemap", (uintmax_t)pid);
-    maps_fd = open(maps_file, O_RDONLY);
-    if (maps_fd < 0)
+void fprintf_pagemap_info(const int proc, FILE *out)
+{
+    fprintf(out, "\n\nPAGEMAP\n\n");
+    fprintf(out, "   addr         pfn      soft-dirty    file/shared    swapped     present\n");
+
+    char path[PATH_MAX];
+    snprintf(path, PATH_MAX, "/proc/%d/maps", proc);
+    FILE *maps = fopen(path, "r");
+
+    snprintf(path, PATH_MAX, "/proc/%d/pagemap", proc);
+    int pm_fd = open(path, O_RDONLY);
+
+    char buf[BUF_SIZE + 1] = "\0";
+    int len;
+
+    // чтение maps
+    while ((len = fread(buf, 1, BUF_SIZE, maps)) > 0)
     {
-        perror("open maps");
-        return EXIT_FAILURE;
-    }
-    pagemap_fd = open(pagemap_file, O_RDONLY);
-    if (pagemap_fd < 0)
-    {
-        perror("open pagemap");
-        return EXIT_FAILURE;
-    }
-    fprintf(out, "\nPAGEMAP:\n");
-    int r = 0;
-    fprintf(out, "addr\t\t\tpfn\tsoft-dirty\tfile/shared\tswapped\tpresent\tlibrary\n");
-    for (;;)
-    {
-        ssize_t length = read(maps_fd, buffer + offset, sizeof buffer - offset);
-        if (length <= 0)
-            break;
-        length += offset;
-        for (size_t i = offset; i < (size_t)length; i++)
+        for (int i = 0; i < len; i++)
         {
-            uintptr_t low = 0, high = 0;
-            if (buffer[i] == '\n' && i)
+            if (buf[i] == 0)
             {
-                const char *lib_name;
-                size_t y;
-                /* Parse a line from maps. Each line contains a range that contains many pages. */
-                {
-                    size_t x = i - 1;
-                    while (x && buffer[x] != '\n')
-                        x--;
-                    if (buffer[x] == '\n')
-                        x++;
-                    while (buffer[x] != '-' && x < sizeof buffer)
-                    {
-                        char c = buffer[x++];
-                        low *= 16;
-                        if (c >= '0' && c <= '9')
-                        {
-                            low += c - '0';
-                        }
-                        else if (c >= 'a' && c <= 'f')
-                        {
-                            low += c - 'a' + 10;
-                        }
-                        else
-                        {
-                            break;
-                        }
-                    }
-                    while (buffer[x] != '-' && x < sizeof buffer)
-                        x++;
-                    if (buffer[x] == '-')
-                        x++;
-                    while (buffer[x] != ' ' && x < sizeof buffer)
-                    {
-                        char c = buffer[x++];
-                        high *= 16;
-                        if (c >= '0' && c <= '9')
-                        {
-                            high += c - '0';
-                        }
-                        else if (c >= 'a' && c <= 'f')
-                        {
-                            high += c - 'a' + 10;
-                        }
-                        else
-                        {
-                            break;
-                        }
-                    }
-                    lib_name = 0;
-                    for (int field = 0; field < 4; field++)
-                    {
-                        x++;
-                        while (buffer[x] != ' ' && x < sizeof buffer)
-                            x++;
-                    }
-                    while (buffer[x] == ' ' && x < sizeof buffer)
-                        x++;
-                    y = x;
-                    while (buffer[y] != '\n' && y < sizeof buffer)
-                        y++;
-                    buffer[y] = 0;
-                    lib_name = buffer + x;
-                }
-                /* Print Amount of Pages */
-                buf[r++] = (uintmax_t)((high - low) / sysconf(_SC_PAGE_SIZE));
-                fprintf(out, "Pages: %ju\n", (uintmax_t)((high - low) / sysconf(_SC_PAGE_SIZE)));
-
-                /* Get info about all pages in this page range with pagemap. */
-                {
-                    PagemapEntry entry;
-                    for (uintptr_t addr = low; addr < high; addr += sysconf(_SC_PAGE_SIZE))
-                    {
-                        /* TODO always fails for the last page (vsyscall), why? pread returns 0. */
-                        if (!pagemap_get_entry(&entry, pagemap_fd, addr))
-                        {
-                            fprintf(out, "%jx\t%jx\t\t\t%u\t\t\t%u\t\t%u\t\t%u\t%s\n",
-                                    (uintmax_t)addr,
-                                    (uintmax_t)entry.pfn,
-                                    entry.soft_dirty,
-                                    entry.file_page,
-                                    entry.swapped,
-                                    entry.present,
-                                    lib_name);
-                        }
-                    }
-                }
-                buffer[y] = '\n';
+                buf[i] = '\n';
             }
         }
-    }
-    close(maps_fd);
-    close(pagemap_fd);
+        buf[len] = '\0';
 
-    return 0;
+        // проход по строкам из maps
+        char *save_row;
+        char *row = strtok_r(buf, "\n", &save_row);
+
+        while (row)
+        {
+            // получение столбца участка адресного пространства
+            char *addresses = strtok(row, " ");
+            char *start_str, *end_str;
+
+            // получение начала и конца участка адресного пространства
+            if ((start_str = strtok(addresses, "-")) && (end_str = strtok(NULL, "-")))
+            {
+                uint64_t start = strtoul(start_str, NULL, 16);
+                uint64_t end = strtoul(end_str, NULL, 16);
+
+                for (uint64_t i = start; i < end; i += sysconf(_SC_PAGE_SIZE))
+                {
+                    uint64_t offset;
+                    // поиск смещения, по которому в pagemap находится информация о текущей странице
+                    uint64_t index = i / sysconf(_SC_PAGE_SIZE) * sizeof(offset);
+
+                    pread(pm_fd, &offset, sizeof(offset), index);
+                    print_page(i, offset, out);
+                }
+            }
+
+            row = strtok_r(NULL, "\n", &save_row);
+        }
+    }
+
+    fclose(maps);
+    close(pm_fd);
 }
 
 int main(int argc, char **argv)
@@ -485,40 +435,18 @@ int main(int argc, char **argv)
     char *name = argv[2];
     FILE *f = fopen(name, "w");
 
-    struct timeval current_time;
-    time_t raw_time;
-    struct tm *timeinfo;
-    time(&raw_time);
-    timeinfo = localtime(&raw_time);
-    char time_buf1[80];
-
-    time_t start, end;
-
-    start = clock();
-    strftime(time_buf1, 80, "%H:%M:%S", timeinfo);
-
     fprintf_environ_info(id, f);
     fprintf_stat_info(id, f);
-    fprintf_statm_info(id, f);
     fprintf_cmdline_info(id, f);
+    fprintf_fd_info(id, f);
     fprintf_cwd_info(id, f);
     fprintf_exe_info(id, f);
     fprintf_root_info(id, f);
     fprintf_maps_info(id, f);
-    fprintf_pagemap_info(id, f);
     fprintf_io_info(id, f);
     fprintf_comm_info(id, f);
     fprintf_task_info(id, f);
-    fprintf_fd_info(id, f);
-
-    time(&raw_time);
-    timeinfo = localtime(&raw_time);
-    char time_buf2[80];
-
-    end = clock();
-    strftime(time_buf2, 80, "%H:%M:%S", timeinfo);
-
-    printf("Time start = %s, Time end = %s, Time two = %ld\n", time_buf1, time_buf2, (end - start));
+    fprintf_pagemap_info(id, f);
 
     fclose(f);
 
