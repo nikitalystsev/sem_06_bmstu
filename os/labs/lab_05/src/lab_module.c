@@ -1,8 +1,8 @@
+#include <linux/dcache.h>
+#include <linux/fs_struct.h>
 #include <linux/init_task.h>
 #include <linux/module.h>
 #include <linux/sched.h>
-#include <linux/fs_struct.h>
-#include <linux/dcache.h>
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Guru Linux");
