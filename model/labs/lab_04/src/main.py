@@ -66,6 +66,22 @@ def f0(time):
     return (f_max / t_max) * time * np.exp(-((time / t_max) - 1))
 
 
+def p(x):
+    """
+    Функция p(u) для исходного уравнения
+    """
+
+    return (2 / r) * alpha(x)
+
+
+def f(x, t, time):
+    """
+    Функция f(x, u) для исходного уравнения
+    """
+
+    return k(t) * f0(time) * np.exp(-k(t) * x) + (2 * t0 / r) * alpha(x)
+
+
 def main() -> None:
     """
     Главная функция
