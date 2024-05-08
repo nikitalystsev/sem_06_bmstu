@@ -1,0 +1,27 @@
+	owner(shcherbakova, building("equestria", 10000000, 6000, 4)).
+	
+	owner(frolova, car("D", audi, burgundy, 2500000, "S042GB562")).
+	owner(frolova, building("house", 5000000, 234, 2)).
+	
+	owner(lystseva, car("crossover", mitsubishi, grey, 1500000, "F001VS148")).
+	owner(lystseva, site("farm2", 1000000, 150)).
+	
+	owner(sidorov, car("F", mazda, black, 3500000, "W042BM342")). 
+  	owner(sidorov, water_vehicle("cruiser", 150000, yamaha, red)).
+  	
+  	property_title(car(Title, _, _, _, _), Title).
+	property_title(building(Title, _, _, _), Title).
+	property_title(site(Title, _, _), Title).
+	property_title(water_vehicle(Title, _, _, _), Title).
+	
+	property_title_price(car(Title, _, _, Price, _), Title, Price).
+	property_title_price(building(Title, Price, _, _), Title, Price).
+	property_title_price(site(Title, Price, _), Title, Price).
+	property_title_price(water_vehicle(Title, Price, _, _), Title, Price).
+	
+  	properties_title_by_surname(Surname, Title) :- owner(Surname, Property), property_title(Property, Title).
+	
+	properties_title_price_by_surname(Surname, Title, Price) :- owner(Surname, Property), property_title_price(Property, Title, Price).
+	
+	cost(Surname, "car", Cost) :- owner(Surname, car(_, _, _, Cost, _)), !.
+	cost(Surname, "building", Cost) :- owner(Surname, building(_, Cost, _, _)), !.

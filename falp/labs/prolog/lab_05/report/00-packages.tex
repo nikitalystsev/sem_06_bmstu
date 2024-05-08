@@ -1,0 +1,56 @@
+\usepackage{threeparttable}
+\usepackage{makecell}
+\usepackage{longtable}
+
+\usepackage[inkscapeformat=png]{svg}
+\svgpath{inc/img/}
+
+% Настройка полей
+\usepackage{geometry}
+\geometry{left=30mm}
+\geometry{right=10mm}
+\geometry{top=20mm}
+\geometry{bottom=20mm}
+
+% Настройка заголовков
+\usepackage{titlesec}
+\makeatletter
+\renewcommand\LARGE{\@setfontsize\LARGE{22pt}{20}}
+\renewcommand\Large{\@setfontsize\Large{20pt}{20}}
+\renewcommand\large{\@setfontsize\large{16pt}{20}}
+\makeatother
+\titleformat{\chapter}{\large\bfseries}{\thechapter}{0.5em}{\large\bfseries}
+\titleformat{name=\chapter,numberless}[block]{\hspace{\parindent}}{}{0pt}{\large\bfseries\centering}
+\titleformat{\section}{\large\bfseries}{\thesection}{0.5em}{\large\bfseries}
+\titleformat{\subsection}{\large\bfseries}{\thesubsection}{0.5em}{\large\bfseries}
+\titleformat{\subsubsection}{\large\bfseries}{\thesubsection}{0.5em}{\large\bfseries}
+\titlespacing{\chapter}{12.5mm}{-22pt}{10pt}
+\titlespacing{\section}{12.5mm}{10pt}{10pt}
+\titlespacing{\subsection}{12.5mm}{10pt}{10pt}
+\titlespacing{\subsubsection}{12.5mm}{10pt}{10pt}
+
+% Команда создания рисунка
+\newcommand{\includesvgimage}[5]
+{
+	\ifthenelse{\equal{#2}{f}}
+	{
+		\begin{figure}[#3]
+			\center{\includesvg[width=#4]{inc/img/#1}}
+			\caption{#5}
+			\label{img:#1}
+		\end{figure}
+	}
+	{
+		\ifthenelse{\equal{#2}{w}}
+		{
+			\begin{wrapfigure}{#3}{#4}
+				\center{\includesvg[width=#4]{inc/img/#1}}
+				\caption{#5}
+				\label{img:#1}
+			\end{wrapfigure}
+		}
+		{
+			\PackageError{bmstu}{unknown image type}{}	
+		}
+	}
+}

@@ -1,0 +1,37 @@
+domains
+	% phonebook
+	surname = symbol
+	phone = string
+	
+	% address
+	city, street = symbol
+	num_house, num_flat = integer
+	addr = address(city, street, num_house, num_flat)
+	
+	% depositors
+	bank = symbol
+	account, amount = integer.
+	
+	% property
+	area, floors, price = integer
+	brand, color = symbol
+	number = string
+	title = string
+	
+	property = car(title, brand, color, price, number);
+    		   building(title, price, area, floors);
+    	 	   site(title, price, area);
+                   water_vehicle(title, price, brand, color).
+                   
+       	type = string
+       	
+predicates
+	phonebook(surname, phone, addr)
+	owner(surname, property)
+	depositor(surname, bank, account, amount)
+	
+	property_title(property, title)
+	property_title_price(property, title, price)
+	
+	properties_title_by_surname(surname, title)
+	properties_title_price_by_surname(surname, title, price)
