@@ -4,11 +4,11 @@ predicates
  
 clauses
 	fibb(1,C,_,C):- !.
-	fibb(N,C,P,F):- N1=N-1,C1=C+P,P1=C,fibb(N1,C1,P1,F).
+	fibb(N,C,P,F):- N1=N-1,C1=C+P,fibb(N1,C1,C,F).
  
 	fib(N,F):-fibb(N,0, 1,F).
 goal
-	fib(1,R).
+	fib(5,R).
 
 
 	
