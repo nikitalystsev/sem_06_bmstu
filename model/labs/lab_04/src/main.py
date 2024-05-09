@@ -74,13 +74,28 @@ def p(x):
     return (2 / r) * alpha(x)
 
 
-def f(x, t, time):
+def f(x, time, t):
     """
     Функция f(x, u) для исходного уравнения
+    идейно, пока что, t - массив значений функции T в текущий момент времени
     """
 
-    return k(t) * f0(time) * np.exp(-k(t) * x) + (2 * t0 / r) * alpha(x)
+    return k(t[x]) * f0(time) * np.exp(-k(t[x]) * x) + (2 * t0 / r) * alpha(x)
 
+
+def kappa(t1, t2):
+    """
+    Функция каппа (вычисляется с использованием метода средних)
+    """
+
+    return (_lambda(t1) + _lambda(t2)) / 2
+
+
+def left_boundary_condition(z0, g0, h):
+    """
+    Левое краевое условие метода правой прогонки
+    """
+    
 
 def main() -> None:
     """

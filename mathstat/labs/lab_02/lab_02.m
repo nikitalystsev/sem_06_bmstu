@@ -85,13 +85,15 @@ end
 fprintf('\nЗадание 3.a)\n');
 fprintf('График в отдельном окне\n');
 
-plot((1 : N), mu_N, 'r', LineWidth=1);
+a = 11;
+
+plot((a : N), mu_N(a:N), 'r', LineWidth=1);
 hold on;
-plot((1 : N), mu_n, 'm--', LineWidth=1);
+plot((a : N), mu_n(a:N), 'm--', LineWidth=1);
 hold on;
-plot((1 : N), mu_lower_n, 'b-o', MarkerIndices=1:5:length(mu_lower_n), LineWidth=1);
+plot((a : N), mu_lower_n(a:N), 'b-o', MarkerIndices=1:5:length(mu_lower_n(a:N)), LineWidth=1);
 hold on;
-plot((1 : N), mu_upper_n, 'k-*', MarkerIndices=1:5:length(mu_lower_n), LineWidth=1);
+plot((a : N), mu_upper_n(a:N), 'k-*', MarkerIndices=1:5:length(mu_lower_n(a:N)), LineWidth=1);
 hold on;
 grid on;
 xlabel("n");
@@ -103,13 +105,13 @@ fprintf('График в отдельном окне\n');
 
 figure()
 
-plot((1 : N), S_quad_N, 'r', LineWidth=1);
+plot((a : N), S_quad_N(a:N), 'r', LineWidth=1);
 hold on;
-% plot((1 : N), S_quad_n, 'm--', LineWidth=1);
+plot((a : N), S_quad_n(a:N), 'm--', LineWidth=1);
 hold on;
-plot((1 : N), S_quad_lower_n, 'b-o', MarkerIndices=1:5:length(mu_lower_n), LineWidth=1);
+plot((a : N), S_quad_lower_n(a:N), 'b-o', MarkerIndices=1:5:length(S_quad_lower_n(a:N)), LineWidth=1);
 hold on;
-plot((1 : N), S_quad_upper_n, 'k-*', MarkerIndices=1:5:length(mu_lower_n), LineWidth=1);
+plot((a : N), S_quad_upper_n(a:N), 'k-*', MarkerIndices=1:5:length(S_quad_upper_n(a:N)), LineWidth=1);
 hold on;
 grid on;
 xlabel("n");
