@@ -25,6 +25,8 @@ c = -0.05 * d
 f_max = 50
 t_max = 60
 
+EPS = 1e-4
+
 
 def alpha(x):
     """
@@ -95,12 +97,81 @@ def left_boundary_condition(z0, g0, h):
     """
     Левое краевое условие метода правой прогонки
     """
-    
+
+
+def solve(t):
+    """
+    Функция получения решения прогонкой
+    """
+
+    return t  # пока что
+
+
+def simple_iteration_on_layer(t_m):
+    """
+    Вычисляет значение искомой функции (функции T) на слое t_m_plus_1
+    """
+    _t_m = t_m
+    while True:
+        # цикл подсчета значений функции T методом простых итераций для
+        # слоя t_m_plus_1
+        t_m_plus_1 = solve(_t_m)
+
+        cnt = 0
+
+        for i in range(len(_t_m)):
+            curr_err = abs((_t_m[i] - t_m_plus_1[i]) / t_m_plus_1[i])
+            if curr_err < EPS:
+                cnt += 1
+
+        if cnt == len(_t_m):
+            break
+
+        _t_m = t_m_plus_1
+
+    return t_m_plus_1
+
+
+def simple_iteration(a, b, h, time0, timem, tau):
+    """
+    Реализация метода простых итераций для решения нелинейной системы уравнений
+    """
+    n = int((b - a) / h)  # число узлов по координате
+    t = [t0 for _ in range(n)]  # начальное условие
+
+    t_m = t
+
+    t_res = []
+
+    tmp = time0
+
+    while tmp <= timem:
+        # цикл подсчета значений функции T
+        t_m_plus_1 = simple_iteration_on_layer(t_m)
+
+        t_res.append(t_m_plus_1)
+
+        tmp += tau
+
+        t_m = t_m_plus_1
+
+    return t_res
+
 
 def main() -> None:
     """
     Главная функция
     """
+    a, b = 0, l  # диапазон значений координаты
+    n = 10
+    h = (b - a) / n
+    time0, timem = 0, 100  # диапазон значений времени
+    m = 10
+    tau = (timem - time0) / m
+
+    t_res = simple_iteration(a, b, h, time0, timem, tau)
+
+    print(t_res)
 
 
 if __name__ == '__main__':
