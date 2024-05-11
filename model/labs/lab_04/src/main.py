@@ -3,33 +3,28 @@ from dataclasses import dataclass
 import matplotlib.pyplot as plt
 
 # константы лабы
-k0 = 1.0
-a1 = 0.0134
-b1 = 1
-c1 = 4.35e-4
-m1 = 1
-a2 = 2.049
-b2 = 0.563e-3
-c2 = 0.528e5
-m2 = 1
-l = 10
-t0 = 300
-r = 0.5
+k0 = 1.0  # ок
+a1 = 0.0134  # ок
+b1 = 1  # ок
+c1 = 4.35e-4  # ок
+m1 = 1  # ок
+a2 = 2.049  # ок
+b2 = 0.563e-3  # ок
+c2 = 0.528e5  # ок
+m2 = 1  # ок
+l = 10  # ок
+t0 = 300  # ок
+r = 0.5  # ок
 
-"""
-alpha0 = 0.05 в точке x0
-alphaN = 0.01 в точке xN
-"""
+alpha_0 = 0.05  # ок в x = 0
+alpha_n = 0.01  # ок в x = l
 
-alpha_0 = 0.05
-alpha_n = 0.01
-
-d = 0.01 * l / (-0.04)
-c = -0.05 * d
+d = 0.01 * l / (-0.04)  # ок
+c = -0.05 * d  # ок
 
 # для отладки принять
-f_max = 50
-t_max = 60
+f_max = 50  # ок
+t_max = 60  # ок
 
 EPS = 1e-4
 
@@ -52,7 +47,7 @@ class Data:
 
 def alpha(x):
     """
-    Функция альфа
+    Функция альфа (вроде правильно)
     """
 
     return c / (x - d)
@@ -60,7 +55,7 @@ def alpha(x):
 
 def _lambda(t):
     """
-    Функция λ(T)
+    Функция λ(T) (вроде правильно)
     """
 
     return a1 * (b1 + c1 * t ** m1)
@@ -68,7 +63,7 @@ def _lambda(t):
 
 def _c(t):
     """
-    Функция c(T)
+    Функция c(T) (вроде правильно)
     """
 
     return a2 + b2 * t ** m2 - (c2 / (t ** 2))
@@ -76,7 +71,7 @@ def _c(t):
 
 def k(t):
     """
-    Функция k(T)
+    Функция k(T) (вроде правильно)
     """
 
     return k0 * (t / 300) ** 2
@@ -84,15 +79,15 @@ def k(t):
 
 def f0(time):
     """
-    Функция потока излучения F0(t) при x = 0
+    Функция потока излучения F0(t) при x = 0 (вроде правильно)
     """
-    return 10
-    # return (f_max / t_max) * time * np.exp(-((time / t_max) - 1))
+
+    return (f_max / t_max) * time * np.exp(-((time / t_max) - 1))
 
 
 def p(x):
     """
-    Функция p(u) для исходного уравнения
+    Функция p(u) для исходного уравнения (вроде правильно)
     """
 
     return (2 / r) * alpha(x)
@@ -100,8 +95,8 @@ def p(x):
 
 def f(x, time, t):
     """
-    Функция f(x, u) для исходного уравнения
-    идейно, пока что, t - значение температурного поля в точке
+    Функция f(T) для исходного уравнения
+    t = t(x, time) (вроде правильно)
     """
 
     return k(t) * f0(time) * np.exp(-k(t) * x) + (2 * t0 / r) * alpha(x)
@@ -121,17 +116,20 @@ def left_boundary_condition(t_m, curr_time, data: Data):
     """
     a, h, tau = data.a, data.h, data.tau
 
+    # вроде ок
     k_0 = (h / 8) * _c((t_m[0] + t_m[1]) / 2) + \
           (h / 4) * _c(t_m[0]) + kappa(t_m[0], t_m[1]) * tau / h + \
           (h * tau / 8) * p(a + h / 2) + \
-          (h * tau / 4) * p(a)
+          (h * tau / 4) * p(a) - alpha_0 * tau
 
+    # вроде ок
     m_0 = (h / 8) * _c((t_m[0] + t_m[1]) / 2) - \
           (tau / h) * kappa(t_m[0], t_m[1]) + \
           (h * tau / 8) * p(a + h / 2)
 
+    # вроде ок
     p_0 = (h / 8) * _c((t_m[0] + t_m[1]) / 2) * (t_m[0] + t_m[1]) + \
-          (h / 4) * _c(t_m[0]) * t_m[0] + tau * f0(t_m[0] + tau) + \
+          (h / 4) * _c(t_m[0]) * t_m[0] - alpha_0 * t0 * tau + \
           (tau * h / 4) * (f(0, curr_time, t_m[0]) +
                            f(0, curr_time, t_m[0] + t_m[1] / 2))
 
@@ -144,16 +142,19 @@ def right_boundary_condition(t_m, curr_time, data: Data):
     """
     b, h, tau = data.b, data.h, data.tau
 
+    # вроде ок
     k_n = (h / 8) * _c((t_m[-1] + t_m[-2]) / 2) - \
           (tau / h) * kappa(t_m[-2], t_m[-1]) + \
           (h / 8) * p(b - h / 2) * tau
 
+    # вроде ок
     m_n = (h / 4) * _c(t_m[-1]) + \
           (h / 8) * _c((t_m[-1] + t_m[-2]) / 2) + \
           (tau / h) * kappa(t_m[-2], t_m[-1]) + \
           tau * alpha_n + (h * tau / 8) * p(b - h / 2) + \
           (h * tau / 4) * p(b)
 
+    # вроде ок
     p_n = (h / 4) * _c(t_m[-1]) * t_m[-1] + \
           (h / 8) * _c((t_m[-1] + t_m[-2]) / 2) * t_m[-2] + \
           (h / 8) * _c((t_m[-1] + t_m[-2]) / 2) * t_m[-1] + \
@@ -206,11 +207,12 @@ def simple_iteration_on_layer(t_m, curr_time, data):
     """
     Вычисляет значение искомой функции (функции T) на слое t_m_plus_1
     """
-    print("[+] call simple_iteration_on_layer")
+    # print("[+] call simple_iteration_on_layer")
     _t_m = t_m
     while True:
         # цикл подсчета значений функции T методом простых итераций для
         # слоя t_m_plus_1
+
         t_m_plus_1 = right_sweep(_t_m, curr_time, data)
 
         cnt = 0
@@ -225,7 +227,7 @@ def simple_iteration_on_layer(t_m, curr_time, data):
 
         _t_m = t_m_plus_1
 
-    print("[+] return simple_iteration_on_layer")
+    # print("[+] return simple_iteration_on_layer")
 
     return t_m_plus_1
 
@@ -234,7 +236,7 @@ def simple_iteration(data: Data):
     """
     Реализация метода простых итераций для решения нелинейной системы уравнений
     """
-    print("[+] call simple_iteration")
+    # print("[+] call simple_iteration")
     n = int((data.b - data.a) / data.h)  # число узлов по координате
     t = [t0 for _ in range(n)]  # начальное условие
 
@@ -254,7 +256,7 @@ def simple_iteration(data: Data):
 
         t_m = t_m_plus_1
 
-    print("[+] return simple_iteration")
+    # print("[+] return simple_iteration")
 
     return t_res
 
