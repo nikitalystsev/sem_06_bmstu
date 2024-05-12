@@ -203,17 +203,65 @@ def right_sweep(t_m, curr_time, data: Data):
     return u
 
 
+def left_sweep(t_m, curr_time, data: Data):
+    """
+    Реализация левой прогонки
+    """
+
+    b, h, tau = data.b, data.h, data.tau
+    # Прямой ход
+    k_0, m_0, p_0 = left_boundary_condition(t_m, curr_time, data)
+    k_n, m_n, p_n = right_boundary_condition(t_m, curr_time, data)
+
+    ksi = [-k_n / m_n, 0]
+    eta = [p_n / m_n, 0]
+
+    x = b - h
+    n = -2
+    cnt = 1
+
+    for i in range(len(t_m) - 2, 0, -1):
+        a_n = kappa(t_m[i - 1], t_m[i]) * tau / h
+        d_n = kappa(t_m[i], t_m[i + 1]) * tau / h
+        b_n = a_n + d_n + _c(t_m[i]) * h + p(x) * h * tau
+        f_n = _c(t_m[i]) * t_m[i] * h + f(x, curr_time, t_m[i]) * h * tau
+
+        ksi.insert(0, a_n / (b_n - d_n * ksi[n]))
+        eta.insert(0, (d_n * eta[n] + f_n) / (b_n - d_n * ksi[n]))
+
+        n -= 1
+        x -= h
+        cnt += 1
+
+    # Обратный ход
+    u = [0] * (cnt + 1)
+
+    u[0] = (p_0 - k_0 * eta[0]) / (m_0 + k_0 * ksi[0])
+
+    for i in range(1, cnt + 1):
+        u[i] = ksi[i - 1] * u[i - 1] + eta[i - 1]
+
+    return u
+
+
 def simple_iteration_on_layer(t_m, curr_time, data):
     """
     Вычисляет значение искомой функции (функции T) на слое t_m_plus_1
     """
     # print("[+] call simple_iteration_on_layer")
     _t_m = t_m
+    # print(f"len(t_m) = {len(t_m)}")
+    # print(f"t_m = {t_m}")
+
     while True:
         # цикл подсчета значений функции T методом простых итераций для
         # слоя t_m_plus_1
 
-        t_m_plus_1 = right_sweep(_t_m, curr_time, data)
+        # t_m_plus_1 = right_sweep(_t_m, curr_time, data)
+        t_m_plus_1 = left_sweep(_t_m, curr_time, data)
+
+        # print(f"t_m_plus_1[:20] = {t_m_plus_1[:20]}")
+        # input()
 
         cnt = 0
 
@@ -268,8 +316,8 @@ def main() -> None:
     a, b = 0, l  # диапазон значений координаты
     n = 1000
     h = (b - a) / n
-    time0, timem = 0, 100  # диапазон значений времени
-    m = 100
+    time0, timem = 0, t_max  # диапазон значений времени
+    m = t_max
     tau = (timem - time0) / m
 
     data = Data(a, b, n, h, time0, timem, m, tau)
