@@ -289,132 +289,144 @@ class Res(Lab4):
         ygrid = np.array(ygrid)
         zgrid = np.array(zgrid)
 
-        fig = plt.figure(figsize=(7, 4))
-        ax_3d = Axes3D(fig)
-        ax_3d.plot_surface(ygrid, xgrid, zgrid, cmap='GnBu')
-        ax_3d.set_ylabel("x, cm")
-        ax_3d.set_xlabel("t, c")
-        ax_3d.set_zlabel("T, K")
+        # fig = plt.figure(figsize=(7, 4))
+        # ax_3d = Axes3D(fig)
+        # ax_3d.plot_surface(ygrid, xgrid, zgrid, cmap='GnBu')
+        # ax_3d.set_ylabel("x, cm")
+        # ax_3d.set_xlabel("t, c")
+        # ax_3d.set_zlabel("T, K")
+        # plt.show()
+
+        # Построение графика
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+        ax.plot_surface(ygrid, xgrid, zgrid, cmap='viridis')
+
+        # Настройка подписей осей
+        ax.set_xlabel('x')
+        ax.set_ylabel('t')
+        ax.set_zlabel('T(x, t)')
+        ax.set_title('Температурное поле')
         plt.show()
 
-        # группа 2д графиков
-        plt.subplot(2, 1, 1)
-        step1 = 0
-        for_graph = ti_max / 10
-        for i in res:
-            if (step1 % for_graph == 0):
-                namestr = "t = " + str(step1)
-                plt.plot(x, i[:-1], label=namestr)
-            step1 += 1
-
-        plt.plot(x, res[-1][:-1])
-        plt.xlabel("x, cm")
-        plt.ylabel("T, K")
-        plt.legend()
-        plt.grid()
-
-        plt.subplot(2, 1, 2)
-        step2 = 0
-        iter = 0
-        l = int(self.l / self.h)
-        while iter < 10:
-            point = [j[int(step2 / h)] for j in res]
-            namestr = "x = " + str(round(step2, 1))
-            plt.plot(te, point[:-1], label=namestr)
-            step2 += 0.1 * 10
-            iter += 1
-
-        plt.xlabel("t, sec")
-        plt.ylabel("T, K")
-        plt.grid()
-
-        plt.show()
-
-    def step_t(self):
-        h = self.h
-        deltah = [1, 0.1, 0.01, 0.001]
-        result = []
-        for hi in deltah:
-            self.tau = hi
-            res, ti = self.res()
-
-            n = 0
-            for temp in res:
-                if (fabs(n - 1) < self.TEPS):
-                    print()
-                    print(self.tau)
-                    print()
-                    result.append(temp[:-1])
-                n += self.tau
-        print('    1    |   0.1   |   0.01  |  0.001  |')
-        for i in range(len(result[0])):
-            for j in range(len(result)):
-                print(' %3.3f |' % result[j][i], end='')
-            print()
-
-    def step_t2(self):
-        deltah = [1, 0.1, 0.01, 0.001]
-        result = []
-        for hi in deltah:
-            self.h = hi
-            h = self.h
-            res, ti = self.res()
-            print(h)
-            i = 0
-            xfix = [temp[int(i / h)] for temp in res]
-            result.append(xfix)
-
-        print('    1    |   0.1   |   0.01  |  0.001  |')
-        for i in range(len(result[0])):
-            for j in range(len(result)):
-                print(' %3.3f |' % result[j][i], end='')
-            print()
-
-    def a_b(self):
-        h = self.h
-        t = self.tau
-        arraya2 = [2.049, 5, 10, 15, 50]
-        arrayb2 = [0.000564, 0.001, 0.01, 0.1, 5]
-        result = []
-        resulti = []
-        for ai, bi in zip(arraya2, arrayb2):
-            self.a2 = ai
-            self.b2 = bi
-            res, ti = self.res()
-
-            te = []
-            i = 0
-            while (i < ti):
-                te.append(i)
-                i += t
-
-            i = 0
-            xfix = [temp[int(i / h)] for temp in res]
-            print(xfix[:-1])
-            result.append(xfix[:-1])
-            resulti.append(te)
-
-        for res, teres in zip(result, resulti):
-            plt.plot(teres, res)
-
-        plt.xlabel("Время, c")
-        plt.ylabel("Температура, K")
-        plt.show()
-
-    def chast(self):  # надо поменять в F0: return 0 поставить
-        res, ti = self.res()
-
-        te = []
-        i = 0
-        while (i < ti):
-            te.append(i)
-            i += self.tau
-        i = 0
-        xfix = [temp[int(i / self.h)] for temp in res]
-        plt.plot(te, xfix[1:])
-        plt.xlabel("Время, c")
-        plt.ylabel("Температура, K")
-        plt.show()
+    #     # группа 2д графиков
+    #     plt.subplot(2, 1, 1)
+    #     step1 = 0
+    #     for_graph = ti_max / 10
+    #     for i in res:
+    #         if (step1 % for_graph == 0):
+    #             namestr = "t = " + str(step1)
+    #             plt.plot(x, i[:-1], label=namestr)
+    #         step1 += 1
+    #
+    #     plt.plot(x, res[-1][:-1])
+    #     plt.xlabel("x, cm")
+    #     plt.ylabel("T, K")
+    #     plt.legend()
+    #     plt.grid()
+    #
+    #     plt.subplot(2, 1, 2)
+    #     step2 = 0
+    #     iter = 0
+    #     l = int(self.l / self.h)
+    #     while iter < 10:
+    #         point = [j[int(step2 / h)] for j in res]
+    #         namestr = "x = " + str(round(step2, 1))
+    #         plt.plot(te, point[:-1], label=namestr)
+    #         step2 += 0.1 * 10
+    #         iter += 1
+    #
+    #     plt.xlabel("t, sec")
+    #     plt.ylabel("T, K")
+    #     plt.grid()
+    #
+    #     plt.show()
+    #
+    # def step_t(self):
+    #     h = self.h
+    #     deltah = [1, 0.1, 0.01, 0.001]
+    #     result = []
+    #     for hi in deltah:
+    #         self.tau = hi
+    #         res, ti = self.res()
+    #
+    #         n = 0
+    #         for temp in res:
+    #             if (fabs(n - 1) < self.TEPS):
+    #                 print()
+    #                 print(self.tau)
+    #                 print()
+    #                 result.append(temp[:-1])
+    #             n += self.tau
+    #     print('    1    |   0.1   |   0.01  |  0.001  |')
+    #     for i in range(len(result[0])):
+    #         for j in range(len(result)):
+    #             print(' %3.3f |' % result[j][i], end='')
+    #         print()
+    #
+    # def step_t2(self):
+    #     deltah = [1, 0.1, 0.01, 0.001]
+    #     result = []
+    #     for hi in deltah:
+    #         self.h = hi
+    #         h = self.h
+    #         res, ti = self.res()
+    #         print(h)
+    #         i = 0
+    #         xfix = [temp[int(i / h)] for temp in res]
+    #         result.append(xfix)
+    #
+    #     print('    1    |   0.1   |   0.01  |  0.001  |')
+    #     for i in range(len(result[0])):
+    #         for j in range(len(result)):
+    #             print(' %3.3f |' % result[j][i], end='')
+    #         print()
+    #
+    # def a_b(self):
+    #     h = self.h
+    #     t = self.tau
+    #     arraya2 = [2.049, 5, 10, 15, 50]
+    #     arrayb2 = [0.000564, 0.001, 0.01, 0.1, 5]
+    #     result = []
+    #     resulti = []
+    #     for ai, bi in zip(arraya2, arrayb2):
+    #         self.a2 = ai
+    #         self.b2 = bi
+    #         res, ti = self.res()
+    #
+    #         te = []
+    #         i = 0
+    #         while (i < ti):
+    #             te.append(i)
+    #             i += t
+    #
+    #         i = 0
+    #         xfix = [temp[int(i / h)] for temp in res]
+    #         print(xfix[:-1])
+    #         result.append(xfix[:-1])
+    #         resulti.append(te)
+    #
+    #     for res, teres in zip(result, resulti):
+    #         plt.plot(teres, res)
+    #
+    #     plt.xlabel("Время, c")
+    #     plt.ylabel("Температура, K")
+    #     plt.show()
+    #
+    # def chast(self):  # надо поменять в F0: return 0 поставить
+    #     res, ti = self.res()
+    #
+    #     te = []
+    #     i = 0
+    #     while (i < ti):
+    #         te.append(i)
+    #         i += self.tau
+    #     i = 0
+    #     xfix = [temp[int(i / self.h)] for temp in res]
+    #     plt.plot(te, xfix[1:])
+    #     plt.xlabel("Время, c")
+    #     plt.ylabel("Температура, K")
+    #     plt.show()
 
 
 def main():

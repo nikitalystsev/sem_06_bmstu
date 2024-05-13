@@ -427,7 +427,6 @@ def get_data_graph_task_3_2(data: Grid, ops: TaskOps):
             tmp_res.append(t_m[0])
         res.append(tmp_res)
 
-        print(f"[+] итерация номер {cnt + 1}")
         cnt += 1
 
     return res, b2_list
