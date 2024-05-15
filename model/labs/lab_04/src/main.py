@@ -93,8 +93,8 @@ def f0(time, ops: TaskOps):
     """
     f_max, t_max = ops.f_max, ops.t_max
 
-    # return (f_max / t_max) * time * np.exp(-((time / t_max) - 1))
-    return 20
+    return (f_max / t_max) * time * np.exp(-((time / t_max) - 1))
+    # return 20
 
 
 def p(x, ops: TaskOps):
@@ -175,14 +175,14 @@ def right_boundary_condition(t_m, curr_time, data: Grid, ops: TaskOps):
     return k_n, m_n, p_n
 
 
-def right_sweep(t_m, curr_time, data: Grid):
+def right_sweep(t_m, curr_time, data: Grid, ops: TaskOps):
     """
     Реализация правой прогонки
     """
     b, h, tau = data.b, data.h, data.tau
     # Прямой ход
-    k_0, m_0, p_0 = left_boundary_condition(t_m, curr_time, data)
-    k_n, m_n, p_n = right_boundary_condition(t_m, curr_time, data)
+    k_0, m_0, p_0 = left_boundary_condition(t_m, curr_time, data, ops)
+    k_n, m_n, p_n = right_boundary_condition(t_m, curr_time, data, ops)
 
     ksi = [0, -m_0 / k_0]
     eta = [0, p_0 / k_0]
@@ -191,10 +191,10 @@ def right_sweep(t_m, curr_time, data: Grid):
     n = 1
 
     for i in range(1, len(t_m) - 1):
-        a_n = kappa(t_m[i - 1], t_m[i]) * tau / h
-        d_n = kappa(t_m[i], t_m[i + 1]) * tau / h
-        b_n = a_n + d_n + _c(t_m[i]) * h + p(x) * h * tau
-        f_n = _c(t_m[i]) * t_m[i] * h + f(x, curr_time, t_m[i]) * h * tau
+        a_n = kappa(t_m[i - 1], t_m[i], ops) * tau / h
+        d_n = kappa(t_m[i], t_m[i + 1], ops) * tau / h
+        b_n = a_n + d_n + _c(t_m[i], ops) * h + p(x, ops) * h * tau
+        f_n = _c(t_m[i], ops) * t_m[i] * h + f(x, curr_time, t_m[i], ops) * h * tau
 
         ksi.append(d_n / (b_n - a_n * ksi[n]))
         eta.append((a_n * eta[n] + f_n) / (b_n - a_n * ksi[n]))
@@ -213,7 +213,7 @@ def right_sweep(t_m, curr_time, data: Grid):
     return u
 
 
-def simple_iteration_on_layer(t_m, curr_time, data):
+def simple_iteration_on_layer(t_m, curr_time, data: Grid, ops: TaskOps):
     """
     Вычисляет значение искомой функции (функции T) на слое t_m_plus_1
     """
@@ -221,7 +221,7 @@ def simple_iteration_on_layer(t_m, curr_time, data):
     while True:
         # цикл подсчета значений функции T методом простых итераций для
         # слоя t_m_plus_1
-        t_m_plus_1 = right_sweep(_t_m, curr_time, data)
+        t_m_plus_1 = right_sweep(_t_m, curr_time, data, ops)
 
         cnt = 0
 
@@ -238,12 +238,12 @@ def simple_iteration_on_layer(t_m, curr_time, data):
     return t_m_plus_1
 
 
-def simple_iteration(data: Grid):
+def simple_iteration(data: Grid, ops: TaskOps):
     """
     Реализация метода простых итераций для решения нелинейной системы уравнений
     """
     n = int((data.b - data.a) / data.h)  # число узлов по координате
-    t = [t0 for _ in range(n)]  # начальное условие
+    t = [ops.t0 for _ in range(n)]  # начальное условие
 
     t_m = t
 
@@ -253,7 +253,7 @@ def simple_iteration(data: Grid):
 
     while curr_time <= data.timem:
         # цикл подсчета значений функции T
-        t_m_plus_1 = simple_iteration_on_layer(t_m, curr_time, data)
+        t_m_plus_1 = simple_iteration_on_layer(t_m, curr_time, data, ops)
 
         t_res.append(t_m_plus_1)
 
@@ -268,7 +268,9 @@ def main() -> None:
     """
     Главная функция
     """
-    a, b = 0, l  # диапазон значений координаты
+    ops = TaskOps()
+
+    a, b = 0, ops.l  # диапазон значений координаты
     n = 1000
     h = (b - a) / n
     time0, timem = 0, 100  # диапазон значений времени
@@ -277,7 +279,7 @@ def main() -> None:
 
     data = Grid(a, b, n, h, time0, timem, m, tau)
 
-    t_res = np.array(simple_iteration(data))[:-1]
+    t_res = np.array(simple_iteration(data, ops))[:-1]
 
     x = np.arange(a, b, h)
     t = np.arange(time0, timem, tau)
