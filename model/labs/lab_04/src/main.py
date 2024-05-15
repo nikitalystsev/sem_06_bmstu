@@ -113,6 +113,9 @@ def f(x, time, t, ops: TaskOps):
     """
     t0, r = ops.t0, ops.r
 
+    # if x > 0:
+    #     return (2 * t0 / r) * alpha(x, ops)
+
     return k(t, ops) * f0(time, ops) * np.exp(-k(t, ops) * x) + (2 * t0 / r) * alpha(x, ops)
 
 
@@ -161,14 +164,12 @@ def right_boundary_condition(t_m, curr_time, data: Grid, ops: TaskOps):
 
     m_n = (h / 4) * _c(t_m[-1], ops) + \
           (h / 8) * _c((t_m[-1] + t_m[-2]) / 2, ops) + \
-          (tau / h) * kappa(t_m[-2], t_m[-1], ops) + \
-          tau * alpha_n + (h * tau / 8) * p(b - h / 2, ops) + \
+          (tau / h) * kappa(t_m[-2], t_m[-1], ops) + tau * alpha_n + \
+          (h * tau / 8) * p(b - h / 2, ops) + \
           (h * tau / 4) * p(b, ops)
 
     p_n = (h / 4) * _c(t_m[-1], ops) * t_m[-1] + \
-          (h / 8) * _c((t_m[-1] + t_m[-2]) / 2, ops) * t_m[-2] + \
-          (h / 8) * _c((t_m[-1] + t_m[-2]) / 2, ops) * t_m[-1] + \
-          t0 * tau * alpha_n + \
+          (h / 8) * _c((t_m[-1] + t_m[-2]) / 2, ops) * (t_m[-2] + t_m[-1]) + t0 * tau * alpha_n + \
           (h * tau / 4) * (f(b - h / 2, curr_time, (t_m[-2] + t_m[-1]) / 2, ops) +
                            f(b, curr_time, t_m[-1], ops))
 
