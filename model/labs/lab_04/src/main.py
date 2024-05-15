@@ -131,25 +131,20 @@ def left_boundary_condition(t_m, curr_time, data: Grid, ops: TaskOps):
     """
     Левое краевое условие прогонки
     """
-    # print(f"[+] call left_boundary_condition")
-
     a, h, tau = data.a, data.h, data.tau
     alpha_0, t0 = ops.alpha_0, ops.t0
 
-    # вроде ок
     k_0 = (h / 8) * _c((t_m[0] + t_m[1]) / 2, ops) + \
           (h / 4) * _c(t_m[0], ops) + kappa(t_m[0], t_m[1], ops) * tau / h + \
           (h * tau / 8) * p(a + h / 2, ops) + \
-          (h * tau / 4) * p(a, ops) - alpha_0 * tau
+          (h * tau / 4) * p(a, ops) + alpha_0 * tau
 
-    # вроде ок
     m_0 = (h / 8) * _c((t_m[0] + t_m[1]) / 2, ops) - \
           (tau / h) * kappa(t_m[0], t_m[1], ops) + \
           (h * tau / 8) * p(a + h / 2, ops)
 
-    # вроде ок
     p_0 = (h / 8) * _c((t_m[0] + t_m[1]) / 2, ops) * (t_m[0] + t_m[1]) + \
-          (h / 4) * _c(t_m[0], ops) * t_m[0] - alpha_0 * t0 * tau + \
+          (h / 4) * _c(t_m[0], ops) * t_m[0] + alpha_0 * t0 * tau + \
           (tau * h / 4) * (f(a, curr_time, t_m[0], ops) +
                            f(a + h / 2, curr_time, (t_m[0] + t_m[1]) / 2, ops))
 
@@ -160,28 +155,21 @@ def right_boundary_condition(t_m, curr_time, data: Grid, ops: TaskOps):
     """
     Правое краевое условие прогонки
     """
-    # print(f"[+] call right_boundary_condition")
-
     b, h, tau = data.b, data.h, data.tau
     alpha_n, t0 = ops.alpha_n, ops.t0
 
-    # вроде ок
     k_n = (h / 8) * _c((t_m[-1] + t_m[-2]) / 2, ops) - \
           (tau / h) * kappa(t_m[-2], t_m[-1], ops) + \
-          (h / 8) * p(b - h / 2, ops) * tau
+          (h * tau / 8) * p(b - h / 2, ops)
 
-    # вроде ок
     m_n = (h / 4) * _c(t_m[-1], ops) + \
           (h / 8) * _c((t_m[-1] + t_m[-2]) / 2, ops) + \
-          (tau / h) * kappa(t_m[-2], t_m[-1], ops) - \
-          tau * alpha_n + (h * tau / 8) * p(b - h / 2, ops) + \
+          (tau / h) * kappa(t_m[-2], t_m[-1], ops) + tau * alpha_n + \
+          (h * tau / 8) * p(b - h / 2, ops) + \
           (h * tau / 4) * p(b, ops)
 
-    # вроде ок
     p_n = (h / 4) * _c(t_m[-1], ops) * t_m[-1] + \
-          (h / 8) * _c((t_m[-1] + t_m[-2]) / 2, ops) * t_m[-2] + \
-          (h / 8) * _c((t_m[-1] + t_m[-2]) / 2, ops) * t_m[-1] - \
-          t0 * tau * alpha_n + \
+          (h / 8) * _c((t_m[-1] + t_m[-2]) / 2, ops) * (t_m[-2] + t_m[-1]) + t0 * tau * alpha_n + \
           (h * tau / 4) * (f(b - h / 2, curr_time, (t_m[-2] + t_m[-1]) / 2, ops) +
                            f(b, curr_time, t_m[-1], ops))
 
@@ -212,8 +200,6 @@ def right_sweep(t_m, curr_time, data: Grid, ops: TaskOps):
         ksi.append(d_n / (b_n - a_n * ksi[n]))
         eta.append((a_n * eta[n] + f_n) / (b_n - a_n * ksi[n]))
 
-
-
         n += 1
         x += h
 
@@ -232,18 +218,11 @@ def simple_iteration_on_layer(t_m, curr_time, data: Grid, ops: TaskOps):
     """
     Вычисляет значение искомой функции (функции T) на слое t_m_plus_1
     """
-    # print("[+] call simple_iteration_on_layer")
-
     _t_m = t_m
-
     while True:
         # цикл подсчета значений функции T методом простых итераций для
         # слоя t_m_plus_1
-
         t_m_plus_1 = right_sweep(_t_m, curr_time, data, ops)
-
-        # print(f"t_m_plus_1[:5] = {t_m_plus_1[:5]}")
-        # input()
 
         cnt = 0
 
@@ -264,7 +243,6 @@ def simple_iteration(data: Grid, ops: TaskOps):
     """
     Реализация метода простых итераций для решения нелинейной системы уравнений
     """
-    # print("[+] call simple_iteration")
     n = int((data.b - data.a) / data.h)  # число узлов по координате
     t = [ops.t0 for _ in range(n)]  # начальное условие
 
@@ -284,75 +262,25 @@ def simple_iteration(data: Grid, ops: TaskOps):
 
         t_m = t_m_plus_1
 
-    # print("[+] return simple_iteration")
-
     return t_res
-
-
-def get_data_graph_task_3(data: Grid, ops: TaskOps):
-    """
-    Функция для получения данных для графиков 3-го задания
-    """
-    a2_list = [2.049, 5, 10, 15, 50]
-    # a2_list = [2.049, 5]
-    # b2_list = [0.000564, 0.001, 0.01, 0.1, 5]
-
-    res = []
-    for a2 in a2_list:
-        ops.a2 = a2  # меняем параметры задачи
-        t_res = simple_iteration(data, ops)
-
-        tmp_res = []
-        for t_m in t_res:
-            tmp_res.append(t_m[0])
-        res.append(tmp_res)
-
-    return res, a2_list
-
-
-def get_data_graph_task_3_2(data: Grid, ops: TaskOps):
-    """
-    Функция для получения данных для графиков 3-го задания
-    """
-    # a2_list = [2.049, 5, 10, 15, 50]
-    b2_list = [0.000564, 0.001, 0.01, 0.1, 0.2]
-
-    res = []
-    cnt = 0
-    for b2 in b2_list:
-        ops.b2 = b2
-        t_res = simple_iteration(data, ops)
-
-        tmp_res = []
-        for t_m in t_res:
-            tmp_res.append(t_m[0])
-        res.append(tmp_res)
-
-        cnt += 1
-
-    return res, b2_list
 
 
 def main() -> None:
     """
     Главная функция
     """
-
     ops = TaskOps()
-    ops.t_max = 1000
 
     a, b = 0, ops.l  # диапазон значений координаты
     n = 1000
     h = (b - a) / n
-    time0, timem = 0, ops.t_max  # диапазон значений времени
-    m = ops.t_max
+    time0, timem = 0, 100  # диапазон значений времени
+    m = 100
     tau = (timem - time0) / m
 
     data = Grid(a, b, n, h, time0, timem, m, tau)
 
     t_res = np.array(simple_iteration(data, ops))[:-1]
-
-    # print(t_res)
 
     x = np.arange(a, b, h)
     t = np.arange(time0, timem, tau)
@@ -370,60 +298,29 @@ def main() -> None:
     ax.set_zlabel('T(x, t)')
     ax.set_title('Температурное поле')
 
-    # Создание нового окна для двумерных графиков
     fig2, axes = plt.subplots(2, 3, figsize=(13, 10))
-
-    # print(f"t = {t}")
-    # print(f"f0(t, ops) = {f0(t, ops)}")
-
-    # Построение двумерных графиков
-    # axes[0, 0].plot(t, f0(t, ops), 'g', label="F0(t)")
-    # axes[0, 0].set_title('График F0')
-    # axes[0, 0].set_xlabel('t')
-    # axes[0, 0].set_ylabel('F0')
-    # axes[0, 0].legend()
-    # axes[0, 0].grid()
-
-    # res, a2_list = get_data_graph_task_3(data, ops)
-    #
-    # for i, res_i in enumerate(res):
-    #     axes[0, 1].plot(t, res_i[:-1], label=f"T(0, t), a2 = {a2_list[i]}")
-    # axes[0, 1].set_title('График T(0, t)')
-    # axes[0, 1].set_xlabel('t')
-    # axes[0, 1].set_ylabel('T(0, t)')
-    # axes[0, 1].legend()
-    # axes[0, 1].grid()
-    #
-    # res, b2_list = get_data_graph_task_3_2(data, ops)
-    #
-    # for i, res_i in enumerate(res):
-    #     axes[0, 2].plot(t, res_i[:-1], label=f"T(0, t), b2 = {b2_list[i]}")
-    # axes[0, 2].set_title('График T(0, t)')
-    # axes[0, 2].set_xlabel('t')
-    # axes[0, 2].set_ylabel('T(0, t)')
-    # axes[0, 2].legend()
-    # axes[0, 2].grid()
 
     a, b = 0, 10  # диапазон значений координаты
     n = 1000
     h = (b - a) / n
-    time0, timem = 0, ops.t_max  # диапазон значений времени
-    m = ops.t_max
+    time0, timem = 0, 10  # диапазон значений времени
+    m = 10
     tau = (timem - time0) / m
 
     data = Grid(a, b, n, h, time0, timem, m, tau)
 
     t_res = np.array(simple_iteration(data, ops))[:-1]
 
+    t = time0
     for i, res_i in enumerate(t_res):
-        axes[1, 0].plot(x, res_i, label=f"T(x, t)")
-    axes[1, 0].set_title('График T(0, t)')
+        axes[1, 0].plot(x, res_i, label=f"T(t), t = {t}")
+        t += tau
+    axes[1, 0].set_title('График T(x, t)')
     axes[1, 0].set_xlabel('t')
     axes[1, 0].set_ylabel('T(0, t)')
     axes[1, 0].legend()
     axes[1, 0].grid()
 
-    plt.tight_layout()
     plt.show()
 
 
