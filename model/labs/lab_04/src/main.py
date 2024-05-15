@@ -297,16 +297,15 @@ def main() -> None:
     # Создание нового окна для двумерных графиков
     fig2, axes = plt.subplots(2, 3, figsize=(13, 10))
 
-    # print(f"t = {t}")
-    # print(f"f0(t, ops) = {f0(t, ops)}")
+    t_f0 = np.arange(time0, 300, tau)
 
     # Построение двумерных графиков
-    # axes[0, 0].plot(t, f0(t, ops), 'g', label="F0(t)")
-    # axes[0, 0].set_title('График F0')
-    # axes[0, 0].set_xlabel('t')
-    # axes[0, 0].set_ylabel('F0')
-    # axes[0, 0].legend()
-    # axes[0, 0].grid()
+    axes[0, 0].plot(t_f0, f0(t_f0, ops), 'g', label="F0(t)")
+    axes[0, 0].set_title('График F0')
+    axes[0, 0].set_xlabel('t')
+    axes[0, 0].set_ylabel('F0')
+    axes[0, 0].legend()
+    axes[0, 0].grid()
 
     # res, a2_list = get_data_graph_task_3(data, ops)
     #
@@ -340,7 +339,7 @@ def main() -> None:
     # t_res = np.array(simple_iteration(data, ops))[:-1]
 
     for i, res_i in enumerate(t_res):
-        axes[1, 0].plot(x, res_i, label=f"T(x, t) t = {t[i]}")
+        axes[1, 0].plot(x, res_i, label=f"T(x, t), t = {t[i]}")
     axes[1, 0].set_title('График T(x, t)')
     axes[1, 0].set_xlabel('t')
     axes[1, 0].set_ylabel('T(x, t)')
