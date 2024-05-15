@@ -244,25 +244,24 @@ def simple_iteration(data: Grid, ops: TaskOps):
     Реализация метода простых итераций для решения нелинейной системы уравнений
     """
     n = int((data.b - data.a) / data.h)  # число узлов по координате
-    t = [ops.t0 for _ in range(n)]  # начальное условие
+    t = [ops.t0 for _ in range(n + 1)]  # начальное условие
+
+    x = np.arange(data.a, data.b + data.h, data.h)
+    times = np.arange(data.time0, data.timem + data.tau, data.tau)
 
     t_m = t
 
     t_res = []
 
-    curr_time = data.time0
-
-    while curr_time <= data.timem:
+    for curr_time in times:
         # цикл подсчета значений функции T
         t_m_plus_1 = simple_iteration_on_layer(t_m, curr_time, data, ops)
 
         t_res.append(t_m_plus_1)
 
-        curr_time += data.tau
-
         t_m = t_m_plus_1
 
-    return t_res
+    return np.array(x), np.array(times), np.array(t_res)
 
 
 def main() -> None:
@@ -274,16 +273,13 @@ def main() -> None:
     a, b = 0, ops.l  # диапазон значений координаты
     n = 1000
     h = (b - a) / n
-    time0, timem = 0, 100  # диапазон значений времени
-    m = 100
+    time0, timem = 0, ops.t_max  # диапазон значений времени
+    m = 10
     tau = (timem - time0) / m
 
     data = Grid(a, b, n, h, time0, timem, m, tau)
 
-    t_res = np.array(simple_iteration(data, ops))[:-1]
-
-    x = np.arange(a, b, h)
-    t = np.arange(time0, timem, tau)
+    x, t, t_res = simple_iteration(data, ops)
 
     X, T = np.meshgrid(x, t)
 
@@ -297,6 +293,59 @@ def main() -> None:
     ax.set_ylabel('t')
     ax.set_zlabel('T(x, t)')
     ax.set_title('Температурное поле')
+
+    # Создание нового окна для двумерных графиков
+    fig2, axes = plt.subplots(2, 3, figsize=(13, 10))
+
+    # print(f"t = {t}")
+    # print(f"f0(t, ops) = {f0(t, ops)}")
+
+    # Построение двумерных графиков
+    # axes[0, 0].plot(t, f0(t, ops), 'g', label="F0(t)")
+    # axes[0, 0].set_title('График F0')
+    # axes[0, 0].set_xlabel('t')
+    # axes[0, 0].set_ylabel('F0')
+    # axes[0, 0].legend()
+    # axes[0, 0].grid()
+
+    # res, a2_list = get_data_graph_task_3(data, ops)
+    #
+    # for i, res_i in enumerate(res):
+    #     axes[0, 1].plot(t, res_i[:-1], label=f"T(0, t), a2 = {a2_list[i]}")
+    # axes[0, 1].set_title('График T(0, t)')
+    # axes[0, 1].set_xlabel('t')
+    # axes[0, 1].set_ylabel('T(0, t)')
+    # axes[0, 1].legend()
+    # axes[0, 1].grid()
+    #
+    # res, b2_list = get_data_graph_task_3_2(data, ops)
+    #
+    # for i, res_i in enumerate(res):
+    #     axes[0, 2].plot(t, res_i[:-1], label=f"T(0, t), b2 = {b2_list[i]}")
+    # axes[0, 2].set_title('График T(0, t)')
+    # axes[0, 2].set_xlabel('t')
+    # axes[0, 2].set_ylabel('T(0, t)')
+    # axes[0, 2].legend()
+    # axes[0, 2].grid()
+
+    # a, b = 0, 10  # диапазон значений координаты
+    # n = 1000
+    # h = (b - a) / n
+    # time0, timem = 0, ops.t_max  # диапазон значений времени
+    # m = ops.t_max
+    # tau = (timem - time0) / m
+    #
+    # data = Grid(a, b, n, h, time0, timem, m, tau)
+    #
+    # t_res = np.array(simple_iteration(data, ops))[:-1]
+
+    for i, res_i in enumerate(t_res):
+        axes[1, 0].plot(x, res_i, label=f"T(x, t) t = {t[i]}")
+    axes[1, 0].set_title('График T(x, t)')
+    axes[1, 0].set_xlabel('t')
+    axes[1, 0].set_ylabel('T(x, t)')
+    axes[1, 0].legend()
+    axes[1, 0].grid()
 
     # Показать график
     plt.show()
