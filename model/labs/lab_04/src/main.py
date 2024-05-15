@@ -2,36 +2,37 @@ import numpy as np
 from dataclasses import dataclass
 import matplotlib.pyplot as plt
 
-# константы лабы
-k0 = 1.0
-a1 = 0.0134
-b1 = 1
-c1 = 4.35e-4
-m1 = 1
-a2 = 2.049
-b2 = 0.563e-3
-c2 = 0.528e5
-m2 = 1
-l = 10
-t0 = 300
-r = 0.5
-
-"""
-alpha0 = 0.05 в точке x0
-alphaN = 0.01 в точке xN
-"""
-
-alpha_0 = 0.05
-alpha_n = 0.01
-
-d = 0.01 * l / (-0.04)
-c = -0.05 * d
-
-# для отладки принять
-f_max = 50
-t_max = 60
-
 EPS = 1e-4
+
+
+@dataclass
+class TaskOps:
+    """
+    Класс параметров задачи
+    """
+    # константы лабы
+    k0: int | float = 1.0  # ок
+    a1: int | float = 0.0134  # ок
+    b1: int | float = 1  # ок
+    c1: int | float = 4.35e-4  # ок
+    m1: int | float = 1  # ок
+    a2: int | float = 2.049  # ок
+    b2: int | float = 0.563e-3  # ок
+    c2: int | float = 0.528e5  # ок
+    m2: int | float = 1  # ок
+    l: int | float = 10  # ок
+    t0: int | float = 300  # ок
+    r: int | float = 0.5  # ок
+
+    alpha_0: int | float = 0.05  # ок в x = 0
+    alpha_n: int | float = 0.01  # ок в x = l
+
+    d: int | float = 0.01 * l / (-0.04)  # ок
+    c: int | float = -0.05 * d  # ок
+
+    # для отладки принять
+    f_max: int | float = 50  # ок
+    t_max: int | float = 60  # ок
 
 
 @dataclass(frozen=True)
@@ -50,90 +51,99 @@ class Grid:
     tau: int | float
 
 
-def alpha(x):
+def alpha(x, ops: TaskOps):
     """
-    Функция альфа
+    Функция альфа (вроде правильно)
     """
+    c, d = ops.c, ops.d
 
     return c / (x - d)
 
 
-def _lambda(t):
+def _lambda(t, ops: TaskOps):
     """
-    Функция λ(T)
+    Функция λ(T) (вроде правильно)
     """
+    a1, b1, c1, m1 = ops.a1, ops.b1, ops.c1, ops.m1
 
     return a1 * (b1 + c1 * t ** m1)
 
 
-def _c(t):
+def _c(t, ops: TaskOps):
     """
-    Функция c(T)
+    Функция c(T) (вроде правильно)
     """
+    a2, b2, c2, m2 = ops.a2, ops.b2, ops.c2, ops.m2
 
     return a2 + b2 * t ** m2 - (c2 / (t ** 2))
 
 
-def k(t):
+def k(t, ops: TaskOps):
     """
-    Функция k(T)
+    Функция k(T) (вроде правильно)
     """
+    k0 = ops.k0
 
     return k0 * (t / 300) ** 2
 
 
-def f0(time):
+def f0(time, ops: TaskOps):
     """
-    Функция потока излучения F0(t) при x = 0
+    Функция потока излучения F0(t) при x = 0 (вроде правильно)
     """
-    # return 10
-    return (f_max / t_max) * time * np.exp(-((time / t_max) - 1))
+    f_max, t_max = ops.f_max, ops.t_max
+
+    # return (f_max / t_max) * time * np.exp(-((time / t_max) - 1))
+    return 20
 
 
-def p(x):
+def p(x, ops: TaskOps):
     """
-    Функция p(u) для исходного уравнения
+    Функция p(u) для исходного уравнения (вроде правильно)
     """
+    r = ops.r
 
-    return (2 / r) * alpha(x)
+    return (2 / r) * alpha(x, ops)
 
 
-def f(x, time, t):
+def f(x, time, t, ops: TaskOps):
     """
-    Функция f(x, u) для исходного уравнения
-    идейно, пока что, t - значение температурного поля в точке
+    Функция f(T) для исходного уравнения
+    t = t(x, time) (вроде правильно)
     """
+    t0, r = ops.t0, ops.r
 
-    return k(t) * f0(time) * np.exp(-k(t) * x) + (2 * t0 / r) * alpha(x)
+    return k(t, ops) * f0(time, ops) * np.exp(-k(t, ops) * x) + (2 * t0 / r) * alpha(x, ops)
 
 
-def kappa(t1, t2):
+def kappa(t1, t2, ops: TaskOps):
     """
     Функция каппа (вычисляется с использованием метода средних)
     """
 
-    return (_lambda(t1) + _lambda(t2)) / 2
+    return (_lambda(t1, ops) + _lambda(t2, ops)) / 2
 
 
-def left_boundary_condition(t_m, curr_time, data: Grid):
+def left_boundary_condition(t_m, curr_time, data: Grid, ops: TaskOps):
     """
     Левое краевое условие прогонки
     """
     a, h, tau = data.a, data.h, data.tau
+    alpha_0, t0 = ops.alpha_0, ops.t0
 
-    k_0 = (h / 8) * _c((t_m[0] + t_m[1]) / 2) + \
-          (h / 4) * _c(t_m[0]) + kappa(t_m[0], t_m[1]) * tau / h + \
-          (h * tau / 8) * p(a + h / 2) + \
-          (h * tau / 4) * p(a) + alpha_0 * tau
+    k_0 = (h / 8) * _c((t_m[0] + t_m[1]) / 2, ops) + \
+          (h / 4) * _c(t_m[0], ops) + kappa(t_m[0], t_m[1], ops) * tau / h + \
+          (h * tau / 8) * p(a + h / 2, ops) + \
+          (h * tau / 4) * p(a, ops) + alpha_0 * tau
 
-    m_0 = (h / 8) * _c((t_m[0] + t_m[1]) / 2) - \
-          (tau / h) * kappa(t_m[0], t_m[1]) + \
-          (h * tau / 8) * p(a + h / 2)
+    m_0 = (h / 8) * _c((t_m[0] + t_m[1]) / 2, ops) - \
+          (tau / h) * kappa(t_m[0], t_m[1], ops) + \
+          (h * tau / 8) * p(a + h / 2, ops)
 
-    p_0 = (h / 8) * _c((t_m[0] + t_m[1]) / 2) * (t_m[0] + t_m[1]) + \
-          (h / 4) * _c(t_m[0]) * t_m[0] + tau * alpha_0 * t0 + \
-          (tau * h / 4) * (f(0, curr_time, t_m[0]) +
-                           f(0, curr_time, t_m[0] + t_m[1] / 2))
+    p_0 = (h / 8) * _c((t_m[0] + t_m[1]) / 2, ops) * (t_m[0] + t_m[1]) + \
+          (h / 4) * _c(t_m[0], ops) * t_m[0] + tau * alpha_0 * t0 + \
+          (tau * h / 4) * (f(0, curr_time, t_m[0], ops) +
+                           f(0, curr_time, t_m[0] + t_m[1] / 2, ops))
 
     return k_0, m_0, p_0
 
