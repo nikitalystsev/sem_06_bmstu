@@ -148,28 +148,29 @@ def left_boundary_condition(t_m, curr_time, data: Grid, ops: TaskOps):
     return k_0, m_0, p_0
 
 
-def right_boundary_condition(t_m, curr_time, data: Grid):
+def right_boundary_condition(t_m, curr_time, data: Grid, ops: TaskOps):
     """
     Правое краевое условие прогонки
     """
     b, h, tau = data.b, data.h, data.tau
+    alpha_n, t0 = ops.alpha_n, ops.t0
 
-    k_n = (h / 8) * _c((t_m[-1] + t_m[-2]) / 2) - \
-          (tau / h) * kappa(t_m[-2], t_m[-1]) + \
-          (h / 8) * p(b - h / 2) * tau
+    k_n = (h / 8) * _c((t_m[-1] + t_m[-2]) / 2, ops) - \
+          (tau / h) * kappa(t_m[-2], t_m[-1], ops) + \
+          (h / 8) * p(b - h / 2, ops) * tau
 
-    m_n = (h / 4) * _c(t_m[-1]) + \
-          (h / 8) * _c((t_m[-1] + t_m[-2]) / 2) + \
-          (tau / h) * kappa(t_m[-2], t_m[-1]) + \
-          tau * alpha_n + (h * tau / 8) * p(b - h / 2) + \
-          (h * tau / 4) * p(b)
+    m_n = (h / 4) * _c(t_m[-1], ops) + \
+          (h / 8) * _c((t_m[-1] + t_m[-2]) / 2, ops) + \
+          (tau / h) * kappa(t_m[-2], t_m[-1], ops) + \
+          tau * alpha_n + (h * tau / 8) * p(b - h / 2, ops) + \
+          (h * tau / 4) * p(b, ops)
 
-    p_n = (h / 4) * _c(t_m[-1]) * t_m[-1] + \
-          (h / 8) * _c((t_m[-1] + t_m[-2]) / 2) * t_m[-2] + \
-          (h / 8) * _c((t_m[-1] + t_m[-2]) / 2) * t_m[-1] + \
+    p_n = (h / 4) * _c(t_m[-1], ops) * t_m[-1] + \
+          (h / 8) * _c((t_m[-1] + t_m[-2]) / 2, ops) * t_m[-2] + \
+          (h / 8) * _c((t_m[-1] + t_m[-2]) / 2, ops) * t_m[-1] + \
           t0 * tau * alpha_n + \
-          (h * tau / 4) * (f(b - h / 2, curr_time, (t_m[-2] + t_m[-1]) / 2) +
-                           f(b, curr_time, t_m[-1]))
+          (h * tau / 4) * (f(b - h / 2, curr_time, (t_m[-2] + t_m[-1]) / 2, ops) +
+                           f(b, curr_time, t_m[-1], ops))
 
     return k_n, m_n, p_n
 
