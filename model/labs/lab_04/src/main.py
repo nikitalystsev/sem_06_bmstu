@@ -273,8 +273,9 @@ def main() -> None:
     a, b = 0, ops.l  # диапазон значений координаты
     n = 1000
     h = (b - a) / n
-    time0, timem = 0, ops.t_max  # диапазон значений времени
-    m = 10
+    t_max = 300
+    time0, timem = 0, t_max  # диапазон значений времени
+    m = 300
     tau = (timem - time0) / m
 
     data = Grid(a, b, n, h, time0, timem, m, tau)

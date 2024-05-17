@@ -454,7 +454,10 @@ def write_result_to_file(filepath, z_res, u_res, f_res, f_res2):
     file.write(f'| {"x": ^7} | {"u(z)": ^22} | {"f(z)": ^22} | {"f(z) integral": ^22} |\n')
     file.write("-" * 86 + "\n")
 
-    for i in range(len(z_res)):
+    # for i in range(len(z_res)):
+    #     file.write(f"| {z_res[i]: ^7.5f} | {u_res[i]: ^22.6e} | {f_res[i]: ^22.6e} | {f_res2[i]: ^22.6e} |\n")
+
+    for i in [0, len(u_res) - 1]:
         file.write(f"| {z_res[i]: ^7.5f} | {u_res[i]: ^22.6e} | {f_res[i]: ^22.6e} | {f_res2[i]: ^22.6e} |\n")
 
     file.write("-" * 86)
@@ -546,9 +549,9 @@ def main() -> None:
     n = 200  # число узлов
     h = (b - a) / n
 
-    u_res = right_sweep(a, b, h)
+    # u_res = right_sweep(a, b, h)
     # u_res = left_sweep(a, b, h)
-    # u_res = meetings_sweep(a, b, h, n // 2)
+    u_res = meetings_sweep(a, b, h, n // 2)
     z_res = np.arange(a, b + h, h)
     f_res = flux1(u_res, z_res, h)
     # f_res2 = flux2(z_res, u_res, h)
@@ -564,9 +567,9 @@ def main() -> None:
         up_res[i] = u_p(z_res[i])
         div_f[i] = div_flux(z_res[i], u_res[i])
 
-    write_result_to_file("../data/right_sweep.txt", z_res, u_res, f_res, f_res2)
+    # write_result_to_file("../data/right_sweep.txt", z_res, u_res, f_res, f_res2)
     # write_result_to_file("../data/left_sweep.txt", z_res, u_res, f_res, f_res2)
-    # write_result_to_file("../data/meetings_sweep.txt", z_res, u_res, f_res, f_res2)
+    write_result_to_file("../data/meetings_sweep.txt", z_res, u_res, f_res, f_res2)
 
     # plt.figure(figsize=(9, 6))
     # plt.subplot(2, 2, 1)

@@ -279,7 +279,10 @@ def write_result_to_file(filepath, z_res, u_res, f_res):
     file.write(f'| {"x": ^7} | {"u(z)": ^22} | {"f(z)": ^22} |\n')
     file.write("-" * 61 + "\n")
 
-    for i in range(len(z_res)):
+    # for i in range(len(z_res)):
+    #     file.write(f"| {z_res[i]: ^7.5f} | {u_res[i]: ^22.6e} | {f_res[i]: ^22.6e} |\n")
+
+    for i in [0, len(u_res) - 1]:
         file.write(f"| {z_res[i]: ^7.5f} | {u_res[i]: ^22.6e} | {f_res[i]: ^22.6e} |\n")
 
     file.write("-" * 61)
