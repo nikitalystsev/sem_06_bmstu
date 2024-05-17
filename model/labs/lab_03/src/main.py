@@ -211,12 +211,15 @@ def left_boundary_condition(z0, g0, h):
     Левое краевое условие метода правой прогонки
     """
 
-    k0 = kappa_new(z0, z0 + h) * (z0 + h / 2) / (r ** 2 * h) - _p_new(z0 + h / 2) * (z0 + h / 2) * h / 8  # правильно
+    p_half = (_p_new(z0) + _p_new(z0 + h)) / 2
+    f_half = (f_new(z0) + f_new(z0 + h)) / 2
 
-    m0 = -kappa_new(z0, z0 + h) * (z0 + h / 2) / (r ** 2 * h) - _p_new(z0 + h / 2) * (z0 + h / 2) * h / 8 - _p_new(
+    k0 = kappa_new(z0, z0 + h) * (z0 + h / 2) / (r ** 2 * h) - p_half * (z0 + h / 2) * h / 8  # правильно
+
+    m0 = -kappa_new(z0, z0 + h) * (z0 + h / 2) / (r ** 2 * h) - p_half * (z0 + h / 2) * h / 8 - _p_new(
         z0) * z0 * h / 4
 
-    p0 = -z0 * g0 / r - (f_new(z0 + h / 2) * (z0 + h / 2) + f_new(z0) * z0) * h / 4
+    p0 = -z0 * g0 / r - (f_half * (z0 + h / 2) + f_new(z0) * z0) * h / 4
 
     return k0, m0, p0
 
@@ -226,12 +229,15 @@ def right_boundary_condition(zn, h):
     """
     Правое краевое условие метода правой прогонки
     """
-    kn = kappa_new(zn - h, zn) * (zn - h / 2) / (r ** 2 * h) - _p_new(zn - h / 2) * (zn - h / 2) * h / 8  # правильно
+    p_half = (_p_new(zn) + _p_new(zn - h)) / 2
+    f_half = (f_new(zn) + f_new(zn - h)) / 2
 
-    mn = -kappa_new(zn - h, zn) * (zn - h / 2) / (r ** 2 * h) - 0.393 * 1 * zn / r - _p_new(zn) * zn * h / 4 - _p_new(
-        zn - h / 2) * (zn - h / 2) * h / 8
+    kn = kappa_new(zn - h, zn) * (zn - h / 2) / (r ** 2 * h) - p_half * (zn - h / 2) * h / 8  # правильно
 
-    pn = -(f_new(zn) * zn + f_new(zn - h / 2) * (zn - h / 2)) * h / 4
+    mn = -kappa_new(zn - h, zn) * (zn - h / 2) / (r ** 2 * h) - 0.393 * 1 * zn / r - _p_new(
+        zn) * zn * h / 4 - p_half * (zn - h / 2) * h / 8
+
+    pn = -(f_new(zn) * zn + f_half * (zn - h / 2)) * h / 4
 
     return kn, mn, pn
 
@@ -242,7 +248,6 @@ def right_sweep(a, b, h):
     """
     # Прямой ход
     k0, m0, p0 = left_boundary_condition(a, 0, h)
-
     kn, mn, pn = right_boundary_condition(b, h)
 
     ksi = [0, -k0 / m0]
@@ -465,82 +470,6 @@ def write_result_to_file(filepath, z_res, u_res, f_res, f_res2):
     file.close()
 
 
-def cmp_res_by_input_data(a, b, h):
-    """
-    5-е задание лабы
-    """
-    plt.ioff()
-
-    z_res = np.arange(a, b + h, h)
-    _t_0 = np.linspace(100, 1e6, 100)
-    u0_t_0_res = []
-    f0_t_0_res = []
-    global t_0
-    for curr_t_0 in _t_0:
-        t_0 = curr_t_0
-        u_res = right_sweep(a, b, h)
-        f_res = flux1(u_res, z_res, h)
-        u0_t_0_res.append(u_res[0])
-        f0_t_0_res.append(f_res[0])
-    t_0 = 1e4
-    fig, axs = plt.subplots(2, 3, figsize=(13, 9))
-    axs[0, 0].plot(_t_0, u0_t_0_res, 'r')
-    axs[0, 0].set_xlabel("T_0")
-    axs[0, 0].set_ylabel("u(0)")
-    axs[0, 0].grid()
-    axs[1, 0].plot(_t_0, f0_t_0_res, 'r')
-    axs[1, 0].set_xlabel("T_0")
-    axs[1, 0].set_ylabel("F(0)")
-    axs[1, 0].grid()
-
-    p_list = list(range(1, 11))
-    u0_p_res = []
-    f0_p_res = []
-    global p
-    for curr_p in p_list:
-        p = curr_p
-        u_res = right_sweep(a, b, h)
-        f_res = flux1(u_res, z_res, h)
-        u0_p_res.append(u_res[0])
-        f0_p_res.append(f_res[0])
-    p = 4
-    axs[0, 1].plot(p_list, u0_p_res, 'r')
-    axs[0, 1].set_xlabel("p")
-    axs[0, 1].set_ylabel("u(0)")
-    axs[0, 1].grid()
-    axs[1, 1].plot(p_list, f0_p_res, 'r')
-    axs[1, 1].set_xlabel("p")
-    axs[1, 1].set_ylabel("F(0)")
-    axs[1, 1].grid()
-
-    r_list = np.arange(0.1, 1 + 0.05, 0.05)
-    u0_r_res = []
-    f0_r_res = []
-    global r
-    for curr_r in r_list:
-        r = curr_r
-        u_res = right_sweep(a, b, h)
-        f_res = flux1(u_res, z_res, h)
-        u0_r_res.append(u_res[0])
-        f0_r_res.append(f_res[0])
-    r = 0.35
-    axs[0, 2].plot(r_list, u0_r_res, 'r')
-    axs[0, 2].set_xlabel("r")
-    axs[0, 2].set_ylabel("u(0)")
-    axs[0, 2].grid()
-
-    axs[1, 2].plot(r_list, f0_r_res, 'r')
-    axs[1, 2].set_xlabel("r")
-    axs[1, 2].set_ylabel("u(0)")
-    axs[1, 2].grid()
-
-    # Сохраняем графики в файл
-    fig.savefig(f"../data/cmp_res_by_input_data.png")
-
-    # Включаем интерактивный режим обратно
-    plt.ion()
-
-
 def main() -> None:
     """
     Главная функция
@@ -549,9 +478,9 @@ def main() -> None:
     n = 200  # число узлов
     h = (b - a) / n
 
-    # u_res = right_sweep(a, b, h)
+    u_res = right_sweep(a, b, h)
     # u_res = left_sweep(a, b, h)
-    u_res = meetings_sweep(a, b, h, n // 2)
+    # u_res = meetings_sweep(a, b, h, n // 2)
     z_res = np.arange(a, b + h, h)
     f_res = flux1(u_res, z_res, h)
     # f_res2 = flux2(z_res, u_res, h)
@@ -567,9 +496,9 @@ def main() -> None:
         up_res[i] = u_p(z_res[i])
         div_f[i] = div_flux(z_res[i], u_res[i])
 
-    # write_result_to_file("../data/right_sweep.txt", z_res, u_res, f_res, f_res2)
+    write_result_to_file("../data/right_sweep.txt", z_res, u_res, f_res, f_res2)
     # write_result_to_file("../data/left_sweep.txt", z_res, u_res, f_res, f_res2)
-    write_result_to_file("../data/meetings_sweep.txt", z_res, u_res, f_res, f_res2)
+    # write_result_to_file("../data/meetings_sweep.txt", z_res, u_res, f_res, f_res2)
 
     # plt.figure(figsize=(9, 6))
     # plt.subplot(2, 2, 1)
