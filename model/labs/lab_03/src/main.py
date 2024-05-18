@@ -271,7 +271,7 @@ def right_sweep(a, b, h):
     # Обратный ход
     u = [0] * n
 
-    u[n - 1] = (pn - kn * eta[n]) / (kn * ksi[n] + mn)
+    u[n - 1] = (pn - kn * eta[n - 1]) / (kn * ksi[n - 1] + mn)
 
     print(f"u[n - 1] = u[{n - 1}] = {u[n - 1]: <.7e}, len(u) = {len(u)}")
 

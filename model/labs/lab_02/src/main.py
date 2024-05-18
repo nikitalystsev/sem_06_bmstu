@@ -295,7 +295,7 @@ def main() -> None:
     Главная функция
     """
     a, b = 0, 1
-    n = 10000  # число узлов
+    n = 200  # число узлов
     h = (b - a) / n
 
     # # z_res, u_res, f_res, ksi_start, ksi_end = get_solve_by_rk(a, b, h, method=rk2)
