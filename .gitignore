@@ -1,8 +1,6 @@
 /falp/others/
-/falp/lects/lect_01/*.m4a
-/falp/lects/lect_02/*.m4a
-/falp/lects/lect_03/*.m4a
-/falp/labs/audio_labs/lab_01/*.m4a
+/falp/lects/lect_0*/*.m4a
+/falp/labs/audio_labs/lab_0*/*.m4a
 /falp/labs/prolog/*.pro
 /falp/labs/prolog/*.bk1
 /falp/labs/prolog/*.grd
@@ -12,45 +10,27 @@
 /falp/labs/prolog/*.vpr
 /falp/labs/prolog/Exe
 /falp/labs/prolog/Obj
-/falp/labs/prolog/lab_01/*.BAK
-/falp/labs/prolog/lab_02/*.BAK
-/falp/labs/prolog/lab_03/*.BAK
-/falp/labs/prolog/lab_03/*.BAK
-/falp/labs/prolog/lab_04/*.BAK
-/falp/labs/prolog/lab_05/*.BAK
+/falp/labs/prolog/lab_0*/*.BAK
 
+/ecol/lects/lect_0*/*.m4a
 
-/ecol/lects/lect_01/*.m4a
-/ecol/lects/lect_02/*.m4a
-/ecol/lects/lect_03/*.m4a
-
-/ppo/lects/lect_02/*.m4a
+/ppo/lects/lect_0*/*.m4a
 /ppo/sems/sem_01/*.m4a
 /ppo/labs/lab_01/img/scheme_drawio/*.bkp
 /ppo/gitlab_ppo/
 
-/os/lects/lect_01/*.m4a
-/os/lects/lect_02/*.m4a
-/os/lects/lect_03/*.m4a
-/os/lects/lect_04/*.m4a
-/os/lects/lect_05/*.m4a
+/os/lects/lect_0*/*.m4a
 /os/labs/audio_labs/*.m4a
 /os/.vscode/
 /os/labs/.vscode/
 
 /mathstat/Matlab 2023b/
-/mathstat/labs/lab_01/report/svg-inkscape/
-/mathstat/labs/lab_02/report/svg-inkscape/
+/mathstat/labs/lab_0*/report/svg-inkscape/
 
-/model/lects/lect_01/*.m4a
-/model/lects/lect_02/*.m4a
+/model/lects/lect_0*/*.m4a
 /model/labs/.idea
 /model/.idea
-/model/labs/lab_01/src/__pycache__
-/model/labs/lab_02/src/__pycache__
-/model/labs/lab_03/src/__pycache__
-/model/labs/lab_04/src/__pycache__
-/model/labs/lab_05/src/__pycache__
+/model/labs/lab_0*/src/__pycache__
 
-/bir/lects/lect_01/*.m4a
+/bir/lects/lect_0*/*.m4a
 /bir/sems/sem_06/*.mp4
