@@ -288,7 +288,6 @@ def left_sweep(a, b, h):
 
     # Прямой ход
     k0, m0, p0 = left_boundary_condition(a, 0, h)
-
     kn, mn, pn = right_boundary_condition(b, h)
 
     ksi = [-kn / mn, 0]
@@ -328,7 +327,6 @@ def meetings_sweep(a, b, h, n_eq):
     """
     # Прямой ход
     k0, m0, p0 = left_boundary_condition(a, 0, h)
-
     kn, mn, pn = right_boundary_condition(b, h)
 
     # правая часть прогонки
@@ -479,12 +477,12 @@ def main() -> None:
     Главная функция
     """
     a, b = 0, 1
-    n = 200  # число узлов
+    n = 100  # число узлов
     h = (b - a) / n
 
-    u_res = right_sweep(a, b, h)
+    # u_res = right_sweep(a, b, h)
     # u_res = left_sweep(a, b, h)
-    # u_res = meetings_sweep(a, b, h, 200)
+    u_res = meetings_sweep(a, b, h, n)
     z_res = np.arange(a, b + h, h)
     f_res = flux1(u_res, z_res, h)
     # f_res2 = flux2(z_res, u_res, h)
@@ -500,9 +498,9 @@ def main() -> None:
         up_res[i] = u_p(z_res[i])
         div_f[i] = div_flux(z_res[i], u_res[i])
 
-    write_result_to_file("../data/right_sweep.txt", z_res, u_res, f_res, f_res2)
+    # write_result_to_file("../data/right_sweep.txt", z_res, u_res, f_res, f_res2)
     # write_result_to_file("../data/left_sweep.txt", z_res, u_res, f_res, f_res2)
-    # write_result_to_file("../data/meetings_sweep.txt", z_res, u_res, f_res, f_res2)
+    write_result_to_file("../data/meetings_sweep.txt", z_res, u_res, f_res, f_res2)
 
     # plt.figure(figsize=(9, 6))
     # plt.subplot(2, 2, 1)

@@ -1,8 +1,15 @@
 import numpy as np
 from dataclasses import dataclass
 import matplotlib.pyplot as plt
+import math as m
+import time
 
 EPS = 1e-4
+
+is_f0_const = False
+
+
+# is_f0_const = True
 
 
 @dataclass
@@ -35,7 +42,7 @@ class TaskOps:
     t_max: int | float = 60  # ок
 
 
-@dataclass(frozen=True)
+@dataclass
 class Grid:
     """
     Класс -- хранитель числа узлов, шагов по каждой переменной
@@ -93,8 +100,13 @@ def f0(time, ops: TaskOps):
     """
     f_max, t_max = ops.f_max, ops.t_max
 
+    if is_f0_const:
+        if time < 400:  # 400 тоже взято от балды (определяем протяженность импульса, что ле)
+            return (f_max / t_max) * 20 * np.exp(-((20 / t_max) - 1))  # 20 тоже от балды
+        else:
+            return 0
+
     return (f_max / t_max) * time * np.exp(-((time / t_max) - 1))
-    # return 20
 
 
 def p(x, ops: TaskOps):
@@ -264,6 +276,260 @@ def simple_iteration(data: Grid, ops: TaskOps):
     return np.array(x), np.array(times), np.array(t_res)
 
 
+def get_optimal_h(data: Grid, ops: TaskOps):
+    """
+    Метод для получения оптимального шага по координате
+    """
+    print(f"[+] вызвал get_optimal_h")
+    h = 0.01  # начальный шаг по координате
+
+    count = 0
+    while True:
+
+        data.h = h
+        x_h, times_h, t_res_h = simple_iteration(data, ops)
+        t_h_0 = dict(zip(x_h, t_res_h[len(times_h) // 2]))
+
+        data.h = h / 2
+        x_h_half_2, times_h_half_2, t_res_h_half_2 = simple_iteration(data, ops)
+        t_h_half_2_0 = dict(zip(x_h_half_2, t_res_h_half_2[len(times_h_half_2) // 2]))
+
+        cnt = 0
+
+        for x in t_h_0.keys():
+            error = abs((t_h_0[x] - t_h_half_2_0[x]) / t_h_half_2_0[x])
+
+            if error < EPS:
+                cnt += 1
+
+        if cnt == len(x_h):
+            break
+
+        h /= 2
+
+        print(f"итерация №{count + 1}")
+        count += 1
+
+    return h
+
+
+def get_optimal_tau(data: Grid, ops: TaskOps):
+    """
+    Метод для получения оптимального шага по координате
+    """
+    print(f"[+] вызвал get_optimal_tau")
+    tau = data.tau  # начальный шаг по координате
+
+    count = 0
+    while True:
+
+        data.tau = tau
+        x_h, times_h, t_res_h = simple_iteration(data, ops)
+        res = []
+        for row in t_res_h:
+            res.append(row[len(x_h) // 2])
+        t_h_0 = dict(zip(times_h, res))
+
+        data.tau = tau / 2
+        x_h_half_2, times_h_half_2, t_res_h_half_2 = simple_iteration(data, ops)
+        res = []
+        for row in t_res_h_half_2:
+            res.append(row[len(x_h) // 2])
+        t_h_half_2_0 = dict(zip(times_h_half_2, res))
+
+        flag = False
+
+        for x in t_h_0.keys():
+            error = abs((t_h_0[x] - t_h_half_2_0[x]) / t_h_half_2_0[x])
+
+            if error > EPS:
+                flag = True
+                break
+
+        if flag:
+            break
+
+        tau /= 2
+
+        print(f"итерация №{count + 1}")
+        count += 1
+
+    return tau
+
+
+def task2_integral(data: Grid, ops: TaskOps):
+    """
+    Рассмотреть влияние на получаемые результаты амплитуды импульса F_max и времени t_max
+    (определяют крутизну фронтов и длительность импульса).
+    """
+    # очевидно, списки значений F_max и t_max
+    f_max_list = [40, 50, 60]
+    t_max_list = [50, 60, 70]
+
+    # plt.figure(figsize=(14, 9))
+    #
+    # cnt = 0
+    # for i, f_max in enumerate(f_max_list):
+    #     for j, t_max in enumerate(t_max_list):
+    #         plt.subplot(len(f_max_list), len(t_max_list), i * len(t_max_list) + j + 1)
+    #
+    #         ops.f_max = f_max
+    #         ops.t_max = t_max
+    #         x, t, t_res = simple_iteration(data, ops)
+    #
+    #         # список номеров некоторых узлов сетки по координате для анализа
+    #         list_ind_x = [0, len(t_res[0]) // 4, len(t_res[0]) // 2, len(t_res[0]) - 1]
+    #
+    #         # цикл по некоторым узлам сетки
+    #         for ind_x in list_ind_x:
+    #             curr_t = [t_m[ind_x] for t_m in t_res]
+    #             plt.xlabel("t, c")
+    #             plt.ylabel("T(x, t)")
+    #             plt.ylim((300, 700))
+    #             plt.grid()
+    #             plt.plot(t, curr_t, label=f"F_max={f_max} t_max={t_max} x={x[ind_x]}")
+    #         plt.legend()
+    #
+    #         print(f"итерация №{cnt + 1}")
+    #         cnt += 1
+    #
+    # plt.savefig(f"../data/F_max_t_max_by_x.png")
+    # plt.show()
+
+    plt.figure(figsize=(14, 9))
+    cnt = 0
+    for i, f_max in enumerate(f_max_list):
+        for j, t_max in enumerate(t_max_list):
+            plt.subplot(len(f_max_list), len(t_max_list), i * len(t_max_list) + j + 1)
+
+            ops.f_max = f_max
+            ops.t_max = t_max
+            x, t, t_res = simple_iteration(data, ops)
+
+            # список номеров узлов сетки по времени для анализа
+            list_ind_t = [0, len(t_res) // 4, len(t_res) // 2, len(t_res) - 1]
+
+            for ind_t in list_ind_t:
+                curr_t = t_res[ind_t]
+                plt.xlabel("x, cm")
+                plt.ylabel("T(x, t)")
+                plt.ylim((300, 750))
+                plt.grid()
+                plt.plot(x, curr_t, label=f"F_max={f_max} t_max={t_max} t={t[ind_t]}")
+            plt.legend()
+
+            print(f"итерация №{cnt + 1}")
+            cnt += 1
+
+    plt.savefig(f"../data/F_max_t_max_by_t.png")
+    plt.show()
+
+
+# пока что траблы
+# def check_power_balance(data: Grid, ops: TaskOps):
+#     """
+#     Интеграл 2 пункта (проверка баланса мощности при выбранных шагах)
+#     """
+#     x, t, t_res = simple_iteration(data, ops)  # получили решение
+#     eps = 1e-2  # другая своя точность
+#     t0, r = ops.t0, ops.r
+#     h = data.h
+#
+#     # из краевых условий
+#     f_0_value = alpha(x[0], ops) * (t0 - t_res[-1][0])
+#     f_n_value = alpha(x[-1], ops) * (t_res[-1][-1] - t0)
+#
+#     # средние
+#     upper_integral = 0
+#     for i in range(1, len(x)):
+#
+#         sum1 = alpha(x[i - 1], ops) * (t_res[-1][i - 1] - t0)
+#         sum2 = alpha(x[i], ops) * (t_res[-1][i] - t0)
+#         upper_integral += (sum1 + sum2)
+#
+#     upper_integral *= (h / r)
+#     print(upper_integral)
+#     f0_t = f0(t[-1], ops)
+#
+#     lower_integral = 0
+#     for i in range(1, len(x)):
+#         sum1 = k(t_res[-1, i], ops) * np.exp(-t_res[-1, i] * x[-1])
+#         sum2 = k(t_res[-1, i - 1], ops) * np.exp(-t_res[-1, i - 1] * x[-1])
+#         lower_integral += (sum1 + sum2)
+#         # lower_integral += func_minus_half(self.k_T, i, M - 1) * func_minus_half(self.exp_Tx, i, M-1) * self.h
+#
+#     chisl = -f_0_value + f_n_value + upper_integral
+#     znam = f0_t * lower_integral
+#
+#     print(chisl, znam, sep='\n')
+#
+#     counted = abs((chisl / znam) - 1)
+#     if znam < 1e-6:
+#         print()
+#     # print('counted', counted)
+#     return counted <= eps, counted
+
+
+def task3_a2_b2(data: Grid, ops: TaskOps):
+    """
+    3-й пункт лабы, изменение параметров a2 и b2
+    """
+    # 2 значения -- по условию
+    a2_list = [1, 2.049, 5]
+    b2_list = [0.563e-3, 0.6e-2]
+
+    plt.figure(figsize=(14, 9))
+
+    cnt = 0
+    for i, a2 in enumerate(a2_list):
+        for j, b2 in enumerate(b2_list):
+            plt.subplot(len(a2_list), len(b2_list), i * len(b2_list) + j + 1)
+
+            ops.a2 = a2
+            ops.b2 = b2
+            x, t, t_res = simple_iteration(data, ops)
+
+            t_0 = [t_m[0] for t_m in t_res]
+
+            plt.plot(t, t_0, label=f"a2={a2} b2={b2}")
+            plt.grid()
+            plt.legend()
+
+            print(f"итерация №{cnt + 1}")
+            cnt += 1
+
+    plt.savefig(f"../data/a2_b2_by_t.png")
+    plt.show()
+
+
+def task4_imp(data: Grid, ops: TaskOps):
+    """
+    Пункт 4 лабы
+    """
+    in_row = 3
+    stop_timing = 600
+
+    v_list = [0.01, 0.05, 0.1, 1, 3, 5]
+
+    plt.figure(figsize=(14, 9))
+
+    for i, v in enumerate(v_list):
+        plt.subplot(m.ceil(len(v_list) / in_row), in_row, i + 1)
+
+        solver = Solver(v={'v': v, 'stop_timing': stop_timing}, h=0.1, tau=0.1)
+        solver.solve()
+        T, t_array = solver.get_results()
+        print(len(T))
+
+        T_0t = [T_m[0] for T_m in T]
+        # plt.xticks(list(range(0, stop_timing, int(stop_timing / 10))))
+        plt.plot(t_array, T_0t, label=f"v={v}")
+        plt.legend()
+
+    plt.savefig(f"v.png")
+    plt.show()
+
+
 def main() -> None:
     """
     Главная функция
@@ -273,40 +539,56 @@ def main() -> None:
     a, b = 0, ops.l  # диапазон значений координаты
     n = 1000
     h = (b - a) / n
-    t_max = 300
+
+    t_max = 600
     time0, timem = 0, t_max  # диапазон значений времени
     m = 300
     tau = (timem - time0) / m
 
+    print(f"tau = {tau}, h = {h}")
+
     data = Grid(a, b, n, h, time0, timem, m, tau)
 
+    # var1, var2 = check_power_balance(data, ops)
+    # print(var1, var2)
+    # task2(data, ops)
+    # opt_h = get_optimal_h(data, ops) # 0.0025
+    # print(f"opt_h = {opt_h}")
+    # opt_tau = get_optimal_tau(data, ops)  # 0.5
+    # print(f"opt_tau = {opt_tau}")
+    # task3_a2_b2(data, ops)
+
+    beg = time.process_time()
     x, t, t_res = simple_iteration(data, ops)
+    beg = time.process_time() - beg
 
-    X, T = np.meshgrid(x, t)
+    print(beg)
 
-    # Построение графика
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-    ax.plot_surface(X, T, t_res, cmap='viridis')
+    # X, T = np.meshgrid(x, t)
+    #
+    # # Построение графика
+    # fig = plt.figure()
+    # ax = fig.add_subplot(111, projection='3d')
+    # ax.plot_surface(X, T, t_res, cmap='viridis')
+    #
+    # # Настройка подписей осей
+    # ax.set_xlabel('x')
+    # ax.set_ylabel('t')
+    # ax.set_zlabel('T(x, t)')
+    # ax.set_title('Температурное поле')
 
-    # Настройка подписей осей
-    ax.set_xlabel('x')
-    ax.set_ylabel('t')
-    ax.set_zlabel('T(x, t)')
-    ax.set_title('Температурное поле')
-
-    # Создание нового окна для двумерных графиков
-    fig2, axes = plt.subplots(2, 3, figsize=(13, 10))
-
-    t_f0 = np.arange(time0, 300, tau)
-
-    # Построение двумерных графиков
-    axes[0, 0].plot(t_f0, f0(t_f0, ops), 'g', label="F0(t)")
-    axes[0, 0].set_title('График F0')
-    axes[0, 0].set_xlabel('t')
-    axes[0, 0].set_ylabel('F0')
-    axes[0, 0].legend()
-    axes[0, 0].grid()
+    # # Создание нового окна для двумерных графиков
+    # fig2, axes = plt.subplots(2, 3, figsize=(13, 10))
+    #
+    # t_f0 = np.arange(time0, 300, tau)
+    #
+    # # Построение двумерных графиков
+    # axes[0, 0].plot(t_f0, f0(t_f0, ops), 'g', label="F0(t)")
+    # axes[0, 0].set_title('График F0')
+    # axes[0, 0].set_xlabel('t')
+    # axes[0, 0].set_ylabel('F0')
+    # axes[0, 0].legend()
+    # axes[0, 0].grid()
 
     # res, a2_list = get_data_graph_task_3(data, ops)
     #
@@ -339,13 +621,13 @@ def main() -> None:
     #
     # t_res = np.array(simple_iteration(data, ops))[:-1]
 
-    for i, res_i in enumerate(t_res):
-        axes[1, 0].plot(x, res_i, label=f"T(x, t), t = {t[i]}")
-    axes[1, 0].set_title('График T(x, t)')
-    axes[1, 0].set_xlabel('t')
-    axes[1, 0].set_ylabel('T(x, t)')
-    axes[1, 0].legend()
-    axes[1, 0].grid()
+    # for i, res_i in enumerate(t_res):
+    #     axes[1, 0].plot(x, res_i, label=f"T(x, t), t = {t[i]}")
+    # axes[1, 0].set_title('График T(x, t)')
+    # axes[1, 0].set_xlabel('t')
+    # axes[1, 0].set_ylabel('T(x, t)')
+    # axes[1, 0].legend()
+    # axes[1, 0].grid()
 
     # Показать график
     plt.show()
