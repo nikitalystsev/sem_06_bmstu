@@ -1,0 +1,35 @@
+x = sort(x);
+
+t = zeros(1, n + 2);
+
+t(1)     = x(1) - 1;
+t(n + 2) = x(n) + 1;
+
+for i = 2 : n + 1
+    t(i) = x(i - 1);
+end
+F_n = zeros(length(t), 1);
+
+for i = 1 : length(t)
+    count = 0;
+    for j = 1 : n
+        if (t(i) >= x(j))
+            count = count + 1;
+        end
+    end
+    F_n(i) = count / n;
+end
+
+figure();
+plot(t, F_n, 'b', LineWidth=1);
+hold on;
+
+F = normcdf(x_values, mu, sqrt(S_quad));
+
+plot(x_values, F, 'r', LineWidth=1, LineStyle='--');
+grid;
+xlabel("x");
+ylabel('F');
+legend('F\_empiric', 'F\_normal', Location='northwest');
+
+end
