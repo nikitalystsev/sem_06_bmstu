@@ -2,7 +2,6 @@ import numpy as np
 from dataclasses import dataclass
 import matplotlib.pyplot as plt
 import math as m
-import time
 
 EPS = 1e-4
 
@@ -40,6 +39,9 @@ class TaskOps:
     # для отладки принять
     f_max: int | float = 50  # ок
     t_max: int | float = 60  # ок
+
+    # частота импульсов (типа число импульсов в секунду: 1 импульс за 100 секунд)
+    v: int | float = 0.01
 
 
 @dataclass
@@ -105,6 +107,11 @@ def f0(time, ops: TaskOps):
             return (f_max / t_max) * 20 * np.exp(-((20 / t_max) - 1))  # 20 тоже от балды
         else:
             return 0
+
+    v = ops.v  # определяет число импульсов в секунду
+
+    if v and not (time * v).is_integer():
+        return 0
 
     return (f_max / t_max) * time * np.exp(-((time / t_max) - 1))
 
@@ -520,12 +527,12 @@ def main() -> None:
     ops = TaskOps()
 
     a, b = 0, ops.l  # диапазон значений координаты
-    n = 500
+    n = 1000
     h = (b - a) / n
 
-    t_max = 600
+    t_max = 100
     time0, timem = 0, t_max  # диапазон значений времени
-    m = 10
+    m = 1000
     tau = (timem - time0) / m
 
     print(f"tau = {tau}, h = {h}")
@@ -541,11 +548,8 @@ def main() -> None:
     # print(f"opt_tau = {opt_tau}")
     # task3_a2_b2(data, ops)
 
-    # beg = time.process_time()
-    # x, t, t_res = simple_iteration(data, ops)
-    # beg = time.process_time() - beg
-    #
-    # print(beg)
+    ops.v = 0.05
+    x, t, t_res = simple_iteration(data, ops)
 
     # X, T = np.meshgrid(x, t)
     #
@@ -560,9 +564,9 @@ def main() -> None:
     # ax.set_zlabel('T(x, t)')
     # ax.set_title('Температурное поле')
 
-    # # Создание нового окна для двумерных графиков
-    # fig2, axes = plt.subplots(2, 3, figsize=(13, 10))
-    #
+    # Создание нового окна для двумерных графиков
+    fig2, axes = plt.subplots(2, 3, figsize=(13, 10))
+
     # t_f0 = np.arange(time0, 300, tau)
     #
     # # Построение двумерных графиков
@@ -572,6 +576,18 @@ def main() -> None:
     # axes[0, 0].set_ylabel('F0')
     # axes[0, 0].legend()
     # axes[0, 0].grid()
+
+    res = []
+    for t_m in t_res:
+        res.append(t_m[0])
+
+    # Построение двумерных графиков
+    axes[0, 0].plot(t, res, 'g', label=f"T(0, t), v = {ops.v}")
+    axes[0, 0].set_title('График T')
+    axes[0, 0].set_xlabel('t')
+    axes[0, 0].set_ylabel('T(0, t)')
+    axes[0, 0].legend()
+    axes[0, 0].grid()
 
     # res, a2_list = get_data_graph_task_3(data, ops)
     #
