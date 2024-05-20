@@ -257,10 +257,10 @@ def right_sweep(a, b, h):
     n = 1
 
     while z < b + h / 2:
-        a_n = (z - h / 2) * (kappa2(z - h, z)) / (r ** 2 * h)
-        c_n = ((z + h / 2) * kappa2(z, z + h)) / (r ** 2 * h)
-        b_n = a_n + c_n + _p(z) * v_n(z, h)
-        d_n = f(z) * v_n(z, h)
+        a_n = (z - h / 2) * (kappa_new(z - h, z)) / (r ** 2 * h)
+        c_n = ((z + h / 2) * kappa_new(z, z + h)) / (r ** 2 * h)
+        b_n = a_n + c_n + _p_new(z) * v_n(z, h)
+        d_n = f_new(z) * v_n(z, h)
 
         ksi.append(c_n / (b_n - a_n * ksi[n]))
         eta.append((a_n * eta[n] + d_n) / (b_n - a_n * ksi[n]))
@@ -273,7 +273,7 @@ def right_sweep(a, b, h):
 
     u[n - 1] = (pn - kn * eta[n - 1]) / (kn * ksi[n - 1] + mn)
 
-    print(f"u[n - 1] = u[{n - 1}] = {u[n - 1]: <.7e}, len(u) = {len(u)}")
+    # print(f"u[n - 1] = u[{n - 1}] = {u[n - 1]: <.7e}, len(u) = {len(u)}")
 
     for i in range(n - 2, -1, -1):
         u[i] = ksi[i + 1] * u[i + 1] + eta[i + 1]
@@ -298,10 +298,10 @@ def left_sweep(a, b, h):
     cnt = 1
 
     while z > a - h / 2:
-        a_n = (z - h / 2) * (kappa1(z - h, z)) / (r ** 2 * h)
-        c_n = ((z + h / 2) * kappa1(z, z + h)) / (r ** 2 * h)
-        b_n = a_n + c_n + _p(z) * v_n(z, h)
-        d_n = f(z) * v_n(z, h)
+        a_n = (z - h / 2) * (kappa_new(z - h, z)) / (r ** 2 * h)
+        c_n = ((z + h / 2) * kappa_new(z, z + h)) / (r ** 2 * h)
+        b_n = a_n + c_n + _p_new(z) * v_n(z, h)
+        d_n = f_new(z) * v_n(z, h)
 
         ksi.insert(0, a_n / (b_n - c_n * ksi[n]))
         eta.insert(0, (c_n * eta[n] + d_n) / (b_n - c_n * ksi[n]))
@@ -336,11 +336,11 @@ def meetings_sweep(a, b, h, n_eq):
     ksi_r = [0, -k0 / m0]
     eta_r = [0, p0 / m0]
 
-    while z < n_eq * h:
-        a_n = (z - h / 2) * (kappa1(z - h, z)) / (r ** 2 * h)
-        c_n = ((z + h / 2) * kappa1(z, z + h)) / (r ** 2 * h)
-        b_n = a_n + c_n + _p(z) * v_n(z, h)
-        d_n = f(z) * v_n(z, h)
+    while z < n_eq * h - h / 2:
+        a_n = (z - h / 2) * (kappa_new(z - h, z)) / (r ** 2 * h)
+        c_n = ((z + h / 2) * kappa_new(z, z + h)) / (r ** 2 * h)
+        b_n = a_n + c_n + _p_new(z) * v_n(z, h)
+        d_n = f_new(z) * v_n(z, h)
 
         ksi_r.append(c_n / (b_n - a_n * ksi_r[n]))
         eta_r.append((a_n * eta_r[n] + d_n) / (b_n - a_n * ksi_r[n]))
@@ -356,12 +356,12 @@ def meetings_sweep(a, b, h, n_eq):
     n1 = -2
     cnt = 1
 
-    while z > n_eq * h - h / 2:
+    while z > n_eq * h:
         print(f"[+] in while")
-        a_n = (z - h / 2) * (kappa1(z - h, z)) / (r ** 2 * h)
-        c_n = ((z + h / 2) * kappa1(z, z + h)) / (r ** 2 * h)
-        b_n = a_n + c_n + _p(z) * v_n(z, h)
-        d_n = f(z) * v_n(z, h)
+        a_n = (z - h / 2) * (kappa_new(z - h, z)) / (r ** 2 * h)
+        c_n = ((z + h / 2) * kappa_new(z, z + h)) / (r ** 2 * h)
+        b_n = a_n + c_n + _p_new(z) * v_n(z, h)
+        d_n = f_new(z) * v_n(z, h)
 
         ksi_l.insert(0, a_n / (b_n - c_n * ksi_l[n1]))
         eta_l.insert(0, (c_n * eta_l[n1] + d_n) / (b_n - c_n * ksi_l[n1]))
@@ -373,6 +373,7 @@ def meetings_sweep(a, b, h, n_eq):
     # # Обратный ход
     u = [0] * (n + cnt)
 
+    print(len(u))
     # вычисляем up (решая систему из двух уравнений) -- сопряжение решений
     u[n_eq] = (ksi_r[-1] * eta_l[0] + eta_r[-1]) / (1 - ksi_r[-1] * ksi_l[0])
 
@@ -483,7 +484,8 @@ def main() -> None:
     # u_res = right_sweep(a, b, h)
     # u_res = left_sweep(a, b, h)
     u_res = meetings_sweep(a, b, h, n)
-    z_res = np.arange(a, b + h, h)
+    z_res = np.arange(a, b + h / 2, h)
+
     f_res = flux1(u_res, z_res, h)
     # f_res2 = flux2(z_res, u_res, h)
     f_res2 = flux3(z_res, u_res, h)

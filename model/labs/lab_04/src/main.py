@@ -315,7 +315,7 @@ def get_optimal_h(data: Grid, ops: TaskOps):
 
 def get_optimal_tau(data: Grid, ops: TaskOps):
     """
-    Метод для получения оптимального шага по координате
+    Метод для получения оптимального шага по времени
     """
     print(f"[+] вызвал get_optimal_tau")
     tau = data.tau  # начальный шаг по координате
@@ -337,16 +337,14 @@ def get_optimal_tau(data: Grid, ops: TaskOps):
             res.append(row[len(x_h) // 2])
         t_h_half_2_0 = dict(zip(times_h_half_2, res))
 
-        flag = False
-
+        cnt = 0
         for x in t_h_0.keys():
             error = abs((t_h_0[x] - t_h_half_2_0[x]) / t_h_half_2_0[x])
 
-            if error > EPS:
-                flag = True
-                break
+            if error < EPS:
+                cnt += 1
 
-        if flag:
+        if cnt == len(x_h):
             break
 
         tau /= 2
@@ -357,7 +355,7 @@ def get_optimal_tau(data: Grid, ops: TaskOps):
     return tau
 
 
-def task2_integral(data: Grid, ops: TaskOps):
+def task2_f_max_t_max(data: Grid, ops: TaskOps):
     """
     Рассмотреть влияние на получаемые результаты амплитуды импульса F_max и времени t_max
     (определяют крутизну фронтов и длительность импульса).
@@ -423,6 +421,19 @@ def task2_integral(data: Grid, ops: TaskOps):
 
     plt.savefig(f"../data/F_max_t_max_by_t.png")
     plt.show()
+
+
+def task2_integral(data: Grid, ops: TaskOps):
+    """
+    Реализация вычисления интеграла во 2-м пункте
+    """
+    x, t, t_res = simple_iteration(data, ops)  # получили решение
+    eps = 1e-2  # другая своя точность
+
+    t0 = ops.t0
+
+    f_0_value = alpha(x[0], ops) * (t0 - t_res[-1][0])
+    f_n_value = alpha(x[-1], ops) * (t_res[-1][-1] - t0)
 
 
 # пока что траблы
@@ -502,34 +513,6 @@ def task3_a2_b2(data: Grid, ops: TaskOps):
     plt.show()
 
 
-def task4_imp(data: Grid, ops: TaskOps):
-    """
-    Пункт 4 лабы
-    """
-    in_row = 3
-    stop_timing = 600
-
-    v_list = [0.01, 0.05, 0.1, 1, 3, 5]
-
-    plt.figure(figsize=(14, 9))
-
-    for i, v in enumerate(v_list):
-        plt.subplot(m.ceil(len(v_list) / in_row), in_row, i + 1)
-
-        solver = Solver(v={'v': v, 'stop_timing': stop_timing}, h=0.1, tau=0.1)
-        solver.solve()
-        T, t_array = solver.get_results()
-        print(len(T))
-
-        T_0t = [T_m[0] for T_m in T]
-        # plt.xticks(list(range(0, stop_timing, int(stop_timing / 10))))
-        plt.plot(t_array, T_0t, label=f"v={v}")
-        plt.legend()
-
-    plt.savefig(f"v.png")
-    plt.show()
-
-
 def main() -> None:
     """
     Главная функция
@@ -537,12 +520,12 @@ def main() -> None:
     ops = TaskOps()
 
     a, b = 0, ops.l  # диапазон значений координаты
-    n = 1000
+    n = 500
     h = (b - a) / n
 
     t_max = 600
     time0, timem = 0, t_max  # диапазон значений времени
-    m = 300
+    m = 10
     tau = (timem - time0) / m
 
     print(f"tau = {tau}, h = {h}")
@@ -552,17 +535,17 @@ def main() -> None:
     # var1, var2 = check_power_balance(data, ops)
     # print(var1, var2)
     # task2(data, ops)
-    # opt_h = get_optimal_h(data, ops) # 0.0025
+    # opt_h = get_optimal_h(data, ops)  # 0.0025.
     # print(f"opt_h = {opt_h}")
     # opt_tau = get_optimal_tau(data, ops)  # 0.5
     # print(f"opt_tau = {opt_tau}")
     # task3_a2_b2(data, ops)
 
-    beg = time.process_time()
-    x, t, t_res = simple_iteration(data, ops)
-    beg = time.process_time() - beg
-
-    print(beg)
+    # beg = time.process_time()
+    # x, t, t_res = simple_iteration(data, ops)
+    # beg = time.process_time() - beg
+    #
+    # print(beg)
 
     # X, T = np.meshgrid(x, t)
     #
