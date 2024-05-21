@@ -275,7 +275,7 @@ def get_research():
     table_size = 85
     a, b = 0, 1
 
-    n_list = [100, 70, 50, 30, 20, 10, 5, 2]
+    n_list = [100, 70, 50, 30, 20, 10]
 
     file = open("../data/research.txt", "w", encoding="utf-8")
 
