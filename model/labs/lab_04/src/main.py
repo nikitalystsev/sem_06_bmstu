@@ -6,9 +6,11 @@ import math as m
 EPS = 1e-4
 
 is_f0_const = False
-
-
 # is_f0_const = True
+
+
+# is_v = False
+is_v = True
 
 
 @dataclass
@@ -110,8 +112,9 @@ def f0(time, ops: TaskOps):
 
     v = ops.v  # определяет число импульсов в секунду
 
-    if v and not (time * v).is_integer():
-        return 0
+    if is_v:
+        if v and not (time * v).is_integer():
+            return 0
 
     return (f_max / t_max) * time * np.exp(-((time / t_max) - 1))
 
@@ -238,6 +241,7 @@ def simple_iteration_on_layer(t_m, curr_time, data: Grid, ops: TaskOps):
     Вычисляет значение искомой функции (функции T) на слое t_m_plus_1
     """
     _t_m = t_m
+
     while True:
         # цикл подсчета значений функции T методом простых итераций для
         # слоя t_m_plus_1
@@ -527,12 +531,12 @@ def main() -> None:
     ops = TaskOps()
 
     a, b = 0, ops.l  # диапазон значений координаты
-    n = 1000
+    n = 100
     h = (b - a) / n
 
-    t_max = 100
+    t_max = 600
     time0, timem = 0, t_max  # диапазон значений времени
-    m = 1000
+    m = 300
     tau = (timem - time0) / m
 
     print(f"tau = {tau}, h = {h}")

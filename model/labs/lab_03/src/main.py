@@ -457,7 +457,7 @@ def get_research():
     table_size = 85
     a, b = 0, 1
 
-    n_list = [100, 70, 50, 30, 20]
+    n_list = [100, 70, 50, 30, 20, 10, 5, 2]
 
     file = open("../data/research.txt", "w", encoding="utf-8")
 
@@ -469,6 +469,7 @@ def get_research():
         h = (b - a) / n
 
         u_res = right_sweep(a, b, h)
+        # u_res = left_sweep(a, b, h)
         z_res = np.arange(a, b + h / 2, h)
         f_res = flux3(z_res, u_res, h)
 
