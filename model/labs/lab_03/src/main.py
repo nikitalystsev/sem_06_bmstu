@@ -450,6 +450,35 @@ def flux3(z, u, h):
     return f_res
 
 
+def get_research():
+    """
+    Исследование правой прогонки по полной
+    """
+    table_size = 85
+    a, b = 0, 1
+
+    n_list = [100, 70, 50, 30, 20]
+
+    file = open("../data/research.txt", "w", encoding="utf-8")
+
+    file.write("-" * table_size + "\n")
+    file.write(f' {"n": ^7} | {"u(0)": ^22} | {"u(1)": ^22} | {"f(1)": ^22} |\n')
+    file.write("-" * table_size + "\n")
+
+    for n in n_list:
+        h = (b - a) / n
+
+        u_res = right_sweep(a, b, h)
+        z_res = np.arange(a, b + h / 2, h)
+        f_res = flux3(z_res, u_res, h)
+
+        file.write(f"{n: 8} | {u_res[0]: ^22.6e} | {u_res[-1]: ^22.6e} | {f_res[-1]: ^22.6e} |\n")
+
+    file.write("-" * table_size)
+
+    file.close()
+
+
 def write_result_to_file(filepath, z_res, u_res, f_res, f_res2):
     """
     Запись результатов в файл
@@ -476,32 +505,33 @@ def main() -> None:
     """
     Главная функция
     """
+    get_research()
     a, b = 0, 1
     n = 100  # число узлов
     h = (b - a) / n
 
     # u_res = right_sweep(a, b, h)
     # u_res = left_sweep(a, b, h)
-    u_res = meetings_sweep(a, b, h, n)
-    z_res = np.arange(a, b + h / 2, h)
-
-    f_res = flux1(u_res, z_res, h)
-    # f_res2 = flux2(z_res, u_res, h)
-    f_res2 = flux3(z_res, u_res, h)
+    # u_res = meetings_sweep(a, b, h, n)
+    # z_res = np.arange(a, b + h / 2, h)
+    #
+    # f_res = flux1(u_res, z_res, h)
+    # # f_res2 = flux2(z_res, u_res, h)
+    # f_res2 = flux3(z_res, u_res, h)
     # f_res2 = [0] * len(z_res)
     # for i in range(1, len(z_res)):
     # f_res2[i] = flux2(z_res[i], h, u_res[i - 1], u_res[i])
-
-    up_res = [0] * len(z_res)
-    div_f = [0] * len(z_res)
-
-    for i in range(len(z_res)):
-        up_res[i] = u_p(z_res[i])
-        div_f[i] = div_flux(z_res[i], u_res[i])
+    #
+    # up_res = [0] * len(z_res)
+    # div_f = [0] * len(z_res)
+    #
+    # for i in range(len(z_res)):
+    #     up_res[i] = u_p(z_res[i])
+    #     div_f[i] = div_flux(z_res[i], u_res[i])
 
     # write_result_to_file("../data/right_sweep.txt", z_res, u_res, f_res, f_res2)
     # write_result_to_file("../data/left_sweep.txt", z_res, u_res, f_res, f_res2)
-    write_result_to_file("../data/meetings_sweep.txt", z_res, u_res, f_res, f_res2)
+    # write_result_to_file("../data/meetings_sweep.txt", z_res, u_res, f_res, f_res2)
 
     # plt.figure(figsize=(9, 6))
     # plt.subplot(2, 2, 1)

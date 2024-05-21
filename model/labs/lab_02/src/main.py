@@ -268,6 +268,35 @@ def get_solve_by_auto_step(a, b, method):
     return z_res, u_res, f_res
 
 
+def get_research():
+    """
+    Исследование правой прогонки по полной
+    """
+    table_size = 85
+    a, b = 0, 1
+
+    n_list = [100, 70, 50, 30, 20]
+
+    file = open("../data/research.txt", "w", encoding="utf-8")
+
+    file.write("-" * table_size + "\n")
+    file.write(f' {"n": ^7} | {"u(0)": ^22} | {"u(1)": ^22} | {"f(1)": ^22} |\n')
+    file.write("-" * table_size + "\n")
+
+    for n in n_list:
+        h = (b - a) / n
+
+        z_res, u_res, f_res, ksi_start, ksi_end = get_solve(a, b, h, method=rk4)
+
+        z_res = np.arange(a, b + h / 2, h)
+
+        file.write(f"{n: 8} | {u_res[0]: ^22.6e} | {u_res[-1]: ^22.6e} | {f_res[-1]: ^22.6e} |\n")
+
+    file.write("-" * table_size)
+
+    file.close()
+
+
 def write_result_to_file(filepath, z_res, u_res, f_res):
     """
     Запись результатов в файл
@@ -294,30 +323,31 @@ def main() -> None:
     """
     Главная функция
     """
-    a, b = 0, 1
-    n = 200  # число узлов
-    h = (b - a) / n
-
-    # # z_res, u_res, f_res, ksi_start, ksi_end = get_solve_by_rk(a, b, h, method=rk2)
-    z_res, u_res, f_res, ksi_start, ksi_end = get_solve(a, b, h, method=rk4)
-    # # z_res, u_res, f_res = get_solve_by_auto_step(a, b, method=rk2)
-    # z_res, u_res, f_res = get_solve_by_auto_step(a, b, method=rk4)
+    get_research()
+    # a, b = 0, 1
+    # n = 200  # число узлов
+    # h = (b - a) / n
     #
-    up_res = [0] * len(z_res)
-
-    for i in range(len(z_res)):
-        up_res[i] = u_p(z_res[i])
+    # # # z_res, u_res, f_res, ksi_start, ksi_end = get_solve_by_rk(a, b, h, method=rk2)
+    # z_res, u_res, f_res, ksi_start, ksi_end = get_solve(a, b, h, method=rk4)
+    # # # z_res, u_res, f_res = get_solve_by_auto_step(a, b, method=rk2)
+    # # z_res, u_res, f_res = get_solve_by_auto_step(a, b, method=rk4)
+    # #
+    # up_res = [0] * len(z_res)
     #
-    # # write_result_to_file("../data/rk2.txt", z_res, u_res, f_res)
-    write_result_to_file("../data/rk4.txt", z_res, u_res, f_res)
-    # write_result_to_file("../data/auto_step.txt", z_res, u_res, f_res)
-
-    plt.figure(figsize=(9, 6))
-    plt.subplot(2, 2, 1)
-    plt.plot(z_res, u_res, 'r', label='u(z)')
-    plt.plot(z_res, up_res, 'b', label='u_p')
-    plt.legend()
-    plt.grid()
+    # for i in range(len(z_res)):
+    #     up_res[i] = u_p(z_res[i])
+    # #
+    # # # write_result_to_file("../data/rk2.txt", z_res, u_res, f_res)
+    # write_result_to_file("../data/rk4.txt", z_res, u_res, f_res)
+    # # write_result_to_file("../data/auto_step.txt", z_res, u_res, f_res)
+    #
+    # plt.figure(figsize=(9, 6))
+    # plt.subplot(2, 2, 1)
+    # plt.plot(z_res, u_res, 'r', label='u(z)')
+    # plt.plot(z_res, up_res, 'b', label='u_p')
+    # plt.legend()
+    # plt.grid()
     #
     # plt.subplot(2, 2, 2)
     # plt.plot(z_res, f_res, 'g', label='F(z)')
