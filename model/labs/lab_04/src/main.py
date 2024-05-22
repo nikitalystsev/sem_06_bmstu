@@ -1,20 +1,19 @@
-import time
-
 import numpy as np
 from dataclasses import dataclass
 import matplotlib.pyplot as plt
 import math as m
 
-# import time as t
-
 EPS = 1e-4
 
 is_f0_const = False
+
 # is_f0_const = True
 
 
 # is_v = False
-is_v = True
+# is_v = True
+
+curr_count = 1
 
 
 @dataclass
@@ -48,6 +47,7 @@ class TaskOps:
 
     # частота импульсов (типа число импульсов в секунду: 1 импульс за 100 секунд)
     v: int | float = 0.01
+    curr_count: int | float = 0
 
 
 @dataclass
@@ -108,17 +108,14 @@ def f0(time, ops: TaskOps):
     """
     f_max, t_max = ops.f_max, ops.t_max
 
-    if is_f0_const:
-        if time < 400:  # 400 тоже взято от балды (определяем протяженность импульса, что ле)
-            return (f_max / t_max) * 20 * np.exp(-((20 / t_max) - 1))  # 20 тоже от балды
-        else:
-            return 0
+    h_imp = 200  # размах времен
 
-    v = ops.v  # определяет число импульсов в секунду
-
-    if is_v:
-        if v and not (time * v).is_integer():
-            return 0
+    # global curr_count
+    #
+    # if time >= curr_count * h_imp:
+    #     curr_count += 1
+    #
+    # time -= (curr_count - 1) * h_imp
 
     return (f_max / t_max) * time * np.exp(-((time / t_max) - 1))
 
@@ -157,6 +154,7 @@ def left_boundary_condition(_t_m, __t_m, curr_time, data: Grid, ops: TaskOps):
     """
     Левое краевое условие прогонки
     """
+
     a, h, tau = data.a, data.h, data.tau
     alpha_0, t0 = ops.alpha_0, ops.t0
 
@@ -259,10 +257,9 @@ def simple_iteration_on_layer(t_m, curr_time, data: Grid, ops: TaskOps):
             if curr_err < EPS:
                 cnt += 1
 
-        if cnt == len(_t_m):
+        if cnt == len(__t_m):
             break
 
-        # _t_m = _t_m
         __t_m = t_m_plus_1
 
     return t_m_plus_1
@@ -543,7 +540,7 @@ def main() -> None:
 
     t_max = 300
     time0, timem = 0, t_max  # диапазон значений времени
-    m = 600
+    m = 1000
     tau = (timem - time0) / m
 
     print(f"tau = {tau}, h = {h}")
@@ -559,50 +556,53 @@ def main() -> None:
     # print(f"opt_tau = {opt_tau}")
     # task3_a2_b2(data, ops)
 
-    ops.v = 0.1
-
     x, t, t_res = simple_iteration(data, ops)
 
-    # X, T = np.meshgrid(x, t)
-    #
-    # # Построение графика
-    # fig = plt.figure()
-    # ax = fig.add_subplot(111, projection='3d')
-    # ax.plot_surface(X, T, t_res, cmap='viridis')
-    #
-    # # Настройка подписей осей
-    # ax.set_xlabel('x')
-    # ax.set_ylabel('t')
-    # ax.set_zlabel('T(x, t)')
-    # ax.set_title('Температурное поле')
+    X, T = np.meshgrid(x, t)
+
+    # Построение графика
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    ax.plot_surface(X, T, t_res, cmap='viridis')
+
+    # Настройка подписей осей
+    ax.set_xlabel('x')
+    ax.set_ylabel('t')
+    ax.set_zlabel('T(x, t)')
+    ax.set_title('Температурное поле')
 
     # Создание нового окна для двумерных графиков
-    fig2, axes = plt.subplots(2, 3, figsize=(13, 10))
+    # fig2, axes = plt.subplots(2, 3, figsize=(13, 10))
+    #
+    # t_f0 = np.arange(time0, t_max + tau, tau)
+    #
+    # res = []
+    # for curr_t in t_f0:
+    #     # print(f"curr_t = {curr_t}")
+    #     print(f"f0 = {f0(curr_t, ops)}")
+    #     res.append(f0(curr_t, ops))
 
-    t_f0 = np.arange(time0, 300, tau)
-
-    res = []
-    for curr_t in t_f0:
-        res.append(f0(curr_t, ops))
-    # Построение двумерных графиков
-    axes[0, 0].plot(t_f0, res, 'g', label="F0(t)")
-    axes[0, 0].set_title('График F0')
-    axes[0, 0].set_xlabel('t')
-    axes[0, 0].set_ylabel('F0')
-    axes[0, 0].legend()
-    axes[0, 0].grid()
-
+    # # Построение двумерных графиков
+    # axes[0, 0].plot(t_f0, res, 'g', label="F0(t)")
+    # axes[0, 0].set_title('График F0')
+    # axes[0, 0].set_xlabel('t')
+    # axes[0, 0].set_ylabel('F0')
+    # axes[0, 0].legend()
+    # axes[0, 0].grid()
+    #
+    # x, t, t_res = simple_iteration(data, ops)
+    #
     # res = []
     # for t_m in t_res:
     #     res.append(t_m[0])
     #
     # # Построение двумерных графиков
-    # axes[0, 0].plot(t, res, 'g', label=f"T(0, t), v = {ops.v}")
-    # axes[0, 0].set_title('График T')
-    # axes[0, 0].set_xlabel('t')
-    # axes[0, 0].set_ylabel('T(0, t)')
-    # axes[0, 0].legend()
-    # axes[0, 0].grid()
+    # axes[0, 1].plot(t, res, 'g', label=f"T(0, t), v = {ops.v}")
+    # axes[0, 1].set_title('График T')
+    # axes[0, 1].set_xlabel('t')
+    # axes[0, 1].set_ylabel('T(0, t)')
+    # axes[0, 1].legend()
+    # axes[0, 1].grid()
 
     # res, a2_list = get_data_graph_task_3(data, ops)
     #
