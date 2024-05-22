@@ -29,6 +29,7 @@
 
 /model/lects/lect_0*/*.m4a
 /model/labs/.idea
+/model/labs/others
 /model/.idea
 /model/labs/lab_0*/src/__pycache__
 
