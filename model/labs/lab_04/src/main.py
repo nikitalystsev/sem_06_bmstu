@@ -1,7 +1,7 @@
 import numpy as np
 from dataclasses import dataclass
 import matplotlib.pyplot as plt
-import math as m
+from copy import copy
 
 EPS = 1e-4
 
@@ -110,12 +110,12 @@ def f0(time, ops: TaskOps):
 
     h_imp = 200  # размах времен
 
-    # global curr_count
-    #
-    # if time >= curr_count * h_imp:
-    #     curr_count += 1
-    #
-    # time -= (curr_count - 1) * h_imp
+    global curr_count
+
+    if time >= curr_count * h_imp:
+        curr_count += 1
+
+    time -= (curr_count - 1) * h_imp
 
     return (f_max / t_max) * time * np.exp(-((time / t_max) - 1))
 
@@ -370,46 +370,54 @@ def get_optimal_tau(data: Grid, ops: TaskOps):
     return tau
 
 
-def task2_f_max_t_max(data: Grid, ops: TaskOps):
+def task2_f_max_t_max_by_x(data: Grid, ops: TaskOps):
     """
-    Рассмотреть влияние на получаемые результаты амплитуды импульса F_max и времени t_max
-    (определяют крутизну фронтов и длительность импульса).
+    2-й пункт лабы, разбил функцию на две (срез по координате)
     """
-    # очевидно, списки значений F_max и t_max
+    print(f"[+] вызвал task2_f_max_t_max_by_x")
     f_max_list = [40, 50, 60]
     t_max_list = [50, 60, 70]
 
-    # plt.figure(figsize=(14, 9))
-    #
-    # cnt = 0
-    # for i, f_max in enumerate(f_max_list):
-    #     for j, t_max in enumerate(t_max_list):
-    #         plt.subplot(len(f_max_list), len(t_max_list), i * len(t_max_list) + j + 1)
-    #
-    #         ops.f_max = f_max
-    #         ops.t_max = t_max
-    #         x, t, t_res = simple_iteration(data, ops)
-    #
-    #         # список номеров некоторых узлов сетки по координате для анализа
-    #         list_ind_x = [0, len(t_res[0]) // 4, len(t_res[0]) // 2, len(t_res[0]) - 1]
-    #
-    #         # цикл по некоторым узлам сетки
-    #         for ind_x in list_ind_x:
-    #             curr_t = [t_m[ind_x] for t_m in t_res]
-    #             plt.xlabel("t, c")
-    #             plt.ylabel("T(x, t)")
-    #             plt.ylim((300, 700))
-    #             plt.grid()
-    #             plt.plot(t, curr_t, label=f"F_max={f_max} t_max={t_max} x={x[ind_x]}")
-    #         plt.legend()
-    #
-    #         print(f"итерация №{cnt + 1}")
-    #         cnt += 1
-    #
-    # plt.savefig(f"../data/F_max_t_max_by_x.png")
-    # plt.show()
+    plt.figure(figsize=(14, 9))
+
+    cnt = 0
+    for i, f_max in enumerate(f_max_list):
+        for j, t_max in enumerate(t_max_list):
+            plt.subplot(len(f_max_list), len(t_max_list), i * len(t_max_list) + j + 1)
+
+            ops.f_max = f_max
+            ops.t_max = t_max
+            x, t, t_res = simple_iteration(data, ops)
+
+            # список номеров некоторых узлов сетки по координате для анализа
+            list_ind_x = [0, len(t_res[0]) // 4, len(t_res[0]) // 2, len(t_res[0]) - 1]
+
+            # цикл по некоторым узлам сетки
+            for ind_x in list_ind_x:
+                curr_t = [t_m[ind_x] for t_m in t_res]
+                plt.xlabel("t, c")
+                plt.ylabel("T(x, t)")
+                plt.ylim((300, 700))
+                plt.grid()
+                plt.plot(t, curr_t, label=f"F_max={f_max} t_max={t_max} x={x[ind_x]}")
+            plt.legend()
+
+            print(f"итерация №{cnt + 1}")
+            cnt += 1
+
+    plt.savefig(f"../data/F_max_t_max_by_x.png")
+
+
+def task2_f_max_t_max_by_t(data: Grid, ops: TaskOps):
+    """
+    2-й пункт лабы, разбил функцию на две (срез по времени)
+    """
+    print(f"[+] вызвал task2_f_max_t_max_by_t")
+    f_max_list = [40, 50, 60]
+    t_max_list = [50, 60, 70]
 
     plt.figure(figsize=(14, 9))
+
     cnt = 0
     for i, f_max in enumerate(f_max_list):
         for j, t_max in enumerate(t_max_list):
@@ -435,7 +443,6 @@ def task2_f_max_t_max(data: Grid, ops: TaskOps):
             cnt += 1
 
     plt.savefig(f"../data/F_max_t_max_by_t.png")
-    plt.show()
 
 
 def task2_integral(data: Grid, ops: TaskOps):
@@ -498,8 +505,9 @@ def task2_integral(data: Grid, ops: TaskOps):
 
 def task3_a2_b2(data: Grid, ops: TaskOps):
     """
-    3-й пункт лабы, изменение параметров a2 и b2
+    3-й пункт лабы, изменение параметров a2 и b2 (срезы по координате)
     """
+    print(f"[+] вызвал task3_a2_b2")
     # 2 значения -- по условию
     a2_list = [1, 2.049, 5]
     b2_list = [0.563e-3, 0.6e-2]
@@ -524,8 +532,7 @@ def task3_a2_b2(data: Grid, ops: TaskOps):
             print(f"итерация №{cnt + 1}")
             cnt += 1
 
-    plt.savefig(f"../data/a2_b2_by_t.png")
-    plt.show()
+    plt.savefig(f"../data/a2_b2_by_x.png")
 
 
 def main() -> None:
@@ -547,48 +554,58 @@ def main() -> None:
 
     data = Grid(a, b, n, h, time0, timem, m, tau)
 
-    # var1, var2 = check_power_balance(data, ops)
-    # print(var1, var2)
-    # task2(data, ops)
+    """Задание №1"""
+
+    # x, t, t_res = simple_iteration(data, ops)
+    #
+    # X, T = np.meshgrid(x, t)
+    #
+    # # Построение графика
+    # fig = plt.figure()
+    # ax = fig.add_subplot(111, projection='3d')
+    # ax.plot_surface(X, T, t_res, cmap='viridis')
+    #
+    # # Настройка подписей осей
+    # ax.set_xlabel('x')
+    # ax.set_ylabel('t')
+    # ax.set_zlabel('T(x, t)')
+    # ax.set_title('Температурное поле')
+    #
+    # plt.show()
+
+    """Задание №2"""
+
     # opt_h = get_optimal_h(data, ops)  # 0.0025.
     # print(f"opt_h = {opt_h}")
     # opt_tau = get_optimal_tau(data, ops)  # 0.5
     # print(f"opt_tau = {opt_tau}")
-    # task3_a2_b2(data, ops)
 
-    x, t, t_res = simple_iteration(data, ops)
+    # var1, var2 = check_power_balance(data, ops)
+    # print(var1, var2)
 
-    X, T = np.meshgrid(x, t)
+    """Задание №3"""
 
-    # Построение графика
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-    ax.plot_surface(X, T, t_res, cmap='viridis')
+    # task3_a2_b2(data, copy(ops))
 
-    # Настройка подписей осей
-    ax.set_xlabel('x')
-    ax.set_ylabel('t')
-    ax.set_zlabel('T(x, t)')
-    ax.set_title('Температурное поле')
+    """Задание №4"""
 
     # Создание нового окна для двумерных графиков
-    # fig2, axes = plt.subplots(2, 3, figsize=(13, 10))
-    #
-    # t_f0 = np.arange(time0, t_max + tau, tau)
-    #
-    # res = []
-    # for curr_t in t_f0:
-    #     # print(f"curr_t = {curr_t}")
-    #     print(f"f0 = {f0(curr_t, ops)}")
-    #     res.append(f0(curr_t, ops))
+    fig2, axes = plt.subplots(2, 3, figsize=(13, 10))
 
-    # # Построение двумерных графиков
-    # axes[0, 0].plot(t_f0, res, 'g', label="F0(t)")
-    # axes[0, 0].set_title('График F0')
-    # axes[0, 0].set_xlabel('t')
-    # axes[0, 0].set_ylabel('F0')
-    # axes[0, 0].legend()
-    # axes[0, 0].grid()
+    t_f0 = np.arange(time0, t_max + tau, tau)
+
+    res = []
+    for curr_t in t_f0:
+        res.append(f0(curr_t, ops))
+
+    # Построение двумерных графиков
+    axes[0, 0].plot(t_f0, res, 'g', label="F0(t)")
+    axes[0, 0].set_title('График F0')
+    axes[0, 0].set_xlabel('t')
+    axes[0, 0].set_ylabel('F0')
+    axes[0, 0].legend()
+    axes[0, 0].grid()
+
     #
     # x, t, t_res = simple_iteration(data, ops)
     #
