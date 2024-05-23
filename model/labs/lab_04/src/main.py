@@ -7,6 +7,9 @@ EPS = 1e-4
 
 curr_count = 1
 
+# is_f0_const = False
+is_f0_const = True
+
 
 @dataclass
 class TaskOps:
@@ -111,6 +114,9 @@ def f0(time, ops: TaskOps):
     #     curr_count += 1
 
     # time -= (curr_count - 1) * h_imp
+
+    if is_f0_const:
+        return 10
 
     return (f_max / t_max) * time * np.exp(-((time / t_max) - 1))
 
@@ -438,60 +444,47 @@ def task2_f_max_t_max_by_t(data: Grid, ops: TaskOps):
 
 def task2_integral(data: Grid, ops: TaskOps):
     """
-    Реализация вычисления интеграла во 2-м пункте
+    Реализация вычисления интеграла во 2-м пункте методом трапеций
+    (ссылка: https://ru.wikipedia.org/wiki/Метод_трапеций)
     """
     x, t, t_res = simple_iteration(data, ops)  # получили решение
+    ind_t_m = -1  # получаем индекс времени для t_m
+
     eps = 1e-2  # другая своя точность
 
-    t0 = ops.t0
+    t0, r = ops.t0, ops.r
+    a, b, h = data.a, data.b, data.h
 
-    f_0_value = alpha(x[0], ops) * (t0 - t_res[-1][0])
+    # F0 и FN (формулы из краевых условий)
+    f_0_value = - alpha(x[0], ops) * (t_res[-1][0] - t0)
     f_n_value = alpha(x[-1], ops) * (t_res[-1][-1] - t0)
 
+    upper_integral = 0
 
-# пока что траблы
-# def check_power_balance(data: Grid, ops: TaskOps):
-#     """
-#     Интеграл 2 пункта (проверка баланса мощности при выбранных шагах)
-#     """
-#     x, t, t_res = simple_iteration(data, ops)  # получили решение
-#     eps = 1e-2  # другая своя точность
-#     t0, r = ops.t0, ops.r
-#     h = data.h
-#
-#     # из краевых условий
-#     f_0_value = alpha(x[0], ops) * (t0 - t_res[-1][0])
-#     f_n_value = alpha(x[-1], ops) * (t_res[-1][-1] - t0)
-#
-#     # средние
-#     upper_integral = 0
-#     for i in range(1, len(x)):
-#
-#         sum1 = alpha(x[i - 1], ops) * (t_res[-1][i - 1] - t0)
-#         sum2 = alpha(x[i], ops) * (t_res[-1][i] - t0)
-#         upper_integral += (sum1 + sum2)
-#
-#     upper_integral *= (h / r)
-#     print(upper_integral)
-#     f0_t = f0(t[-1], ops)
-#
-#     lower_integral = 0
-#     for i in range(1, len(x)):
-#         sum1 = k(t_res[-1, i], ops) * np.exp(-t_res[-1, i] * x[-1])
-#         sum2 = k(t_res[-1, i - 1], ops) * np.exp(-t_res[-1, i - 1] * x[-1])
-#         lower_integral += (sum1 + sum2)
-#         # lower_integral += func_minus_half(self.k_T, i, M - 1) * func_minus_half(self.exp_Tx, i, M-1) * self.h
-#
-#     chisl = -f_0_value + f_n_value + upper_integral
-#     znam = f0_t * lower_integral
-#
-#     print(chisl, znam, sep='\n')
-#
-#     counted = abs((chisl / znam) - 1)
-#     if znam < 1e-6:
-#         print()
-#     # print('counted', counted)
-#     return counted <= eps, counted
+    for i in range(0, len(x) - 1):
+        first = alpha(x[i], ops) * (t_res[ind_t_m][i] - t0)
+        second = alpha(x[i + 1], ops) * (t_res[ind_t_m][i] - t0)
+
+        upper_integral += 0.5 * (first + second) * h
+
+    lower_integral = 0
+
+    for i in range(0, len(x) - 1):
+        first = k(t_res[ind_t_m][i], ops) * np.exp(-k(t_res[ind_t_m][i], ops) * x[i])
+        second = k(t_res[ind_t_m][i + 1], ops) * np.exp(-k(t_res[ind_t_m][i + 1], ops) * x[i + 1])
+
+        lower_integral += 0.5 * (first + second) * h
+
+    numerator = -f_0_value + f_n_value + (2 / r) * upper_integral  # числитель дроби
+    denominator = f0(t[-1], ops) * lower_integral  # знаменатель дроби
+
+    accuracy = abs(numerator / denominator - 1)
+    print(f"accuracy = {accuracy}")
+
+    if accuracy <= eps:
+        print(f"все классно, мощность сбалансирована!")
+    else:
+        print(f"мощность не сбалансирована!")
 
 
 def task3_a2_b2(data: Grid, ops: TaskOps):
@@ -536,7 +529,7 @@ def main() -> None:
     n = 100
     h = (b - a) / n
 
-    t_max = 500
+    t_max = 600
     time0, timem = 0, t_max  # диапазон значений времени
     m = 2000
     tau = (timem - time0) / m
@@ -566,13 +559,14 @@ def main() -> None:
 
     """Задание №2"""
 
-    # opt_h = get_optimal_h(data, copy(ops))  # 0.0025.
-    # print(f"opt_h = {opt_h}")
-    opt_tau = get_optimal_tau(data, copy(ops))  # 0.5
+    opt_h = get_optimal_h(data, copy(ops))  # 0.0025.
+    print(f"opt_h = {opt_h}")
+    opt_tau = get_optimal_tau(data, copy(ops))  # 1.25
     print(f"opt_tau = {opt_tau}")
 
-    # var1, var2 = check_power_balance(data, ops)
-    # print(var1, var2)
+    data.h, data.tau = opt_h, opt_tau
+
+    task2_integral(data, copy(ops))
 
     """Задание №3"""
 
