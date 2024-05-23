@@ -5,14 +5,6 @@ from copy import copy
 
 EPS = 1e-4
 
-is_f0_const = False
-
-# is_f0_const = True
-
-
-# is_v = False
-# is_v = True
-
 curr_count = 1
 
 
@@ -108,14 +100,17 @@ def f0(time, ops: TaskOps):
     """
     f_max, t_max = ops.f_max, ops.t_max
 
-    h_imp = 200  # размах времен
+    h_imp = 193.131  # размах времен
+    delta = h_imp - 8.971
 
-    global curr_count
+    # global curr_count
+    #
+    # if curr_count == 1 and time >= curr_count * h_imp:
+    #     curr_count += 1
+    # elif curr_count > 1 and time >= curr_count * delta:
+    #     curr_count += 1
 
-    if time >= curr_count * h_imp:
-        curr_count += 1
-
-    time -= (curr_count - 1) * h_imp
+    # time -= (curr_count - 1) * h_imp
 
     return (f_max / t_max) * time * np.exp(-((time / t_max) - 1))
 
@@ -135,9 +130,6 @@ def f(x, time, t, ops: TaskOps):
     t = t(x, time) (вроде правильно)
     """
     t0, r = ops.t0, ops.r
-
-    # if x > 0:
-    #     return (2 * t0 / r) * alpha(x, ops)
 
     return k(t, ops) * f0(time, ops) * np.exp(-k(t, ops) * x) + (2 * t0 / r) * alpha(x, ops)
 
@@ -348,7 +340,7 @@ def get_optimal_tau(data: Grid, ops: TaskOps):
         x_h_half_2, times_h_half_2, t_res_h_half_2 = simple_iteration(data, ops)
         res = []
         for row in t_res_h_half_2:
-            res.append(row[len(x_h) // 2])
+            res.append(row[len(x_h_half_2) // 2])
         t_h_half_2_0 = dict(zip(times_h_half_2, res))
 
         cnt = 0
@@ -358,10 +350,9 @@ def get_optimal_tau(data: Grid, ops: TaskOps):
             if error < EPS:
                 cnt += 1
 
-        if cnt == len(x_h):
+        if cnt == len(times_h):
             break
 
-        print(tau)
         tau /= 2
 
         print(f"итерация №{count + 1}")
@@ -545,9 +536,9 @@ def main() -> None:
     n = 100
     h = (b - a) / n
 
-    t_max = 300
+    t_max = 500
     time0, timem = 0, t_max  # диапазон значений времени
-    m = 1000
+    m = 2000
     tau = (timem - time0) / m
 
     print(f"tau = {tau}, h = {h}")
@@ -575,10 +566,10 @@ def main() -> None:
 
     """Задание №2"""
 
-    # opt_h = get_optimal_h(data, ops)  # 0.0025.
+    # opt_h = get_optimal_h(data, copy(ops))  # 0.0025.
     # print(f"opt_h = {opt_h}")
-    # opt_tau = get_optimal_tau(data, ops)  # 0.5
-    # print(f"opt_tau = {opt_tau}")
+    opt_tau = get_optimal_tau(data, copy(ops))  # 0.5
+    print(f"opt_tau = {opt_tau}")
 
     # var1, var2 = check_power_balance(data, ops)
     # print(var1, var2)
@@ -589,32 +580,31 @@ def main() -> None:
 
     """Задание №4"""
 
-    # Создание нового окна для двумерных графиков
-    fig2, axes = plt.subplots(2, 3, figsize=(13, 10))
-
-    t_f0 = np.arange(time0, t_max + tau, tau)
-
-    res = []
-    for curr_t in t_f0:
-        res.append(f0(curr_t, ops))
-
-    # Построение двумерных графиков
-    axes[0, 0].plot(t_f0, res, 'g', label="F0(t)")
-    axes[0, 0].set_title('График F0')
-    axes[0, 0].set_xlabel('t')
-    axes[0, 0].set_ylabel('F0')
-    axes[0, 0].legend()
-    axes[0, 0].grid()
-
+    # # Создание нового окна для двумерных графиков
+    # fig2, axes = plt.subplots(2, 3, figsize=(13, 10))
     #
-    # x, t, t_res = simple_iteration(data, ops)
+    # t_f0 = np.arange(time0, t_max + tau, tau)
+    #
+    # res = []
+    # for curr_t in t_f0:
+    #     res.append(f0(curr_t, copy(ops)))
+    #
+    # # Построение двумерных графиков
+    # axes[0, 0].plot(t_f0, res, 'g', label="F0(t)")
+    # axes[0, 0].set_title('График F0')
+    # axes[0, 0].set_xlabel('t')
+    # axes[0, 0].set_ylabel('F0')
+    # axes[0, 0].legend()
+    # axes[0, 0].grid()
+
+    # x, t, t_res = simple_iteration(data, copy(ops))
     #
     # res = []
     # for t_m in t_res:
     #     res.append(t_m[0])
     #
     # # Построение двумерных графиков
-    # axes[0, 1].plot(t, res, 'g', label=f"T(0, t), v = {ops.v}")
+    # axes[0, 1].plot(t, res, 'g', label=f"T(0, t)")
     # axes[0, 1].set_title('График T')
     # axes[0, 1].set_xlabel('t')
     # axes[0, 1].set_ylabel('T(0, t)')
