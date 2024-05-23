@@ -442,6 +442,41 @@ def task2_f_max_t_max_by_t(data: Grid, ops: TaskOps):
     plt.savefig(f"../data/F_max_t_max_by_t.png")
 
 
+def get_optimal_steps_by_f_max_t_max(data: Grid, ops: TaskOps):
+    """
+    Функция находит оптимальные шаги для различных F_max и t_max
+    """
+    print(f"[+] вызвал task2_f_max_t_max_by_t")
+    table_size = 101
+    file = open("../data/optimal_steps.txt", "w", encoding="utf-8")
+
+    file.write("-" * table_size + "\n")
+    file.write(f'| {"F_max": ^22} | {"t_max": ^22} | {"optimal h": ^22} | {"optimal tau": ^22} |\n')
+    file.write("-" * table_size + "\n")
+
+    f_max_list = [40, 50, 60]
+    t_max_list = [50, 60, 70]
+
+    cnt = 0
+
+    for f_max in f_max_list:
+        for t_max in t_max_list:
+            ops.f_max = f_max
+            ops.t_max = t_max
+
+            opt_h = get_optimal_h(data, copy(ops))
+            opt_tau = get_optimal_tau(data, copy(ops))
+
+            file.write(f'| {f_max: ^22} | {t_max: ^22} | {opt_h: ^22} | {opt_tau: ^22} |\n')
+
+            print(f"итерация №{cnt + 1}")
+            cnt += 1
+
+    file.write("-" * table_size)
+
+    file.close()
+
+
 def task2_integral(data: Grid, ops: TaskOps):
     """
     Реализация вычисления интеграла во 2-м пункте методом трапеций
@@ -559,14 +594,16 @@ def main() -> None:
 
     """Задание №2"""
 
-    opt_h = get_optimal_h(data, copy(ops))  # 0.0025.
-    print(f"opt_h = {opt_h}")
-    opt_tau = get_optimal_tau(data, copy(ops))  # 1.25
-    print(f"opt_tau = {opt_tau}")
+    get_optimal_steps_by_f_max_t_max(data, copy(ops))
 
-    data.h, data.tau = opt_h, opt_tau
-
-    task2_integral(data, copy(ops))
+    # opt_h = get_optimal_h(data, copy(ops))  # 0.0025.
+    # print(f"opt_h = {opt_h}")
+    # opt_tau = get_optimal_tau(data, copy(ops))  # 1.25
+    # print(f"opt_tau = {opt_tau}")
+    #
+    # data.h, data.tau = opt_h, opt_tau
+    #
+    # task2_integral(data, copy(ops))
 
     """Задание №3"""
 
