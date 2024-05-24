@@ -7,8 +7,10 @@ EPS = 1e-4
 
 curr_count = 1
 
-# is_f0_const = False
-is_f0_const = True
+is_f0_const = False
+
+
+# is_f0_const = True
 
 
 @dataclass
@@ -38,11 +40,7 @@ class TaskOps:
 
     # для отладки принять
     f_max: int | float = 50  # ок
-    t_max: int | float = 60  # ок
-
-    # частота импульсов (типа число импульсов в секунду: 1 импульс за 100 секунд)
-    v: int | float = 0.01
-    curr_count: int | float = 0
+    t_max: int | float = 5  # ок
 
 
 @dataclass
@@ -103,20 +101,17 @@ def f0(time, ops: TaskOps):
     """
     f_max, t_max = ops.f_max, ops.t_max
 
-    h_imp = 193.131  # размах времен
-    delta = h_imp - 8.971
-
-    # global curr_count
-    #
-    # if curr_count == 1 and time >= curr_count * h_imp:
-    #     curr_count += 1
-    # elif curr_count > 1 and time >= curr_count * delta:
-    #     curr_count += 1
-
-    # time -= (curr_count - 1) * h_imp
-
     if is_f0_const:
         return 10
+
+    # h = t_max * 3.5
+    #
+    # if time < h:
+    #     return (f_max / t_max) * time * np.exp(-((time / t_max) - 1))
+    # else:
+    #     coef = time // h
+    #     t = time - h * coef
+    #     return (f_max / t_max) * t * np.exp(-((t / t_max) - 1))
 
     return (f_max / t_max) * time * np.exp(-((time / t_max) - 1))
 
@@ -330,7 +325,7 @@ def get_optimal_tau(data: Grid, ops: TaskOps):
     Метод для получения оптимального шага по времени
     """
     print(f"[+] вызвал get_optimal_tau")
-    tau = 10  # начальный шаг по координате
+    tau = 5  # начальный шаг по координате
 
     count = 0
     while True:
@@ -372,8 +367,8 @@ def task2_f_max_t_max_by_x(data: Grid, ops: TaskOps):
     2-й пункт лабы, разбил функцию на две (срез по координате)
     """
     print(f"[+] вызвал task2_f_max_t_max_by_x")
-    f_max_list = [40, 50, 60]
-    t_max_list = [50, 60, 70]
+    f_max_list = [60, 50, 40, 30, 20, 10, 1]
+    t_max_list = [70, 60, 50, 40, 30, 20, 10, 1]
 
     plt.figure(figsize=(14, 9))
 
@@ -454,8 +449,8 @@ def get_optimal_steps_by_f_max_t_max(data: Grid, ops: TaskOps):
     file.write(f'| {"F_max": ^22} | {"t_max": ^22} | {"optimal h": ^22} | {"optimal tau": ^22} |\n')
     file.write("-" * table_size + "\n")
 
-    f_max_list = [40, 50, 60]
-    t_max_list = [50, 60, 70]
+    f_max_list = [60, 50, 40, 30, 20, 10, 1]
+    t_max_list = [70, 60, 50, 40, 30, 20, 10, 1]
 
     cnt = 0
 
@@ -564,9 +559,9 @@ def main() -> None:
     n = 100
     h = (b - a) / n
 
-    t_max = 600
+    t_max = 100
     time0, timem = 0, t_max  # диапазон значений времени
-    m = 2000
+    m = 15000
     tau = (timem - time0) / m
 
     print(f"tau = {tau}, h = {h}")
@@ -594,7 +589,7 @@ def main() -> None:
 
     """Задание №2"""
 
-    get_optimal_steps_by_f_max_t_max(data, copy(ops))
+    # get_optimal_steps_by_f_max_t_max(data, copy(ops))
 
     # opt_h = get_optimal_h(data, copy(ops))  # 0.0025.
     # print(f"opt_h = {opt_h}")
@@ -611,36 +606,36 @@ def main() -> None:
 
     """Задание №4"""
 
-    # # Создание нового окна для двумерных графиков
-    # fig2, axes = plt.subplots(2, 3, figsize=(13, 10))
-    #
-    # t_f0 = np.arange(time0, t_max + tau, tau)
-    #
-    # res = []
-    # for curr_t in t_f0:
-    #     res.append(f0(curr_t, copy(ops)))
-    #
-    # # Построение двумерных графиков
-    # axes[0, 0].plot(t_f0, res, 'g', label="F0(t)")
-    # axes[0, 0].set_title('График F0')
-    # axes[0, 0].set_xlabel('t')
-    # axes[0, 0].set_ylabel('F0')
-    # axes[0, 0].legend()
-    # axes[0, 0].grid()
+    # Создание нового окна для двумерных графиков
+    fig2, axes = plt.subplots(2, 3, figsize=(13, 10))
 
-    # x, t, t_res = simple_iteration(data, copy(ops))
-    #
-    # res = []
-    # for t_m in t_res:
-    #     res.append(t_m[0])
-    #
-    # # Построение двумерных графиков
-    # axes[0, 1].plot(t, res, 'g', label=f"T(0, t)")
-    # axes[0, 1].set_title('График T')
-    # axes[0, 1].set_xlabel('t')
-    # axes[0, 1].set_ylabel('T(0, t)')
-    # axes[0, 1].legend()
-    # axes[0, 1].grid()
+    t_f0 = np.arange(time0, t_max + tau, tau)
+
+    res = []
+    for curr_t in t_f0:
+        res.append(f0(curr_t, copy(ops)))
+
+    # Построение двумерных графиков
+    axes[0, 0].plot(t_f0, res, 'g', label="F0(t)")
+    axes[0, 0].set_title('График F0')
+    axes[0, 0].set_xlabel('t')
+    axes[0, 0].set_ylabel('F0')
+    axes[0, 0].legend()
+    axes[0, 0].grid()
+
+    x, t, t_res = simple_iteration(data, copy(ops))
+
+    res = []
+    for t_m in t_res:
+        res.append(t_m[0])
+
+    # Построение двумерных графиков
+    axes[0, 1].plot(t, res, 'g', label=f"T(0, t)")
+    axes[0, 1].set_title('График T')
+    axes[0, 1].set_xlabel('t')
+    axes[0, 1].set_ylabel('T(0, t)')
+    axes[0, 1].legend()
+    axes[0, 1].grid()
 
     # res, a2_list = get_data_graph_task_3(data, ops)
     #
@@ -651,7 +646,7 @@ def main() -> None:
     # axes[0, 1].set_ylabel('T(0, t)')
     # axes[0, 1].legend()
     # axes[0, 1].grid()
-    #
+    # #
     # res, b2_list = get_data_graph_task_3_2(data, ops)
     #
     # for i, res_i in enumerate(res):
