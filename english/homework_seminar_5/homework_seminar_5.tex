@@ -1,0 +1,55 @@
+\documentclass[a4paper,14pt, unknownkeysallowed]{extreport}
+
+\include{packages}
+
+\title{Домашнее задание с 3-го семинара}
+\author{Лысцев Никита ИУ7-63Б}
+\date{13 марта 2024}
+
+\begin{document}
+	\maketitle
+	
+\section*{Задание}
+
+\subsection*{Task 26: Now read the text and discuss the following questions with your partners.}
+
+\begin{enumerate}
+	\item What are the main aims and purposes of using programs that use databases?
+	\item What is understood by “impedance mismatch” and what problems does it cause?
+	\item Why is it difficult to design and develop applications that use databases?
+	\item What are the three main criteria for evaluating solution approaches to impedance mismatch?
+	\item How does typing affect impedance mismatch between a program and a DB?
+	\item What are the basic techniques to optimize data access?
+	\item What kind of queries are commonly used in reporting applications?
+	\item Why is the concept of relation composition limited in terms of query	optimization?
+\end{enumerate}
+
+\section*{Ответы}
+
+\begin{enumerate}
+	\item The main aims and purposes of using programs that use databases are to manage and control access to data, search large amounts of data efficiently, update data reliably and securely, and handle concurrent access to data.
+	
+	\item "Impedance mismatch" refers to the differences in semantic foundations and optimization strategies between procedural languages used in programming and declarative query languages used in databases. These differences result in various problems such as difficulties in aligning types, optimization challenges, and issues with modularity and composition.
+	
+	\item It is difficult to design and develop applications that use databases because of the challenges posed by impedance mismatch. Developers need to make architectural decisions on how to organize and partition system functionality effectively. Additionally, distributed execution requires efficient structuring and management of specialized communication patterns.
+	
+	\item The three main criteria for evaluating solution approaches to impedance mismatch are:
+	
+	\begin{itemize}
+		\item Typing: This involves aligning types between programming languages and databases, particularly focusing on static typing of queries and composite programs;
+		\item Optimization: Optimizing data access is crucial, with the separation of search and navigation concepts being important for fine-grained analysis of solutions;
+		\item Reuse: This involves issues relating to composition or decomposition of operations, including parameterized queries, dynamic queries, and modular queries.
+	\end{itemize}
+	
+	\item Typing affects impedance mismatch between a program and a database because of difficulties in aligning types between the two. Although the conceptual models of data are compatible, there are still significant issues in the static typing of queries and composite programs.
+	
+	\item Basic techniques to optimize data access include designing appropriate query strategies, separating concepts of search and navigation, and optimizing query execution by sending large units of work to the database rather than individual operations.
+	
+	\item Dynamic queries are commonly used in reporting applications. These are query strings that are constructed at runtime and are necessary for creating ad-hoc joins in reporting applications supporting online analytical processing (OLAP).
+	
+	\item The concept of relation composition is limited in terms of query optimization because while relational algebra supports modular composition, it can be difficult to combine the effect of two SQL queries at a syntactic level. This limitation can hinder query optimization, particularly in relation to database access.
+\end{enumerate}
+
+	
+
+\end{document}
