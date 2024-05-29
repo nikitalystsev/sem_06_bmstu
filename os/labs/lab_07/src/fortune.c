@@ -4,6 +4,8 @@
 #include <linux/version.h> // for versions
 #include <linux/vmalloc.h>
 
+// https://habr.com/ru/companies/ruvds/articles/684382/
+
 MODULE_LICENSE("GPL");
 
 #define COOKIE_BUF_SIZE PAGE_SIZE
