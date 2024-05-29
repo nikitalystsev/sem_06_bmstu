@@ -13,7 +13,7 @@ static int __init md_init(void)
 
     do
     {
-        printk(KERN_INFO "TASK: state - %5d, on_cpu - %5d, flags - %10d, prio - %5d, policy - %d, migration_flags - %d, exit_code - %d, exit_state - %d, in_execve - %d, comm - %15s, pid - %5d, pcomm - %15s, ppid - %5d, utime - %13llu, stime - %13llu, root - %s, thread level - %d\n",
+        printk(KERN_INFO "TASK: state - %5d, on_cpu - %5d, flags - %x, prio - %5d, policy - %d, migration_flags - %d, exit_code - %d, exit_state - %d, in_execve - %x, comm - %15s, pid - %5d, pcomm - %15s, ppid - %5d, utime - %13llu, stime - %13llu, root - %s, thread level - %d\n",
                task->__state,
                task->on_cpu,
                task->flags,
@@ -33,7 +33,7 @@ static int __init md_init(void)
 
     } while ((task = next_task(task)) != &init_task);
 
-    printk(KERN_INFO "CURR: state - %5d, on_cpu - %5d, flags - %10d, prio - %5d, policy - %d, migration_flags - %d, exit_code - %d, exit_state - %d, in_execve - %d, comm - %15s, pid - %5d, pcomm - %15s, ppid - %5d, utime - %13llu, stime - %13llu, root - %s\n",
+    printk(KERN_INFO "CURR: state - %5d, on_cpu - %5d, flags - %x, prio - %5d, policy - %d, migration_flags - %d, exit_code - %d, exit_state - %d, in_execve - %x, comm - %15s, pid - %5d, pcomm - %15s, ppid - %5d, utime - %13llu, stime - %13llu, root - %s\n",
            task->__state,
            task->on_cpu,
            task->flags,
