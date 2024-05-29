@@ -1,7 +1,7 @@
 # компилятор тот же, что использует ядро (передаем параметром)
 # /usr/bin/x86_64-linux-gnu-gcc-12
 
-MODULES := fortune.c proc_example.c
+MODULES := fortune.c 
 
 obj-m := $(MODULES:.c=.o)
 

@@ -1,17 +1,22 @@
 #include <linux/init.h>
 #include <linux/module.h>
 #include <linux/proc_fs.h>
+#include <linux/version.h> // for versions
 #include <linux/vmalloc.h>
 
 MODULE_LICENSE("GPL");
 
 #define COOKIE_BUF_SIZE PAGE_SIZE
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 6, 0)
+#define HAVE_PROC_OPS
+#endif
+
 static struct proc_dir_entry *fortune_dir;
 static struct proc_dir_entry *fortune_file;
 static struct proc_dir_entry *fortune_symlink;
 
-static char *cookie_buf = NULL;
+static char *cookie_buf = NULL; // буфер в пространстве ядра
 
 char tmp_buf[COOKIE_BUF_SIZE];
 
@@ -32,25 +37,37 @@ static void free_all(void)
     vfree(cookie_buf);
 }
 
-static int fortune_open(struct inode *spInode, struct file *spFile)
+static ssize_t fortune_read(struct file *file, char __user *buf, size_t len, loff_t *fPos)
 {
-    printk(KERN_INFO "fortune: open called\n");
-    return 0;
-}
+    printk(KERN_INFO "fortune: fortune_read called\n");
 
-static int fortune_release(struct inode *spInode, struct file *spFile)
-{
-    printk(KERN_INFO "fortune: release called\n");
-    return 0;
+    if ((*fPos > 0) || (write_index == 0))
+        return 0;
+
+    if (read_index >= write_index)
+        read_index = 0;
+
+    int readLen = snprintf(tmp_buf, COOKIE_BUF_SIZE, "%s\n", &cookie_buf[read_index]);
+
+    if (copy_to_user(buf, tmp_buf, readLen) != 0)
+    {
+        printk(KERN_ERR "fortune: copy_to_user error\n");
+        return -EFAULT;
+    }
+
+    read_index += readLen;
+    *fPos += readLen;
+
+    return readLen;
 }
 
 static ssize_t fortune_write(struct file *file, const char __user *buf, size_t len, loff_t *fPos)
 {
-    printk(KERN_INFO "fortune: write called\n");
+    printk(KERN_INFO "fortune: fortune_write called\n");
 
     if (len > COOKIE_BUF_SIZE - write_index + 1)
     {
-        printk(KERN_ERR "fortune: buffer overflow\n");
+        printk(KERN_ERR "fortune: [ERROR] [buffer overflow]\n");
         return -ENOSPC;
     }
 
@@ -66,41 +83,37 @@ static ssize_t fortune_write(struct file *file, const char __user *buf, size_t l
     return len;
 }
 
-static ssize_t fortune_read(struct file *file, char __user *buf, size_t len, loff_t *fPos)
+static int fortune_open(struct inode *spInode, struct file *spFile)
 {
-    int readLen;
-
-    printk(KERN_INFO "fortune: read called\n");
-
-    if ((*fPos > 0) || (write_index == 0))
-        return 0;
-
-    if (read_index >= write_index)
-        read_index = 0;
-
-    readLen = snprintf(tmp_buf, COOKIE_BUF_SIZE, "%s\n", &cookie_buf[read_index]);
-
-    if (copy_to_user(buf, tmp_buf, readLen) != 0)
-    {
-        printk(KERN_ERR "fortune: copy_to_user error\n");
-        return -EFAULT;
-    }
-
-    read_index += readLen;
-    *fPos += readLen;
-
-    return readLen;
+    printk(KERN_INFO "fortune: fortune_open called\n");
+    return 0;
 }
 
+static int fortune_release(struct inode *spInode, struct file *spFile)
+{
+    printk(KERN_INFO "fortune: fortune_release called\n");
+    return 0;
+}
+
+#ifdef HAVE_PROC_OPS
 static const struct proc_ops fops = {
-    .proc_open = fortune_open,
     .proc_read = fortune_read,
     .proc_write = fortune_write,
+    .proc_open = fortune_open,
     .proc_release = fortune_release};
+
+#else
+static const struct file_operations fops = {
+    .owner = THIS_MODULE,
+    .read = fortune_read,
+    .write = fortune_write,
+    .open = fortune_open,
+    .release = fortune_release};
+#endif
 
 static int __init md_init(void)
 {
-    printk(KERN_INFO "fortune: init\n");
+    printk(KERN_INFO "fortune: call md_init\n");
 
     cookie_buf = vmalloc(COOKIE_BUF_SIZE);
     if (!cookie_buf)
@@ -146,7 +159,7 @@ static int __init md_init(void)
 static void __exit md_exit(void)
 {
     free_all();
-    printk(KERN_INFO "fortune: exit\n");
+    printk(KERN_INFO "fortune: сall md_exit\n");
 }
 
 module_init(md_init);
