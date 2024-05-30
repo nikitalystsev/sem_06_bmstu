@@ -103,7 +103,6 @@ static const struct proc_ops fops = {
     .proc_write = fortune_write,
     .proc_open = fortune_open,
     .proc_release = fortune_release};
-
 #else
 static const struct file_operations fops = {
     .owner = THIS_MODULE,
