@@ -13,8 +13,6 @@ MODULE_LICENSE("GPL");
 
 #define COOKIE_BUF_SIZE PAGE_SIZE
 
-static int limit = 10;
-
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 6, 0)
 #define HAVE_PROC_OPS
 #endif
@@ -36,6 +34,8 @@ static void free_all(void)
 
     if (seq_dir != NULL)
         remove_proc_entry("seq_dir", NULL);
+
+    vfree(cookie_buf);
 }
 
 /**
@@ -45,8 +45,37 @@ static int ct_seq_show(struct seq_file *s, void *v)
 {
     printk(KERN_INFO "seq: call seq_show");
 
-    loff_t *spos = v;
-    seq_printf(s, "%lld \n", (long long)*spos);
+    int pid;
+
+    if (kstrtoint(cookie_buf, 0, &pid))
+    {
+        seq_printf(s, "%s: pid must be an integer\n", cookie_buf);
+        return 0;
+    }
+
+    struct task_struct *task = get_pid_task(find_get_pid((pid_t)pid), PIDTYPE_PID);
+
+    if (!task)
+    {
+        seq_printf(s, "%d: no such task\n", pid);
+        return 0;
+    }
+
+    seq_printf(s, "%d:\ncomm - %s\npid - %d\nparent comm - %s\nppid - %d\nstate - %d\non_cpu - %d\nflags - %x\nprio - %d\npolicy - %d\nexit_state - %d\nexit_code - %d\nin_execve - %x\nutime - %llu\n",
+               pid,
+               task->comm,
+               task->pid,
+               task->parent->comm,
+               task->parent->pid,
+               task->__state,
+               task->on_cpu,
+               task->flags,
+               task->prio,
+               task->policy,
+               task->exit_state,
+               task->exit_code,
+               task->in_execve,
+               task->utime);
 
     return 0;
 }
