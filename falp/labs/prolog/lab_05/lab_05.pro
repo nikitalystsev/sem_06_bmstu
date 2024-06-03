@@ -52,7 +52,7 @@ goal
     	% len([1, 2, 3, 4], Len).
    	% sum([1, 2, 3, 4], Sum).
    	% sum_odd([17, 1, 13, 2], SumOdd).
-   	filter_greater_than([1, 2, 3, 4], 2, R).
+   	% filter_greater_than([1, 2, 3, 4], 2, R).
    	% delete_one([1, 2, 3, 3, 4], 3, R).
-   	% delete_all([1, 2, 3, 3, 4], 3, R).
+   	% delete_all([1, 3, 2, 3, 3, 4], 3, R).
    	% append([1, 2], [3, 4, 5], R).
