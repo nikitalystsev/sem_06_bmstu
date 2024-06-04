@@ -10,7 +10,7 @@
 
 MODULE_LICENSE("GPL");
 
-static int limit = 10;
+static int limit = 1;
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 6, 0)
 #define HAVE_PROC_OPS
@@ -35,9 +35,12 @@ static void free_all(void)
 /**
  * start
  */
-static void *ct_seq_start(struct seq_file *s, loff_t *pos)
+static void *ct_seq_start(struct seq_file *m, loff_t *pos)
 {
-    printk(KERN_INFO "seq: call seq_start");
+    // printk(KERN_INFO "seq: call seq_start");
+
+    printk(KERN_INFO "seq: call seq_start, m = %p, pos = %p, *pos = %Ld, seq-file pos = %lu.\n",
+           m, pos, *pos, m->count);
 
     if (*pos >= limit)
     { // are we done?
@@ -51,7 +54,37 @@ static void *ct_seq_start(struct seq_file *s, loff_t *pos)
     if (!spos)
         return NULL;
 
-    seq_printf(s, "current:\ncomm - %s\npid - %d\nparent comm - %s\nppid - %d\nstate - %d\non_cpu - %d\nflags - %x\nprio - %d\npolicy - %d\nexit_state - %d\nexit_code - %d\nin_execve - %x\nutime - %llu\n",
+    *spos = *pos;
+    return spos;
+}
+
+/**
+ * show
+ */
+static int ct_seq_show(struct seq_file *m, void *v)
+{
+    // printk(KERN_INFO "seq: call seq_show");
+    printk(KERN_INFO "seq: call seq_show, m = %p, v = %p, *v = %d\n", m, v, *(int *)v);
+
+    loff_t *spos = v;
+    seq_printf(m, "%lld \n", (long long)*spos);
+
+    printk(KERN_INFO "cseq: current: comm - %s; pid - %d; parent comm - %s; ppid - %d; state - %d; on_cpu - %d; flags - %x; prio - %d; policy - %d; exit_state - %d; exit_code - %d; in_execve - %x; utime - %llu\n",
+           current->comm,
+           current->pid,
+           current->parent->comm,
+           current->parent->pid,
+           current->__state,
+           current->on_cpu,
+           current->flags,
+           current->prio,
+           current->policy,
+           current->exit_state,
+           current->exit_code,
+           current->in_execve,
+           current->utime);
+
+    seq_printf(m, "current:\ncomm - %s\npid - %d\nparent comm - %s\nppid - %d\nstate - %d\non_cpu - %d\nflags - %x\nprio - %d\npolicy - %d\nexit_state - %d\nexit_code - %d\nin_execve - %x\nutime - %llu\n",
                current->comm,
                current->pid,
                current->parent->comm,
@@ -66,29 +99,18 @@ static void *ct_seq_start(struct seq_file *s, loff_t *pos)
                current->in_execve,
                current->utime);
 
-    *spos = *pos;
-    return spos;
-}
-
-/**
- * show
- */
-static int ct_seq_show(struct seq_file *s, void *v)
-{
-    printk(KERN_INFO "seq: call seq_show");
-
-    loff_t *spos = v;
-    seq_printf(s, "%lld \n", (long long)*spos);
-
     return 0;
 }
 
 /**
  * next
  */
-static void *ct_seq_next(struct seq_file *s, void *v, loff_t *pos)
+static void *ct_seq_next(struct seq_file *m, void *v, loff_t *pos)
 {
-    printk(KERN_INFO "seq: call seq_next");
+    // printk(KERN_INFO "seq: call seq_next");
+
+    printk(KERN_INFO "seq: call seq_next, m = %p, v = %p, pos = %p, *pos = %Ld, seq-file pos = %lu.\n",
+           m, v, pos, *pos, m->count);
 
     loff_t *spos = v;
     *pos = ++*spos;
@@ -102,9 +124,9 @@ static void *ct_seq_next(struct seq_file *s, void *v, loff_t *pos)
 /**
  * stop
  */
-static void ct_seq_stop(struct seq_file *s, void *v)
+static void ct_seq_stop(struct seq_file *m, void *v)
 {
-    printk(KERN_INFO "seq: call seq_stop");
+    printk(KERN_INFO "seq: call seq_stop, m = %p, v = %p", m, v);
 
     kfree(v);
 }

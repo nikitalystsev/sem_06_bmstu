@@ -1,7 +1,7 @@
 # компилятор тот же, что использует ядро (передаем параметром)
 # /usr/bin/x86_64-linux-gnu-gcc-12
 
-MODULES := seqfile_single.c 
+MODULES := seqfile_single.c seqfile_iterator.c 
 
 obj-m := $(MODULES:.c=.o)
 
