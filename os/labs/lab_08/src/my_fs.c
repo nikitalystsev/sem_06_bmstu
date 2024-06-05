@@ -89,10 +89,10 @@ static int myfs_fill_sb(struct super_block *sb, void *data, int silent)
 
     root->i_ino = 1;
     root->i_mode = S_IFDIR | 0755;
-    root->i_ctime = inode->i_mtime = inode->i_atime = current_time(inode);
+    root->i_ctime = root->i_mtime = root->i_atime = current_time(root);
     root->i_op = &simple_dir_inode_operations;
     root->i_fop = &simple_dir_operations;
-    set_nlink(inode, 2);
+    set_nlink(root, 2);
 
     sb->s_root = d_make_root(root);
     if (!sb->s_root)

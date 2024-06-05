@@ -10,7 +10,7 @@ all:
 
 test:
 	sudo dmesg -C
-	sudo insmod $(MODULES:.o=.ko)
+	sudo insmod $(MODULES:.c=.ko)
 	sudo dmesg
 
 clean:
