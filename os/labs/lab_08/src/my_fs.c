@@ -32,13 +32,27 @@ void co(void *p)
 
 static void myfs_put_super(struct super_block *sb)
 {
-    printk(KERN_DEBUG "MYFS super block destroyed!\n");
+    printk(KERN_INFO "+ myfs: call myfs_put_super\n");
+}
+
+static int myfs_statfs(struct dentry *dentry, struct kstatfs *buf)
+{
+    printk(KERN_INFO "+ myfs: call myfs_statfs\n");
+
+    return simple_statfs(dentry, buf);
+}
+
+int myfs_delete_inode(struct inode *inode)
+{
+    printk(KERN_INFO "+ myfs: call myfs_delete_inode\n");
+
+    return generic_delete_inode(inode);
 }
 
 static struct super_operations const myfs_super_ops = {
     .put_super = myfs_put_super,
-    .statfs = simple_statfs,
-    .drop_inode = generic_delete_inode,
+    .statfs = myfs_statfs,
+    .drop_inode = myfs_delete_inode,
 };
 
 static struct inode *myfs_make_inode(struct super_block *sb, int mode)
@@ -57,6 +71,8 @@ static struct inode *myfs_make_inode(struct super_block *sb, int mode)
 
 static int myfs_fill_sb(struct super_block *sb, void *data, int silent)
 {
+    printk(KERN_INFO "+ myfs: call myvfs_fill_super\n");
+
     struct inode *root = NULL;
 
     sb->s_blocksize = PAGE_SIZE;
@@ -67,17 +83,21 @@ static int myfs_fill_sb(struct super_block *sb, void *data, int silent)
     root = myfs_make_inode(sb, S_IFDIR | 0755);
     if (!root)
     {
-        printk(KERN_ERR "MYFS inode allocation failed !\n");
+        printk(KERN_ERR "+ myfs: inode allocation failed !\n");
         return -ENOMEM;
     }
 
+    root->i_ino = 1;
+    root->i_mode = S_IFDIR | 0755;
+    root->i_ctime = inode->i_mtime = inode->i_atime = current_time(inode);
     root->i_op = &simple_dir_inode_operations;
     root->i_fop = &simple_dir_operations;
+    set_nlink(inode, 2);
 
     sb->s_root = d_make_root(root);
     if (!sb->s_root)
     {
-        printk(KERN_ERR " MYFS root creation failed !\n");
+        printk(KERN_ERR "+ myfs: root creation failed !\n");
         iput(root);
         return -ENOMEM;
     }
@@ -90,18 +110,25 @@ static struct dentry *myfs_mount(struct file_system_type *type, int flags, char 
     struct dentry *const entry = mount_nodev(type, flags, data, myfs_fill_sb);
 
     if (IS_ERR(entry))
-        printk(KERN_ERR "MYFS mounting failed !\n");
+        printk(KERN_ERR "+ myfs: mounting failed !\n");
     else
-        printk(KERN_DEBUG "MYFS mounted!\n");
+        printk(KERN_DEBUG "+ myfs: mounted!\n");
 
     return entry;
+}
+
+static void myfs_kill_super(struct super_block *sb)
+{
+    printk(KERN_INFO "+ myfs: call myfs_kill_super\n");
+
+    kill_anon_super(sb);
 }
 
 static struct file_system_type myfs_type = {
     .owner = THIS_MODULE,
     .name = "myfs", // название файловой системы
     .mount = myfs_mount,
-    .kill_sb = kill_block_super,
+    .kill_sb = myfs_kill_super,
 };
 
 static int __init myfs_init(void)
@@ -109,36 +136,36 @@ static int __init myfs_init(void)
     int ret = register_filesystem(&myfs_type);
     if (ret != 0)
     {
-        printk(KERN_ERR "MYFS_MODULE cannot register filesystem!\n");
+        printk(KERN_ERR "+ myfs: cannot register filesystem!\n");
         return ret;
     }
 
     line = kmalloc(sizeof(void *) * number, GFP_KERNEL);
     if (!line)
     {
-        printk(KERN_ERR "kmalloc error\n");
+        printk(KERN_ERR "+ myfs: kmalloc error\n");
         goto mout;
     }
 
     cache = kmem_cache_create(SLABNAME, size, 0, SLAB_HWCACHE_ALIGN, co);
     if (!cache)
     {
-        printk(KERN_ERR "kmem_cache_create error\n");
+        printk(KERN_ERR "+ myfs: kmem_cache_create error\n");
         goto cout;
     }
 
     for (int i = 0; i < number; i++)
         if (NULL == (line[i] = kmem_cache_alloc(cache, GFP_KERNEL)))
         {
-            printk(KERN_ERR "kmem_cache_alloc error\n");
+            printk(KERN_ERR "+ myfs: kmem_cache_alloc error\n");
             goto oout;
         }
 
-    printk(KERN_INFO "allocate %d objects into slab: %s\n", number, SLABNAME);
-    printk(KERN_INFO "object size %d bytes, full size %ld bytes\n", size, (long)size * number);
-    printk(KERN_INFO "constructor called %d times\n", sco);
+    printk(KERN_INFO "+ myfs: allocate %d objects into slab: %s\n", number, SLABNAME);
+    printk(KERN_INFO "+ myfs: object size %d bytes, full size %ld bytes\n", size, (long)size * number);
+    printk(KERN_INFO "+ myfs: constructor called %d times\n", sco);
 
-    printk(KERN_DEBUG "MYFS_MODULE loaded !\n");
+    printk(KERN_DEBUG "+ myfs: myfs_module loaded !\n");
 
     return 0;
 oout:
@@ -158,7 +185,7 @@ static void __exit myfs_exit(void)
 
     if (ret != 0)
     {
-        printk(KERN_ERR "MYFS_MODULE cannot unregister filesystem !\n");
+        printk(KERN_ERR "+ myfs: cannot unregister filesystem !\n");
         return;
     }
 
@@ -167,7 +194,7 @@ static void __exit myfs_exit(void)
     kmem_cache_destroy(cache);
     kfree(line);
 
-    printk(KERN_DEBUG "MYFS_MODULE unloaded !\n");
+    printk(KERN_DEBUG "+ myfs: unloaded !\n");
 }
 
 module_init(myfs_init);
