@@ -1,0 +1,142 @@
+// sudo dmesg -wH | grep my_tasklet 
+// cat /proc/interrupts 
+// cat /proc/interrupts |head -n 1 && cat /proc/interrupts | grep my_tasklet
+
+// Регистрируем прерывание (IRQ_NUM=1 - клавиатура, my_handler - указатель на обработчик прерывания 
+// IRQF_SHARED - разрешает разделение irq несколькими устройствами, 
+// "name" - имя устройства, вызывающего прерывание (для справки), 
+// my_handler - id девайса, нужно при удалении. Если больше одного обработчика, то 
+// то при удалении обязательно указывать, какой обработчик удаляем. Технически это id обработчика. 
+// Так как у нас один обработчик, то можно вписывать туда NULL. Это назвали dev_id, тк подразумевается, 
+// что у одного девайса один обработчик прерываний.)
+#include <linux/module.h>
+#include <linux/kernel.h>
+#include <linux/interrupt.h>
+#include <linux/slab.h>
+#include <asm/io.h>
+#include <linux/stddef.h>
+#include <linux/workqueue.h>
+#include <linux/delay.h>
+
+#include "ascii.h"
+
+MODULE_LICENSE("GPL");
+MODULE_AUTHOR("Yusupov");
+
+typedef struct {
+    struct work_struct work;
+    int code;
+} my_work_struct_t;
+
+static struct workqueue_struct *interrupt_2;
+
+static my_work_struct_t *work1;
+static struct work_struct *work2;
+
+int keyboard_irq = 1;
+
+void work1_func(struct work_struct *work) {
+    my_work_struct_t *my_work = (my_work_struct_t *)work;
+    int code = my_work->code;
+
+    printk(KERN_INFO "MyWorkQueue: work1 begin");
+
+    if (code < 110)
+        printk(KERN_INFO "MyWorkQueue: the key is %s", ascii[code]);
+
+    printk(KERN_INFO "MyWorkQueue: work1 end");
+}
+
+void work2_func(struct work_struct *work) {
+    my_work_struct_t *my_work = (my_work_struct_t *)work;
+    int code = my_work->code;
+
+    printk(KERN_INFO "MyWorkQueue: work2 begin");
+    if ((code < 110) && (code >= 0))
+        printk(KERN_INFO "+ mywq: work22: time = %llu", ktime_get());
+        ssleep(10);
+        printk(KERN_INFO "MyWorkQueue: the key is %s", ascii[code]);
+
+    printk(KERN_INFO "MyWorkQueue: work2 end");
+}
+
+irqreturn_t my_irq_handler(int irq, void *dev_id) {
+    static int initial = 1;
+
+    if (irq == keyboard_irq) {
+        if (initial) {
+            initial = 0;
+        } else {
+            unsigned char scancode = inb(0x60);
+            work1->code = (int)scancode;
+
+            queue_work(interrupt_2, (struct work_struct *)work1);
+            queue_work(interrupt_2, (struct work_struct *)work2);
+
+            return IRQ_HANDLED;
+        }
+    }
+
+    printk(KERN_INFO "MyWorkQueue: called not by keyboard_irq");
+    return IRQ_NONE;
+}
+
+static int __init my_workqueue_init(void) {
+    int ret;
+
+    ret = request_irq(keyboard_irq, my_irq_handler, IRQF_SHARED,
+                      "interrupt_2", (void *) my_irq_handler);
+
+    printk(KERN_INFO "MyWorkQueue: init");
+    if (ret) {
+        printk(KERN_ERR "MyWorkQueue: request_irq error");
+        return ret;
+    } else {
+        interrupt_2 = alloc_workqueue("%s", __WQ_LEGACY | WQ_MEM_RECLAIM, 1, "interrupt_2");
+
+        if (interrupt_2 == NULL) {
+            printk(KERN_ERR "MyWorkQueue: create queue error");
+            ret = GFP_NOIO;
+            return ret;
+        }
+
+        work1 = kmalloc(sizeof(my_work_struct_t), GFP_KERNEL);
+        if (work1 == NULL) {
+            printk(KERN_ERR "MyWorkQueue: work1 alloc error");
+            destroy_workqueue(interrupt_2);
+            ret = GFP_NOIO;
+            return ret;
+        }
+
+        work2 = kmalloc(sizeof(struct work_struct), GFP_KERNEL);
+        if (work2 == NULL) {
+            printk(KERN_ERR "MyWorkQueue: work2 alloc error");
+            destroy_workqueue(interrupt_2);
+            kfree(work1);
+            ret = GFP_NOIO;
+            return ret;
+        }
+
+        INIT_WORK((struct work_struct *)work1, work1_func);
+        INIT_WORK(work2, work2_func);
+        printk(KERN_ERR "MyWorkQueue: loaded");
+    }
+    return ret;
+}
+
+static void __exit my_workqueue_exit(void) {
+    printk(KERN_INFO "MyWorkQueue: exit");
+
+    synchronize_irq(keyboard_irq);
+    free_irq(keyboard_irq, my_irq_handler);
+
+    flush_workqueue(interrupt_2);
+    destroy_workqueue(interrupt_2);
+    kfree(work1);
+    kfree(work2);
+    
+    printk(KERN_INFO "MyWorkQueue: unloaded");
+}
+
+module_init(my_workqueue_init);
+module_exit(my_workqueue_exit);

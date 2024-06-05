@@ -1,0 +1,1 @@
+savedcmd_/home/fool/OS/lab_9/work_queue/Module.symvers :=  scripts/mod/modpost -m -a      -o /home/fool/OS/lab_9/work_queue/Module.symvers -T /home/fool/OS/lab_9/work_queue/modules.order -i Module.symvers -e 

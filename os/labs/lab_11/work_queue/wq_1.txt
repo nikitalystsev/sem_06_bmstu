@@ -1,0 +1,354 @@
+#include <linux/module.h>
+#include <linux/kernel.h>
+#include <linux/init.h>
+#include <linux/interrupt.h>
+#include <linux/slab.h>
+#include <asm/atomic.h>
+#include <linux/sched.h>
+#include <linux/fs_struct.h>
+#include <linux/seq_file.h>
+#include <linux/vmalloc.h>
+#include <linux/proc_fs.h>
+#include <linux/version.h>
+#include <linux/time.h>
+#include <asm/io.h>
+#include <linux/workqueue.h>
+#include <linux/delay.h>
+
+MODULE_LICENSE("GPL");
+
+#define IRQ_NO 1
+#define BUF_SIZE PAGE_SIZE
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0)
+#define HAVE_PROC_OPS
+#endif
+
+typedef struct {
+    struct work_struct work;
+    int code;
+} my_work_t;
+
+static struct workqueue_struct *mywq;
+my_work_t *work_1, *work_2;
+
+static char *ascii[84] =  { " ", "Esc", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "+", "Backspace", 
+                      "Tab", "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "[", "]", "Enter", "Ctrl",
+                      "A", "S", "D", "F", "G", "H", "J", "K", "L", ";", "\"", "'", "Shift (left)", "|", 
+                      "Z", "X", "C", "V", "B", "N", "M", "<", ">", "?", "Shift (right)", 
+                      "*", "Alt", "Space", "CapsLock", 
+                      "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10",
+                      "NumLock", "ScrollLock", "Home", "Up", "Page-Up", "-", "Left",
+                      " ", "Right", "+", "End", "Down", "Page-Down", "Insert", "Delete"};
+
+static struct proc_dir_entry *proc_file, *proc_dir, *proc_link;
+
+static ssize_t my_read(struct file *file, char *buf, size_t count, loff_t *f_pos);
+static int my_release(struct inode*, struct file*);
+static int my_open(struct inode *inode, struct file *file);
+
+#ifdef HAVE_PROC_OPS
+static struct proc_ops fops = {
+    .proc_read = my_read,
+    .proc_open = my_open,
+    .proc_release = my_release
+};
+#else
+static struct file_operations fops = {
+    .owner = THIS_MODULE,
+    .read = my_read,
+    .open = my_open,
+    .release = my_release
+}
+#endif
+
+static ssize_t my_read(struct file *file, char *buf, size_t count, loff_t *f_pos)
+{
+    printk(KERN_INFO "+ INFO: call my_read\n");
+    return seq_read(file, buf, count, f_pos);
+}
+
+static int my_release(struct inode*, struct file*)
+{
+    printk(KERN_INFO "+ INFO: call my_release");
+    return 0;
+}
+
+static int my_show(struct seq_file *m, void *v)
+{
+    printk(KERN_INFO "+ INFO: call my_show\n");
+
+    seq_printf(m, "workqueue info:\n");
+
+    return 0;
+}
+
+static int my_open(struct inode *inode, struct file *file)
+{
+    printk(KERN_INFO "+ INFO: call my_open\n");
+    return single_open(file, my_show, NULL);
+}
+
+static void mywq_fun_1(struct work_struct *work)
+{
+    my_work_t *mywork = (my_work_t *)work;
+
+    if (mywork->code < 84)
+        printk(KERN_INFO "+ mywq: mywq_fun_1: time = %llu, code = %s\n", ktime_get(), ascii[mywork->code]);
+}
+
+static void mywq_fun_2(struct work_struct *work)
+{
+    my_work_t *mywork = (my_work_t *)work;
+
+    if ((mywork->code < 84) && (mywork->code >= 0))
+    {
+        printk(KERN_INFO "+ mywq: mywq_fun_2: time = %llu, delay = 1000\n", ktime_get());
+        msleep(1000);
+        printk(KERN_INFO "+ mywq: mywq_fun_2: time = %llu, code = %s\n", ktime_get(), ascii[mywork->code-128]);
+    }
+}
+
+static irqreturn_t my_irq_handler(int irq, void *dev_id)
+{
+    int code = inb(0x60);
+    work_1->code = code;
+    work_2->code = code;
+
+    if (irq == IRQ_NO)
+    {
+        queue_work(mywq, (struct work_struct *)work_1);
+        queue_work(mywq, (struct work_struct *)work_2);
+        return IRQ_HANDLED;
+    }
+
+    printk(KERN_INFO "+ mywq: irq wasn't handled\n");
+    return IRQ_NONE;
+}
+
+static int __init mywq_init(void)
+{
+    int ret = request_irq(IRQ_NO, my_irq_handler, IRQF_SHARED, "my_irq_handler", (void *)(my_irq_handler));
+
+    if (ret)
+    {
+        printk(KERN_ERR "+ mywq: request_irq\n");
+        return ret;
+    }
+
+    mywq = alloc_workqueue("%s", __WQ_LEGACY | WQ_MEM_RECLAIM, 1, "my_queue");
+
+    if (!mywq)
+    {
+        free_irq(IRQ_NO, (void *)(my_irq_handler));
+        printk(KERN_ERR "+ mywq: create_workqueue\n");
+        return -ENOMEM;
+    }
+
+    work_1 = (my_work_t *)kmalloc(sizeof(my_work_t), GFP_KERNEL);
+    if (!work_1)
+    {
+        free_irq(IRQ_NO, (void *)(my_irq_handler));
+        printk(KERN_ERR "+ mywq: kmalloc work_1\n");
+        return -ENOMEM;
+    }
+
+    INIT_WORK((struct work_struct *)work_1, mywq_fun_1);
+
+    work_2 = (my_work_t *)kmalloc(sizeof(my_work_t), GFP_KERNEL);
+    if (!work_2)
+    {
+        free_irq(IRQ_NO, (void *)(my_irq_handler));
+        kfree(work_1);
+        printk(KERN_ERR "+ mywq: kmalloc work_2\n");
+        return -ENOMEM;
+    }
+    
+    INIT_WORK((struct work_struct *)work_2, mywq_fun_2);
+
+    proc_file = proc_create_data("tasklet", S_IRUGO, NULL, &fops, NULL);
+
+    if (!proc_file) {
+        printk(KERN_ERR "+ ERR: can't proc_create\n");
+        return -ENOMEM;
+    }
+   
+    printk(KERN_INFO "+ INFO: tasklet_init");
+
+    proc_dir = proc_mkdir("tasklet_dir", NULL);
+    proc_link = proc_symlink("tasklet_symlink", NULL, "/proc/tasklet");
+    
+    if (!proc_dir || !proc_link) {
+        printk(KERN_ERR "+ ERROR: can't proc_mkdir or proc_symlink\n");
+        return -ENOMEM;
+    }
+    
+    printk(KERN_INFO "+ myqw: init mywq\n");
+
+    return 0;
+}
+
+static void __exit mywq_exit(void)
+{
+    proc_remove(proc_file);
+    proc_remove(proc_dir);
+    proc_remove(proc_link);
+    flush_workqueue(mywq);
+    destroy_workqueue(mywq);
+    free_irq(IRQ_NO, (void *)(my_irq_handler));
+    kfree(work_1);
+    kfree(work_2);
+    printk(KERN_INFO "+ mywq: exit mywq-----------------END");
+}
+
+module_init(mywq_init);
+module_exit(mywq_exit);
+
+
+#include <linux/module.h>
+#include <linux/kernel.h>
+#include <linux/interrupt.h>
+#include <linux/slab.h>
+#include <asm/io.h>
+#include <linux/stddef.h>
+#include <linux/workqueue.h>
+#include <linux/delay.h>
+
+#include "ascii.h"
+
+MODULE_LICENSE("GPL");
+MODULE_AUTHOR("Yusupov F");
+
+typedef struct
+{
+    struct work_struct work;
+    int code;
+} my_work_struct_t;
+
+static struct workqueue_struct * interrupt_2;
+
+static my_work_struct_t *work1;
+static my_work_struct_t *work2;
+
+int keyboard_irq = 1;
+
+void work1_func(struct work_struct *work)
+{
+    my_work_struct_t *my_work = (my_work_struct_t *)work;
+    int code = my_work->code;
+
+    printk(KERN_INFO "MyWorkQueue: work1 begin");
+
+    if (code < 84)
+        printk(KERN_INFO "MyWorkQueue: the key is %s", ascii[code]);
+
+    printk(KERN_INFO "MyWorkQueue: work1 end");
+}
+
+void work2_func(struct work_struct *work)
+{
+    my_work_struct_t *my_work = (my_work_struct_t *)work;
+    int code = my_work->code;
+
+    printk(KERN_INFO "MyWorkQueue: work2 begin");
+    if (code < 110)
+        printk(KERN_INFO "+ mywq: work22: time = %llu", ktime_get());
+        ssleep(10);
+        printk(KERN_INFO "MyWorkQueue: the key is %s", ascii[code]);
+
+    printk(KERN_INFO "MyWorkQueue: work2 end");
+}
+
+irqreturn_t my_irq_handler(int irq, void *dev)
+{
+    int code;
+    printk(KERN_INFO "MyWorkQueue: my_irq_handler");
+
+    if (irq == keyboard_irq)
+    {
+        // printk(KERN_INFO "MyWorkQueue: called by keyboard_irq");
+
+        code = inb(0x60);
+        work1->code = code;
+        work2->code = code;
+        // printk(KERN_INFO "MyWorkQueue: key code is %d", code);
+
+        queue_work(interrupt_2, (struct work_struct *)work1);
+        queue_work(interrupt_2, (struct work_struct *)work2);
+
+        return IRQ_HANDLED;
+    }
+
+    printk(KERN_INFO "MyWorkQueue: called not by keyboard_irq");
+
+    return IRQ_NONE;
+}
+
+static int __init my_workqueue_init(void)
+{
+    int ret;
+    
+
+    ret = request_irq(keyboard_irq, my_irq_handler, IRQF_SHARED,
+                      "test_my_irq_handler", (void *) my_irq_handler);
+
+    printk(KERN_INFO "MyWorkQueue: init");
+    if (ret)
+    {
+        printk(KERN_ERR "MyWorkQueue: request_irq error");
+        return ret;
+    }
+    else
+    {
+        interrupt_2 = alloc_workqueue("%s", __WQ_LEGACY | WQ_MEM_RECLAIM, 1, "interrupt_2");
+
+        if  (interrupt_2 == NULL)
+        {
+            printk(KERN_ERR "MyWorkQueue: create queue error");
+            ret = GFP_NOIO;
+            return ret;
+        }
+
+        work1 = kmalloc(sizeof(my_work_struct_t), GFP_KERNEL);
+        if (work1 == NULL)
+        {
+            printk(KERN_ERR "MyWorkQueue: work1 alloc error");
+            destroy_workqueue(interrupt_2);
+            ret = GFP_NOIO;
+            return ret;
+        }
+
+        work2 = kmalloc(sizeof(struct work_struct), GFP_KERNEL);
+        if (work2 == NULL)
+        {
+            printk(KERN_ERR "MyWorkQueue: work2 alloc error");
+            destroy_workqueue(interrupt_2);
+            kfree(work1);
+            ret = GFP_NOIO;
+            return ret;
+        }
+
+        INIT_WORK((struct work_struct *)work1, work1_func);
+        INIT_WORK((struct work_struct *)work2, work2_func);
+        printk(KERN_ERR "MyWorkQueue: loaded");
+    }
+    return ret;
+}
+
+static void __exit my_workqueue_exit(void)
+{
+    printk(KERN_INFO "MyWorkQueue: exit");
+
+    synchronize_irq(keyboard_irq); // ожидание завершения обработчика
+    free_irq(keyboard_irq, my_irq_handler); // освобождение линни от обработчика
+
+    flush_workqueue(interrupt_2);
+    destroy_workqueue(interrupt_2);
+    kfree(work1);
+    kfree(work2);
+    
+    printk(KERN_INFO "MyWorkQueue: unloaded");
+}
+
+module_init(my_workqueue_init);
+module_exit(my_workqueue_exit);

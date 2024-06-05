@@ -1,0 +1,1 @@
+savedcmd_/home/fool/OS/lab_9/work_queue/myworkqueue.ko := ld -r -m elf_x86_64 -z noexecstack --build-id=sha1  -T scripts/module.lds -o /home/fool/OS/lab_9/work_queue/myworkqueue.ko /home/fool/OS/lab_9/work_queue/myworkqueue.o /home/fool/OS/lab_9/work_queue/myworkqueue.mod.o;  make -f ./arch/x86/Makefile.postlink /home/fool/OS/lab_9/work_queue/myworkqueue.ko
