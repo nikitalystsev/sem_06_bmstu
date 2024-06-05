@@ -1,1 +1,1 @@
-Спасибо [fleshbound](https://github.com/fleshbound))
+Спасибо [fleshbound](https://github.com/fleshbound) )
