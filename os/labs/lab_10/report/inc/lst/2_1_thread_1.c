@@ -31,17 +31,3 @@ int main()
                open("q.txt", O_RDWR)};
   pthread_t thr[2];
   struct thread_arg targ[2];
-  for (int i = 0; i < 2; i++)
-  {
-    targ[i].fd = fd[i];
-    targ[i].i = i;
-    if (pthread_create(&thr[i], NULL, thread_start, &targ[i]))
-    {
-      perror("pthread_create");
-      return 1;
-    }
-  }
-  close(fd[0]);
-  close(fd[1]);
-  return 0;
-}
