@@ -5,7 +5,7 @@
 2:
 	gcc 2.c -o 2.out
 	gcc 2_1.c -o 2_1.out
-	gcc 2_thread.c -o thr2.out
+	gcc 2_thread.c -o 2_thread.out
 	gcc 2_1_thread.c -o 2_1_thread.out
 	
 3:
@@ -13,3 +13,6 @@
 	gcc 3_thread.c -o 3_thread.out
 
 all: 1 2 3
+
+clean:
+	rm ./*.out 

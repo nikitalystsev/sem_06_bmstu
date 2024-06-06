@@ -1,6 +1,6 @@
-#include <stdio.h>
-#include <pthread.h>
 #include <fcntl.h>
+#include <pthread.h>
+#include <stdio.h>
 #include <unistd.h>
 
 void *thread_start(void *arg)
@@ -16,10 +16,10 @@ void *thread_start(void *arg)
 
 int main()
 {
-    int fd[2] = {open("alphabet.txt", O_RDONLY), 
+    int fd[2] = {open("alphabet.txt", O_RDONLY),
                  open("alphabet.txt", O_RDONLY)};
     pthread_t thr[2];
-   
+
     for (int i = 0; i < 2; i++)
         if (pthread_create(&thr[i], NULL, thread_start, &fd[i]))
         {
