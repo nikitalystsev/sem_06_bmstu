@@ -2,6 +2,8 @@ import numpy as np
 from dataclasses import dataclass
 from matplotlib import pyplot as plt
 
+EPS = 1e-3
+
 
 class TaskOps:
     """
@@ -254,22 +256,59 @@ def get_solve(grid: Grid, ops: TaskOps):
     return curr_mtr_u
 
 
+def get_optimal_h_x(grid: Grid, ops: TaskOps):
+    """
+    Метод для получения оптимального шага по координате
+    """
+    h_x = 1  # начальный шаг по координате
+
+    count = 0
+    while True:
+
+        grid.h_x = h_x
+        grid.n = int(ops.a / grid.h_x)
+        x_lst, z_lst, u_res = get_solve(grid, ops)
+        t_h = dict(zip(x_lst, u_res[len(u_res) // 2]))
+
+        grid.h_x = h_x / 2
+        grid.n = int(ops.a / grid.h_x)
+        _x, z, u_res = get_solve(grid, ops)
+        t_h_half_2 = dict(zip(_x, u_res[len(u_res) // 2]))
+
+        cnt = 0
+
+        for x in t_h.keys():
+            error = abs((t_h[x] - t_h_half_2[x]) / t_h_half_2[x])
+
+            if error < EPS:
+                cnt += 1
+
+        if cnt == len(x_lst):
+            break
+
+        h_x /= 2
+
+        print(f"итерация №{count + 1}")
+        count += 1
+
+    return h_x
+
+
 def main() -> None:
     """
     Главная функция
     """
     ops = TaskOps()
-    n = 100  # число узлов по x (на деле узлов n + 1)
+    n = 1000  # число узлов по x (на деле узлов n + 1)
     h_x = ops.a / n  # шаг по координате
     k = 100  # число узлов по z (на деле узлов k + 1)
     h_z = ops.b / k
 
-    grid = Grid(ops.a, n, h_x, ops.b, k, h_z, tau=1)
+    print(f"h_x = {h_x}, h_z = {h_z}")
 
-    u_res = get_solve(grid, ops)
+    grid = Grid(ops.a, n, h_x, ops.b, k, h_z, tau=2)
 
-    x = np.linspace(0, ops.a, len(u_res[0]))
-    z = np.linspace(0, ops.b, len(u_res))
+    x, z, u_res = get_solve(grid, ops)
 
     X, Y = np.meshgrid(x, z)
 
@@ -283,9 +322,33 @@ def main() -> None:
     ax.set_zlabel("U(x, z)")
     plt.show()
 
-    plt.imshow(u_res, cmap='viridis')
-    plt.colorbar()
-    plt.show()
+    # plt.imshow(u_res, cmap='viridis')
+    # plt.colorbar()
+    # plt.show()
+
+    # x, z, u_res = get_solve(grid, ops)
+    #
+    # # одномерные графики при фиксированном x
+    # for i in range(len(x)):
+    #     if i % 10 == 0:
+    #         u_z = []
+    #         for j in range(len(z)):
+    #             u_z.append(u_res[j][i])
+    #         plt.plot(z, u_z, label=f"x = {i // 10}")
+    #         plt.xlabel("z")
+    #         plt.ylabel("u")
+    #         plt.legend()
+    # plt.show()
+    #
+    # # одномерные графики при фиксированном z
+    # for i in range(k):
+    #     if i % 10 == 0:
+    #         u_x = u_res[i]
+    #         plt.plot(x, u_x, label=f"z = {i // 10}")
+    #         plt.xlabel("x")
+    #         plt.ylabel("u")
+    #         plt.legend()
+    # plt.show()
 
 
 if __name__ == '__main__':
