@@ -2,7 +2,7 @@ import numpy as np
 from dataclasses import dataclass
 from matplotlib import pyplot as plt
 
-EPS = 1e-3
+EPS = 1e-5
 
 
 class TaskOps:
@@ -26,11 +26,11 @@ class TaskOps:
     flux0: int | float = 30  # flux - поток при x = 0
     # f0, beta варьируются исходя из условия, чтобы максимум решения
     # уравнения - функции u (x,z) не превышал 3000К
-    f0: int | float = 1
+    f0: int | float = 30
     beta: int | float = 1
     # координаты x0, z0 центра распределения функции f(x,z) задаются пользователем.
-    x0: int | float = 3
-    z0: int | float = 3
+    x0: int | float = 5
+    z0: int | float = 5
 
 
 @dataclass
@@ -115,7 +115,6 @@ def right_sweep_by_x(prev_mtr_u, k, grid: Grid, ops: TaskOps):
         a_n = 1 / (h_x ** 2)
         d_n = 1 / (h_x ** 2)
         b_n = 2 * a_n + 1 / (0.5 * tau)
-
         f_n = (prev_mtr_u[k][i] / (0.5 * tau) + (
                 prev_mtr_u[k - 1][i] - 2 * prev_mtr_u[k][i] + prev_mtr_u[k + 1][i]) / (h_z ** 2) + f(x, z_list[k],
                                                                                                      ops) / _lambda())
@@ -128,12 +127,8 @@ def right_sweep_by_x(prev_mtr_u, k, grid: Grid, ops: TaskOps):
 
     # Обратный ход
     u = [0] * len(prev_mtr_u[0])
-
-    print(f"n = {n}, len(prev_mtr_u[0]) = {len(prev_mtr_u[0])}")
-
+    
     u[-1] = (p_n - k_n * eta[-1]) / (k_n * ksi[-1] + m_n)
-
-    # print(f"len(u) = {len(u)} in right sweep by x")
 
     for i in range(len(u) - 2, -1, -1):
         u[i] = ksi[i + 1] * u[i + 1] + eta[i + 1]
@@ -143,7 +138,7 @@ def right_sweep_by_x(prev_mtr_u, k, grid: Grid, ops: TaskOps):
 
 def right_sweep_by_z(prev_mtr_u, n, grid: Grid, ops: TaskOps):
     """
-    Реализация правой прогонки для про
+    Реализация правой прогонки по координате z для метода переменных направлений
     """
     a, b, h_x, h_z, tau = grid.a, grid.b, grid.h_x, grid.h_z, grid.tau
 
@@ -239,6 +234,10 @@ def get_solve(grid: Grid, ops: TaskOps):
     u0 = ops.u0
 
     n, k = grid.n, grid.k
+
+    x_list = np.linspace(0, ops.a, n + 1)
+    z_list = np.linspace(0, ops.b, k + 1)
+
     # хз почему в начальный фиктивный момент времени вся матрица u0
     prev_mtr_u = [[u0 for _ in range(n + 1)] for _ in range(k + 1)]  # предыдущий слой (на котором все известно)
 
@@ -253,7 +252,7 @@ def get_solve(grid: Grid, ops: TaskOps):
         print(f"ИТЕРАЦИЯ НОМЕР {c + 1}")
         c += 1
 
-    return curr_mtr_u
+    return x_list, z_list, curr_mtr_u
 
 
 def get_optimal_h_x(grid: Grid, ops: TaskOps):
@@ -294,6 +293,50 @@ def get_optimal_h_x(grid: Grid, ops: TaskOps):
     return h_x
 
 
+def get_optimal_h_z(grid: Grid, ops: TaskOps):
+    """
+    Метод для получения оптимального шага по координате
+    """
+    h_z = 1  # начальный шаг по координате
+
+    count = 0
+    while True:
+
+        grid.h_z = h_z
+        grid.k = int(ops.b / grid.h_z)
+        x_lst, z_lst, u_res = get_solve(grid, ops)
+        res = []
+        for row in u_res:
+            res.append(row[len(x_lst) // 2])
+        t_h = dict(zip(z_lst, res))
+
+        grid.h_z = h_z / 2
+        grid.k = int(ops.b / grid.h_z)
+        _x, z, u_res = get_solve(grid, ops)
+        res = []
+        for row in u_res:
+            res.append(row[len(_x) // 2])
+        t_h_half_2 = dict(zip(z, res))
+
+        cnt = 0
+
+        for x in t_h.keys():
+            error = abs((t_h[x] - t_h_half_2[x]) / t_h_half_2[x])
+
+            if error < EPS:
+                cnt += 1
+
+        if cnt == len(z_lst):
+            break
+
+        h_z /= 2
+
+        print(f"итерация №{count + 1}")
+        count += 1
+
+    return h_z
+
+
 def main() -> None:
     """
     Главная функция
@@ -301,13 +344,15 @@ def main() -> None:
     ops = TaskOps()
     n = 1000  # число узлов по x (на деле узлов n + 1)
     h_x = ops.a / n  # шаг по координате
-    k = 100  # число узлов по z (на деле узлов k + 1)
+    k = 1000  # число узлов по z (на деле узлов k + 1)
     h_z = ops.b / k
 
     print(f"h_x = {h_x}, h_z = {h_z}")
 
     grid = Grid(ops.a, n, h_x, ops.b, k, h_z, tau=2)
 
+    # print(get_optimal_h_x(grid, ops))  # 0.0078125 при h_z = 0.01
+    # print(get_optimal_h_z(grid, ops))  # 0.00390625 при h_x = 0.01
     x, z, u_res = get_solve(grid, ops)
 
     X, Y = np.meshgrid(x, z)
@@ -322,9 +367,9 @@ def main() -> None:
     ax.set_zlabel("U(x, z)")
     plt.show()
 
-    # plt.imshow(u_res, cmap='viridis')
-    # plt.colorbar()
-    # plt.show()
+    plt.imshow(u_res, cmap='viridis')
+    plt.colorbar()
+    plt.show()
 
     # x, z, u_res = get_solve(grid, ops)
     #

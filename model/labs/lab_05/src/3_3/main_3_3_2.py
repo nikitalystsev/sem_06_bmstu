@@ -27,11 +27,11 @@ class TaskOps:
     flux0: int | float = 30  # flux - поток при x = 0
     # f0, beta варьируются исходя из условия, чтобы максимум решения
     # уравнения - функции u (x,z) не превышал 3000К
-    f0: int | float = 1
+    f0: int | float = 30
     beta: int | float = 1
     # координаты x0, z0 центра распределения функции f(x,z) задаются пользователем.
-    x0: int | float = 7
-    z0: int | float = 7
+    x0: int | float = 5
+    z0: int | float = 5
 
 
 @dataclass
@@ -56,7 +56,7 @@ def _lambda():
     Функция λ(x, z) = λ
     """
 
-    return 0.1
+    return 1
 
 
 def f(x, z, ops: TaskOps):
@@ -121,8 +121,8 @@ def right_sweep_by_x(prev_mtr_u, k, grid: Grid, ops: TaskOps):
         ksi.append(d_n / (b_n - a_n * ksi[n]))
         eta.append((a_n * eta[n] + f_n) / (b_n - a_n * ksi[n]))
 
-    n += 1
-    x += h_x
+        n += 1
+        x += h_x
 
     # Обратный ход
     u = [0] * len(prev_mtr_u[0])
@@ -196,27 +196,18 @@ def solve(prev_mtr_u: list[list[int | float]], grid: Grid, ops: TaskOps):
     Функция поиска текущего решения (реализация локально одномерного метода)
     """
     k, n = grid.k, grid.n
-    u0 = ops.u0
 
     tmp_mtr_u = []  # значения на промежуточном слое
 
-    # прогонка для каждого k
-    for i in range(1, k):
+    for i in range(0, k + 1):
         tmp_u = right_sweep_by_x(prev_mtr_u, i, grid, ops)
         tmp_mtr_u.append(tmp_u)
 
-    tmp_mtr_u.insert(0, [u0 for _ in range(n + 1)])
-    tmp_mtr_u.append([u0 for _ in range(n + 1)])
-
     curr_mtr_u = []  # значения на новом слое
 
-    # прогонка для каждого n
-    for i in range(1, n):
+    for i in range(0, n + 1):
         curr_u = right_sweep_by_z(tmp_mtr_u, i, grid, ops)
         curr_mtr_u.append(curr_u)
-
-    curr_mtr_u.insert(0, [u0 for _ in range(k + 1)])
-    curr_mtr_u.append([u0 for _ in range(k + 1)])
 
     np_matrix = np.array(curr_mtr_u)
     transposed = list(np_matrix.T)
@@ -228,14 +219,13 @@ def get_solve(grid: Grid, ops: TaskOps):
     """
     Функция получения ВСЕГО решения
     """
-    u0 = ops.u0
-
+    a, b, u0 = ops.a, ops.b, ops.u0
     n, k = grid.n, grid.k
 
-    x_list = np.linspace(0, ops.a, n + 1)
-    z_list = np.linspace(0, ops.b, k + 1)
+    x_list = np.linspace(0, a, n + 1)
+    z_list = np.linspace(0, b, k + 1)
 
-    # хз почему в начальный фиктивный момент времени вся матрица u0
+    # начальный момент времени
     prev_mtr_u = [[u0 for _ in range(n + 1)] for _ in range(k + 1)]  # предыдущий слой (на котором все известно)
 
     curr_mtr_u = solve(prev_mtr_u, grid, ops)  # значения, полученные на текущем слое
@@ -246,7 +236,7 @@ def get_solve(grid: Grid, ops: TaskOps):
         prev_mtr_u = curr_mtr_u
         curr_mtr_u = solve(prev_mtr_u, grid, ops)
 
-        print(f"ИТЕРАЦИЯ НОМЕР {c + 1}")
+        print(f"ИТЕРАЦИЯ № {c + 1}")
         c += 1
 
     return x_list, z_list, curr_mtr_u
@@ -289,15 +279,14 @@ def get_optimal_h_x(grid: Grid, ops: TaskOps):
 
     return h_x
 
-
 def main() -> None:
     """
     Главная функция
     """
     ops = TaskOps()
-    n = 1000  # число узлов по x (на деле узлов n + 1)
+    n = 50  # число узлов по x (на деле узлов n + 1)
     h_x = ops.a / n  # шаг по координате
-    k = 100  # число узлов по z (на деле узлов k + 1)
+    k = 50  # число узлов по z (на деле узлов k + 1)
     h_z = ops.b / k
 
     print(f"h_x = {h_x}, h_z = {h_z}")
@@ -318,9 +307,9 @@ def main() -> None:
     ax.set_zlabel("U(x, z)")
     plt.show()
 
-    # plt.imshow(u_res, cmap='viridis')
-    # plt.colorbar()
-    # plt.show()
+    plt.imshow(u_res, cmap='viridis')
+    plt.colorbar()
+    plt.show()
 
     # x, z, u_res = get_solve(grid, ops)
     #
