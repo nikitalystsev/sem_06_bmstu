@@ -30,8 +30,8 @@ class TaskOps:
     f0: int | float = 30
     beta: int | float = 1
     # координаты x0, z0 центра распределения функции f(x,z) задаются пользователем.
-    x0: int | float = 5
-    z0: int | float = 5
+    x0: int | float = 1
+    z0: int | float = 1
 
 
 @dataclass
@@ -278,6 +278,7 @@ def get_optimal_h_x(grid: Grid, ops: TaskOps):
         count += 1
 
     return h_x
+
 
 def main() -> None:
     """

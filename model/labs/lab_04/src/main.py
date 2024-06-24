@@ -147,7 +147,7 @@ def left_boundary_condition(_t_m, __t_m, curr_time, data: Grid, ops: TaskOps):
     """
     Левое краевое условие прогонки
     """
-
+    # __t_m -- с крышкой (текущие)
     a, h, tau = data.a, data.h, data.tau
     alpha_0, t0 = ops.alpha_0, ops.t0
 
